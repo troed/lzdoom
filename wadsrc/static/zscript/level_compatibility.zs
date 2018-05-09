@@ -634,6 +634,8 @@ class LevelCompatibility : LevelPostProcessor
 				SetWallTextureID(328, Line.front, Side.bottom, stone4);
 				SetWallTextureID(338, Line.front, Side.bottom, stone4);
 				SetWallTextureID(339, Line.front, Side.bottom, stone4);
+				// Stuck shotgun guy
+				SetThingXY(85, 960, 904);
 				break;
 			}
 
@@ -779,8 +781,8 @@ class LevelCompatibility : LevelPostProcessor
 			case '0D491365C1B88B7D1B603890100DD03E': // doom2.wad map18
 			{
 				// missing textures
-				SetWallTexture(451, Line.front, Side.mid, "metal");
-				SetWallTexture(459, Line.front, Side.mid, "metal");
+				SetWallTexture(451, Line.front, Side.mid, "doorstop");
+				SetWallTexture(459, Line.front, Side.mid, "doorstop");
 				SetWallTexture(574, Line.front, Side.top, "grayvine");
 				break;
 			}
@@ -967,7 +969,7 @@ class LevelCompatibility : LevelPostProcessor
 			case 'CA3773ED313E8899311F3DD0CA195A68': // heretic.wad e3m6
 			{
 				// Quartz flask outside of map
-				SetThingSkills(373, 0);
+				SetThingXY(373, -384, 1088);
 				// Missing wall torch on hard difficulty
 				SetThingSkills(448, 31);
 				// Missing textures
