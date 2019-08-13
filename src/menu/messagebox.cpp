@@ -189,15 +189,17 @@ CCMD (quicksave)
 		G_DoQuickSave();
 		return;
 	}
-		
+
 	if (savegameManager.quickSaveSlot == NULL || savegameManager.quickSaveSlot == (FSaveGameNode*)1)
 	{
 		S_Sound(CHAN_VOICE, CHANF_UI, "menu/activate", snd_menuvolume, ATTN_NONE);
 		M_StartControlPanel(false);
+		// signal that whatever gets loaded should be the new quicksave
+		savegameManager.quickSaveSlot = (FSaveGameNode *)1;
 		M_SetMenu(NAME_Savegamemenu);
 		return;
 	}
-	
+
 	// [mxd]. Just save the game, no questions asked.
 	if (!saveloadconfirmation)
 	{
@@ -238,9 +240,7 @@ CCMD (quickload)
 	if (savegameManager.quickSaveSlot == NULL || savegameManager.quickSaveSlot == (FSaveGameNode*)1)
 	{
 		M_StartControlPanel(true);
-		// signal that whatever gets loaded should be the new quicksave
-		savegameManager.quickSaveSlot = (FSaveGameNode *)1;
-		M_SetMenu(NAME_Loadgamemenu);
+		M_StartMessage (GStrings("QSAVESPOT"), 1);
 		return;
 	}
 
