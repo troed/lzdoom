@@ -995,6 +995,7 @@ CCMD (menu_load)
 
 CCMD (menu_save)
 {	// F2
+	doquicksave = false;
 	M_StartControlPanel (true);
 	M_SetMenu(NAME_Savegamemenu, -1);
 }
