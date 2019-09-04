@@ -1843,7 +1843,7 @@ void HWWall::DoFFloorBlocks(HWDrawInfo *di, seg_t * seg, sector_t * frontsector,
 // 
 //
 //==========================================================================
-void HWWall::Process(HWDrawInfo *di, seg_t *seg, sector_t * frontsector, sector_t * backsector)
+void HWWall::Process(HWDrawInfo *di, seg_t *seg, sector_t * frontsector, sector_t * backsector, bool isculled)
 {
 	vertex_t * v1, *v2;
 	float fch1;
@@ -1972,6 +1972,25 @@ void HWWall::Process(HWDrawInfo *di, seg_t *seg, sector_t * frontsector, sector_
 	{
 		SkyNormal(di, frontsector, v1, v2);
 		DoHorizon(di, seg, frontsector, v1, v2);
+		return;
+	}
+
+	if (isculled)
+	{
+		if (frontsector->GetTexture(sector_t::ceiling) == skyflatnum)
+		{
+			SkyNormal(di, frontsector, v1, v2);
+		}
+		else
+		{
+			gltexture = FMaterial::ValidateTexture(frontsector->GetTexture(sector_t::ceiling), false, true);
+			if (gltexture)
+			{
+				DoTexture(di, RENDERWALL_TOP, seg, true,
+					crefz, frefz,
+					fch1, fch2, ffh1, ffh2, 0);
+			}
+		}
 		return;
 	}
 
