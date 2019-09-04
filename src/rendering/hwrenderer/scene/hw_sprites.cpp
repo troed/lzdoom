@@ -655,12 +655,30 @@ void HWSprite::PerformSpriteClipAdjustment(AActor *thing, const DVector2 &thingp
 //
 //==========================================================================
 
+EXTERN_CVAR(Float, r_sprite_distance_cull)
+
+inline bool IsDistanceCulled(AActor* thing)
+{
+	double culldist = r_sprite_distance_cull * r_sprite_distance_cull;
+	if (culldist <= 0.0)
+		return false;
+
+	double dist = (thing->Pos() - r_viewpoint.Pos).LengthSquared();
+
+	if (dist > culldist)
+		return true;
+	return false;
+}
+
 void HWSprite::Process(HWDrawInfo *di, AActor* thing, sector_t * sector, area_t in_area, int thruportal)
 {
 	sector_t rs;
 	sector_t * rendersector;
 
 	if (thing == nullptr)
+		return;
+
+	if (IsDistanceCulled(thing)) 
 		return;
 
 	// [ZZ] allow CustomSprite-style direct picnum specification
