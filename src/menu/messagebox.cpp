@@ -197,7 +197,7 @@ CCMD (quicksave)
 		S_Sound(CHAN_VOICE, CHANF_UI, "menu/activate", snd_menuvolume, ATTN_NONE);
 		M_StartControlPanel(false);
 		// signal that whatever gets loaded should be the new quicksave
-		savegameManager.quickSaveSlot = (FSaveGameNode *)1;
+		savegameManager.quickSaveSlot = (FSaveGameNode*)1;
 		M_SetMenu(NAME_Savegamemenu);
 		return;
 	}
@@ -292,4 +292,10 @@ DEFINE_ACTION_FUNCTION(DMenu, StartMessage)
 	PARAM_NAME(action);
 	M_StartMessage(msg, mode, action);
 	return 0;
+}
+
+UNSAFE_CCMD (quickunsetslot)
+{
+	if (savegameManager.quickSaveSlot != NULL) savegameManager.quickSaveSlot = (FSaveGameNode*)1;
+	Printf("Quicksave slot unset.\n");
 }
