@@ -211,9 +211,9 @@ if( MSVC )
 	# Function-level linking
 	# Disable run-time type information
 	if ( HAVE_VULKAN )
-		set( ALL_C_FLAGS "/GF /Gy /GR- /permissive- /DHAVE_VULKAN" )
+		set( ALL_C_FLAGS "/GF /Gy /GR- /DHAVE_VULKAN" )
 	else()
-		set( ALL_C_FLAGS "/GF /Gy /GR- /permissive-" )
+		set( ALL_C_FLAGS "/GF /Gy /GR-" )
 	endif()
 
 	# Use SSE 2 as minimum always as the true color drawers needs it for __vectorcall
