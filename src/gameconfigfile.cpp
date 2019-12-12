@@ -499,17 +499,6 @@ void FGameConfigFile::DoGlobalSetup ()
 					}
 				}
 			}
-			if (last < 217)
-			{
-				auto var = FindCVar("vid_scalemode", NULL);
-				UCVarValue newvalue;
-				newvalue.Int = 2;
-				if (var != NULL)
-				{
-					UCVarValue v = var->GetGenericRep(CVAR_Int);
-					if (v.Int == 3) var->SetGenericRep(newvalue, CVAR_Int);
-				}
-			}
 			if (last < 219)
 			{
 				// migrate vid_enablevulkan to vid_preferbackend

@@ -41,7 +41,10 @@
 #include "v_font.h"
 #include "utf8.h"
 
-CVAR (Bool, cl_spreaddecals, true, CVAR_ARCHIVE)
+EXTERN_CVAR(Int, vid_scalemode)
+EXTERN_CVAR(Float, vid_scalefactor)
+
+CVAR(Bool, cl_spreaddecals, true, CVAR_ARCHIVE)
 CVAR(Bool, var_pushers, true, CVAR_SERVERINFO);
 CVAR(Bool, gl_cachenodes, true, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 CVAR(Float, gl_cachetime, 0.6f, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
@@ -186,11 +189,36 @@ void UpdateGenericUI(bool cvar)
 	}
 }
 
+EXTERN_CVAR(Bool, ui_classic);
+
 CUSTOM_CVAR(Bool, ui_generic, false, CVAR_NOINITCALL) // This is for allowing to test the generic font system with all languages
 {
-	UpdateGenericUI(self);
+	if (ui_classic && self)
+		self = false;
+	else UpdateGenericUI(self);
 }
 
+void DisableGenericUI(bool cvar)
+{
+	if (generic_ui && cvar) generic_ui = false;
+	if (cvar)
+	{
+		CurrentConsoleFont = ConFont;
+	}
+	else
+	{
+		CurrentConsoleFont = NewConsoleFont;
+	}
+}
+
+CUSTOM_CVAR(Bool, ui_classic, false, CVAR_ARCHIVE | CVAR_NOINITCALL)
+{
+	if (ui_generic && self)
+		ui_generic = false;
+	DisableGenericUI(self);
+	vid_scalemode.Callback();
+	vid_scalefactor.Callback();
+}
 
 CUSTOM_CVAR(String, language, "auto", CVAR_ARCHIVE | CVAR_NOINITCALL | CVAR_GLOBALCONFIG)
 {
@@ -201,4 +229,6 @@ CUSTOM_CVAR(String, language, "auto", CVAR_ARCHIVE | CVAR_NOINITCALL | CVAR_GLOB
 		if (Level->info != nullptr) Level->LevelName = Level->info->LookupLevelName();
 	}
 	UpdateGenericUI(ui_generic);
+	if (ui_classic)
+		DisableGenericUI(true);
 }

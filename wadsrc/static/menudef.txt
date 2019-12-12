@@ -345,12 +345,11 @@ OptionMenuSettings
 {
 	// These can be overridden if a different menu fonts requires it.
 	Linespacing 17
-	/*
+	OldLinespacing 8
 	IfGame(Heretic, Hexen)
 	{
-		Linespacing 9
+		OldLinespacing 9
 	}
-	*/
 }
 
 DefaultOptionMenu
@@ -1211,6 +1210,7 @@ OptionMenu "MiscOptions" protected
 	Slider "$MISCMNU_CACHETIME",				"gl_cachetime", 0.0, 2.0, 0.1
 	SafeCommand "$MISCMNU_CLEARNODECACHE",		"clearnodecache"
 	StaticText " "
+	Command "$OPTMNU_SWITCHUI", "switchui"
 	Option "$OPTMNU_LANGUAGE", "language", "LanguageOptions"
 
 	StaticText " "
@@ -2198,8 +2198,8 @@ OptionValue ScaleModes
 {
 	0, "$OPTVAL_SCALENEAREST"
 	1, "$OPTVAL_SCALELINEAR"
-	2, "640x400"
-	3, "960x600"
+	2, "320x200"
+	3, "640x400"
 	4, "1280x800"
 	5, "$OPTVAL_CUSTOM"
 }
@@ -2256,6 +2256,7 @@ OptionMenu CustomResolutionMenu protected
 	StaticText "$VIDMNU_RESPRESETHEAD"
 	StaticText ""
 	StaticText "$VIDMNU_ASPECT43"
+	Command "320x240", "menu_resolution_set_custom 320 240"
 	Command "640x480", "menu_resolution_set_custom 640 480"
 	Command "1024x768", "menu_resolution_set_custom 1024 768"
 	Command "1280x960", "menu_resolution_set_custom 1280 960"

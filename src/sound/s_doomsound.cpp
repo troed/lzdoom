@@ -68,6 +68,7 @@
 
 // PUBLIC DATA DEFINITIONS -------------------------------------------------
 
+EXTERN_CVAR(Bool, ui_classic)
 
 FBoolCVar noisedebug("noise", false, 0);	// [RH] Print sound debugging info?
 CUSTOM_CVAR(Int, snd_channels, 128, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)	// number of channels available
@@ -1059,23 +1060,24 @@ void DoomSoundEngine::NoiseDebug()
 	FVector3 listener;
 	FVector3 origin;
 	int y, color;
+	FFont *font = ui_classic? SmallFont : NewConsoleFont;
 
 	y = 32 * CleanYfac;
-	screen->DrawText(NewConsoleFont, CR_YELLOW, 0, y, "*** SOUND DEBUG INFO ***", TAG_DONE);
-	y += NewConsoleFont->GetHeight();
+	screen->DrawText (font, CR_YELLOW, 0, y, "*** SOUND DEBUG INFO ***", TAG_DONE);
+	y += font->GetHeight();
 
-	screen->DrawText(NewConsoleFont, CR_GOLD, 0, y, "name", TAG_DONE);
-	screen->DrawText(NewConsoleFont, CR_GOLD, 70, y, "x", TAG_DONE);
-	screen->DrawText(NewConsoleFont, CR_GOLD, 120, y, "y", TAG_DONE);
-	screen->DrawText(NewConsoleFont, CR_GOLD, 170, y, "z", TAG_DONE);
-	screen->DrawText(NewConsoleFont, CR_GOLD, 220, y, "vol", TAG_DONE);
-	screen->DrawText(NewConsoleFont, CR_GOLD, 260, y, "dist", TAG_DONE);
-	screen->DrawText(NewConsoleFont, CR_GOLD, 300, y, "chan", TAG_DONE);
-	screen->DrawText(NewConsoleFont, CR_GOLD, 340, y, "pri", TAG_DONE);
-	screen->DrawText(NewConsoleFont, CR_GOLD, 380, y, "flags", TAG_DONE);
-	screen->DrawText(NewConsoleFont, CR_GOLD, 460, y, "aud", TAG_DONE);
-	screen->DrawText(NewConsoleFont, CR_GOLD, 520, y, "pos", TAG_DONE);
-	y += NewConsoleFont->GetHeight();
+	screen->DrawText (font, CR_GOLD, 0, y, "name", TAG_DONE);
+	screen->DrawText (font, CR_GOLD, 70, y, "x", TAG_DONE);
+	screen->DrawText (font, CR_GOLD, 120, y, "y", TAG_DONE);
+	screen->DrawText (font, CR_GOLD, 170, y, "z", TAG_DONE);
+	screen->DrawText (font, CR_GOLD, 220, y, "vol", TAG_DONE);
+	screen->DrawText (font, CR_GOLD, 260, y, "dist", TAG_DONE);
+	screen->DrawText (font, CR_GOLD, 300, y, "chan", TAG_DONE);
+	screen->DrawText (font, CR_GOLD, 340, y, "pri", TAG_DONE);
+	screen->DrawText (font, CR_GOLD, 380, y, "flags", TAG_DONE);
+	screen->DrawText (font, CR_GOLD, 460, y, "aud", TAG_DONE);
+	screen->DrawText (font, CR_GOLD, 520, y, "pos", TAG_DONE);
+	y += font->GetHeight();
 
 	if (Channels == nullptr)
 	{

@@ -50,13 +50,14 @@ EXTERN_CVAR(Int, vid_scale_customwidth)
 EXTERN_CVAR(Int, vid_scale_customheight)
 EXTERN_CVAR(Int, vid_scalemode)
 EXTERN_CVAR(Float, vid_scalefactor)
+EXTERN_CVAR(Bool, ui_classic)
 
 CCMD (menu_resolution_set_custom)
 {
 	if (argv.argc() > 2)
 	{
-		menu_resolution_custom_width = atoi(argv[1]);
-		menu_resolution_custom_height = atoi(argv[2]);
+		menu_resolution_custom_width = ui_classic? atoi(argv[1]) : atoi(argv[1]) < 640? 640 : atoi(argv[1]);
+		menu_resolution_custom_height = ui_classic? atoi(argv[2]) : atoi(argv[2]) < 480? 480 : atoi(argv[2]);
 	}
 	else
 	{
@@ -76,7 +77,12 @@ CCMD (menu_resolution_commit_changes)
 	if (do_fullscreen == false)
 	{
 		vid_scalemode = vid_scale_customlinear;
-		vid_scalefactor = 1.;
+		if (vid_scalefactor != 1) vid_scalefactor = 1.;
+		if (!ui_classic && (menu_resolution_custom_width < 640 || menu_resolution_custom_height < 400))
+		{
+			menu_resolution_custom_width = 640;
+			menu_resolution_custom_height = 400;
+		}
 		screen->SetWindowSize(menu_resolution_custom_width, menu_resolution_custom_height);
 		V_OutputResized(screen->GetClientWidth(), screen->GetClientHeight());
 	}
@@ -84,7 +90,12 @@ CCMD (menu_resolution_commit_changes)
 	{
 		fullscreen = true;
 		vid_scalemode = 5;
-		vid_scalefactor = 1.;
+		if (vid_scalefactor != 1) vid_scalefactor = 1.;
+		if (!ui_classic && (menu_resolution_custom_width < 640 || menu_resolution_custom_height < 400))
+		{
+			menu_resolution_custom_width = 640;
+			menu_resolution_custom_height = 400;
+		}
 		vid_scale_customwidth = menu_resolution_custom_width;
 		vid_scale_customheight = menu_resolution_custom_height;
 		vid_scale_customstretched = false;

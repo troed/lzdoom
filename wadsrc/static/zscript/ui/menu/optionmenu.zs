@@ -42,6 +42,7 @@ struct FOptionMenuSettings native version("2.4")
 	int mFontColorHighlight;
 	int mFontColorSelection;
 	int mLinespacing;
+	int mOldLinespacing;
 }
 
 class OptionMenuDescriptor : MenuDescriptor native
@@ -94,6 +95,7 @@ class OptionMenu : Menu
 	bool CanScrollDown;
 	int VisBottom;
 	OptionMenuItem mFocusControl;
+	int linespacing;
 
 	//=============================================================================
 	//
@@ -131,6 +133,8 @@ class OptionMenu : Menu
 		{
 			mDesc.mItems[i].OnMenuCreated();
 		}
+
+		linespacing = ui_classic? OptionMenuSettings.mOldLinespacing : OptionMenuSettings.mLinespacing;
 	}
 
 	
@@ -250,7 +254,7 @@ class OptionMenu : Menu
 						}
 					}
 					y *= CleanYfac_1;
-					int	rowheight = OptionMenuSettings.mLinespacing * CleanYfac_1;
+					int	rowheight = linespacing * CleanYfac_1;
 					int maxitems = (screen.GetHeight() - rowheight - y) / rowheight + 1;
 
 					mDesc.mScrollPos = MAX (0, mDesc.mItems.Size() - maxitems + mDesc.mScrollTop);
@@ -383,7 +387,7 @@ class OptionMenu : Menu
 		}
 		else
 		{
-			int yline = (y / OptionMenuSettings.mLinespacing);
+			int yline = (y / linespacing);
 			if (yline >= mDesc.mScrollTop)
 			{
 				yline += mDesc.mScrollPos;
@@ -427,8 +431,19 @@ class OptionMenu : Menu
 
 	virtual int GetIndent()
 	{
-		int indent = max(0, (mDesc.mIndent + 40) - CleanWidth_1 / 2);
-		return screen.GetWidth() / 2 + indent * CleanXfac_1;
+		int indent;
+
+		if (ui_classic && screen.GetWidth() < 400)
+		{
+			indent = mDesc.mIndent;
+			indent = (indent - 110) * CleanXfac_1 + screen.GetWidth() / 2;
+		}
+		else
+		{
+			indent = max(0, (mDesc.mIndent + 40) - CleanWidth_1 / 2);
+			indent = screen.GetWidth() / 2 + indent * CleanXfac_1;
+		}
+		return indent;
 	}
 
 	override void Drawer ()
@@ -452,7 +467,7 @@ class OptionMenu : Menu
 			}
 		}
 		mDesc.mDrawTop = y;
-		int fontheight = OptionMenuSettings.mLinespacing * CleanYfac_1;
+		int fontheight = linespacing * CleanYfac_1;
 		y *= CleanYfac_1;
 
 		int indent = GetIndent();
@@ -467,7 +482,7 @@ class OptionMenu : Menu
 			if (i == mDesc.mScrollTop)
 			{
 				i += mDesc.mScrollPos;
-				if (i >= mDesc.mItems.Size()) break;	// skipped beyond end of menu 
+				if (i >= mDesc.mItems.Size()) break;	// skipped beyond end of menu
 			}
 			bool isSelected = mDesc.mSelectedItem == i;
 			int cur_indent = mDesc.mItems[i].Draw(mDesc, y, indent, isSelected);
@@ -475,7 +490,10 @@ class OptionMenu : Menu
 			{
 				if (((MenuTime() % 8) < 6) || GetCurrentMenu() != self)
 				{
-					DrawOptionText(cur_indent + 3 * CleanXfac_1, y, OptionMenuSettings.mFontColorSelection, "◄");
+					if (ui_classic)
+						DrawConTextScaled(OptionMenuSettings.mFontColorSelection, cur_indent + 3 * CleanXfac_1, y+fontheight-9*CleanYfac_1, "\xd");
+					else
+						DrawOptionText(cur_indent + 3 * CleanXfac_1, y, OptionMenuSettings.mFontColorSelection, "◄");
 				}
 			}
 			y += fontheight;
@@ -487,11 +505,17 @@ class OptionMenu : Menu
 
 		if (CanScrollUp)
 		{
-			DrawOptionText(screen.GetWidth() - 11 * CleanXfac_1, ytop, OptionMenuSettings.mFontColorSelection, "▲");
+			if (ui_classic)
+				DrawConTextScaled(OptionMenuSettings.mFontColorSelection, 3 * CleanXfac_1, ytop, "\x1a");
+			else
+				DrawOptionText(screen.GetWidth() - 11 * CleanXfac_1, ytop, OptionMenuSettings.mFontColorSelection, "▲");
 		}
 		if (CanScrollDown)
 		{
-			DrawOptionText(screen.GetWidth() - 11 * CleanXfac_1 , y - 8*CleanYfac_1, OptionMenuSettings.mFontColorSelection, "▼");
+			if (ui_classic)
+				DrawConTextScaled(OptionMenuSettings.mFontColorSelection, 3 * CleanXfac_1, y - 8*CleanYfac_1, "\x1b");
+			else
+				DrawOptionText(screen.GetWidth() - 11 * CleanXfac_1 , y - 8*CleanYfac_1, OptionMenuSettings.mFontColorSelection, "▼");
 		}
 		Super.Drawer();
 	}

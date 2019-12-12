@@ -85,6 +85,8 @@ EXTERN_CVAR (Bool, noisedebug)
 EXTERN_CVAR (Int, con_scaletext)
 EXTERN_CVAR(Bool, vid_fps)
 EXTERN_CVAR(Bool, inter_subtitles)
+EXTERN_CVAR (Bool, ui_classic)
+
 CVAR(Int, hud_scale, 0, CVAR_ARCHIVE);
 CVAR(Bool, log_vgafont, false, CVAR_ARCHIVE)
 
@@ -604,7 +606,7 @@ void DBaseStatusBar::DoDrawAutomapHUD(int crdefault, int highlight)
 
 	if (am_showtime)
 	{
-		if (vid_fps) y += (NewConsoleFont->GetHeight() * active_con_scale() + 5) / scale;
+		if (vid_fps) y += (CurrentConsoleFont->GetHeight() * active_con_scale() + 5) / scale;
 		sec = Tics2Seconds(primaryLevel->time);
 		textbuffer.Format("%02d:%02d:%02d", sec / 3600, (sec % 3600) / 60, sec % 60);
 		screen->DrawText(font, crdefault, vwidth - zerowidth * 8 - textdist, y, textbuffer, DTA_VirtualWidth, vwidth, DTA_VirtualHeight, vheight,
@@ -1228,10 +1230,10 @@ void DBaseStatusBar::DrawLog ()
 	if (text.IsNotEmpty())
 	{
 		// This uses the same scaling as regular HUD messages
-		auto scale = active_con_scaletext(generic_ui || log_vgafont);
+		auto scale = active_con_scaletext(generic_ui || (log_vgafont && !ui_classic));
 		hudwidth = SCREENWIDTH / scale;
 		hudheight = SCREENHEIGHT / scale;
-		FFont *font = (generic_ui || log_vgafont)? NewSmallFont : SmallFont;
+		FFont *font = (generic_ui || (log_vgafont && !ui_classic))? NewSmallFont : SmallFont;
 
 		int linelen = hudwidth<640? Scale(hudwidth,9,10)-40 : 560;
 		auto lines = V_BreakLines (font, linelen, text[0] == '$'? GStrings(text.GetChars()+1) : text.GetChars());
