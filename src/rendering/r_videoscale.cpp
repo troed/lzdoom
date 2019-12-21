@@ -27,7 +27,7 @@
 #include "v_video.h"
 #include "templates.h"
 
-#define NUMSCALEMODES 7
+#define NUMSCALEMODES 6
 
 extern bool setsizeneeded;
 
@@ -80,7 +80,7 @@ namespace
 			if (sx <= 0. || sy <= 0.)
 				return 1.; // prevent x/0 error
 			// set absolute minimum scale to fill the entire screen but get as close to 640x400 as possible
-			float ssx = (float)640. / sx, ssy = (float)400. / sy;
+			float ssx = (ui_classic? (float)(VID_MIN_WIDTH) : (float)640.) / sx, ssy = (ui_classic? (float)(VID_MIN_HEIGHT) : (float)400.) / sy;
 			result = (ssx < ssy) ? ssy : ssx;
 			lastsx = sx;
 			lastsy = sy;
@@ -105,7 +105,6 @@ namespace
 		{ true,			false,		[](uint32_t Width)->uint32_t { return 640; },		            	[](uint32_t Height)->uint32_t { return 400; },				        true,   	false   },	// 3  - 640x400
 		{ true,			true,		[](uint32_t Width)->uint32_t { return 1280; },		            	[](uint32_t Height)->uint32_t { return 800; },	        			true,   	false   },	// 4  - 1280x800
 		{ true,			true,		[](uint32_t Width)->uint32_t { return vid_scale_customwidth; },	[](uint32_t Height)->uint32_t { return vid_scale_customheight; },	true,   	true    },	// 5  - Custom
-		{ true,			true,		[](uint32_t Width)->uint32_t { return v_mfillX(); },				[](uint32_t Height)->uint32_t { return v_mfillY(); },				false,		false   },	// 6  - Minimum Scale to Fill Entire Screen
 	};
 	bool isOutOfBounds(int x)
 	{
@@ -238,10 +237,18 @@ CCMD (vid_setscale)
             }
         }
         vid_scalemode = 5;
-	vid_scalefactor = 1.0;
+        vid_scalefactor = 1.0;
     }
     else
     {
         Printf("Usage: vid_setscale <x> <y> [bool linear] [bool long-pixel-shape]\nThis command will create a custom viewport scaling mode.\n");
     }
+}
+
+CCMD (vid_minscale) // Minimum Scale to Fill Entire Screen
+{
+	vid_scale_customwidth = menu_resolution_custom_width = v_mfillX();
+	vid_scale_customheight = menu_resolution_custom_height = v_mfillY();
+	vid_scalemode = 5;
+	vid_scalefactor = 1.0;
 }
