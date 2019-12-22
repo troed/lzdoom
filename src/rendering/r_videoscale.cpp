@@ -74,17 +74,14 @@ namespace
 	{
 		// sx = screen x dimension, sy = same for y
 		float sx = (float)screen->GetClientWidth(), sy = (float)screen->GetClientHeight();
-		static float lastsx = 0., lastsy = 0., result = 0.;
-		if (lastsx != sx || lastsy != sy)
-		{
-			if (sx <= 0. || sy <= 0.)
-				return 1.; // prevent x/0 error
-			// set absolute minimum scale to fill the entire screen but get as close to 640x400 as possible
-			float ssx = (ui_classic? (float)(VID_MIN_WIDTH) : (float)640.) / sx, ssy = (ui_classic? (float)(VID_MIN_HEIGHT) : (float)400.) / sy;
-			result = (ssx < ssy) ? ssy : ssx;
-			lastsx = sx;
-			lastsy = sy;
-		}
+		float result;
+
+		if (sx <= 0. || sy <= 0.)
+			return 1.; // prevent x/0 error
+		// set absolute minimum scale to fill the entire screen but get as close to 640x400 as possible
+		float ssx = (ui_classic? (float)(VID_MIN_WIDTH) : (float)640.) / sx, ssy = (ui_classic? (float)(VID_MIN_HEIGHT) : (float)400.) / sy;
+		result = (ssx < ssy) ? ssy : ssx;
+
 		return result;
 	}
 	inline uint32_t v_mfillX()
