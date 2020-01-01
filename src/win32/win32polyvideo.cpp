@@ -5,7 +5,6 @@
 #include <Windows.h>
 
 EXTERN_CVAR(Bool, vid_vsync)
-EXTERN_CVAR(Bool, vid_scale_customlinear)
 
 extern HWND Window;
 
@@ -169,10 +168,7 @@ void I_PolyPresentUnlock(int x, int y, int width, int height)
 		dstrect.top = y;
 		dstrect.right = x + width;
 		dstrect.bottom = y + height;
-		if (vid_scale_customlinear)
-			device->StretchRect(surface, &srcrect, backbuffer, &dstrect, D3DTEXF_LINEAR);
-		else
-			device->StretchRect(surface, &srcrect, backbuffer, &dstrect, D3DTEXF_POINT);
+		device->StretchRect(surface, &srcrect, backbuffer, &dstrect, D3DTEXF_LINEAR);
 
 		result = device->EndScene();
 		if (SUCCEEDED(result))
