@@ -3,9 +3,15 @@
 *.pdb
 *.ilk
 *.aps
+/Debug
+/Release
 /wadsrc_wad
 *.user
 /build
+/debug
+/release
+*/debug
+*/release
 /release_gcc
 /DOOMSTATS.TXT
 /src/gitinfo.h
