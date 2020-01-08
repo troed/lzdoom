@@ -98,6 +98,10 @@ CUSTOM_CVAR(Int, vid_rendermode, 4, CVAR_ARCHIVE | CVAR_GLOBALCONFIG | CVAR_NOIN
 	{
 		self = 4;
 	}
+	else if (self == 2 || self == 3)
+	{
+		self = self - 2; // softpoly to software
+	}
 
 	if (usergame)
 	{
@@ -675,10 +679,6 @@ int ActiveFakeRatio(int width, int height)
 			fakeratio = 3;
 		}
 	}
-	else if (vid_aspect == 0 && ViewportIsScaled43())
-	{
-		fakeratio = 0;
-	}
 	return fakeratio;
 }
 
@@ -701,7 +701,7 @@ float ActiveRatio(int width, int height, float *trueratio)
 
 	if (trueratio)
 		*trueratio = ratio;
-	return (fakeratio != -1) ? forcedRatioTypes[fakeratio] : ratio;
+	return (fakeratio != -1) ? forcedRatioTypes[fakeratio] : (ratio / ViewportPixelAspect());
 }
 
 DEFINE_ACTION_FUNCTION(_Screen, GetAspectRatio)

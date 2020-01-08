@@ -144,6 +144,8 @@ void ParseGLDefs();
 void DrawFullscreenSubtitle(const char *text);
 void D_Cleanup();
 void FreeSBarInfoScript();
+void I_UpdateWindowTitle();
+void C_GrabCVarDefaults ();
 
 // PRIVATE FUNCTION PROTOTYPES ---------------------------------------------
 
@@ -161,7 +163,6 @@ EXTERN_CVAR (Bool, lookstrafe)
 EXTERN_CVAR (Int, screenblocks)
 EXTERN_CVAR (Bool, sv_cheats)
 EXTERN_CVAR (Bool, sv_unlimited_pickup)
-EXTERN_CVAR (Bool, I_FriendlyWindowTitle)
 EXTERN_CVAR (Bool, r_drawplayersprites)
 EXTERN_CVAR (Bool, show_messages)
 
@@ -276,7 +277,7 @@ void D_ToggleHud()
 	static int saved_screenblocks;
 	static bool saved_drawplayersprite, saved_showmessages;
 
-	if (hud_toggled = !hud_toggled)
+	if ((hud_toggled = !hud_toggled))
 	{
 		saved_screenblocks = screenblocks;
 		saved_drawplayersprite = r_drawplayersprites;
@@ -1476,6 +1477,10 @@ void ParseCVarInfo()
 				{
 					cvarflags |= CVAR_LATCH;
 				}
+				else if (stricmp(sc.String, "nosave") == 0)
+				{
+					cvarflags |= CVAR_NOSAVEGAME;
+				}
 				else
 				{
 					sc.ScriptError("Unknown cvar attribute '%s'", sc.String);
@@ -2531,6 +2536,8 @@ static int D_DoomMain_Internal (void)
 		allwads.ShrinkToFit();
 		SetMapxxFlag();
 
+		C_GrabCVarDefaults(); //parse DEFCVARS
+
 		GameConfig->DoKeySetup(gameinfo.ConfigName);
 
 		// Now that wads are loaded, define mod-specific cvars.
@@ -2848,8 +2855,7 @@ static int D_DoomMain_Internal (void)
 
 		D_DoAnonStats();
 
-		if (I_FriendlyWindowTitle)
-			I_SetWindowTitle(DoomStartupInfo.Name.GetChars());
+		I_UpdateWindowTitle();
 
 		D_DoomLoop ();		// this only returns if a 'restart' CCMD is given.
 		// 
@@ -3086,11 +3092,27 @@ DEFINE_FIELD_X(InputEventData, event_t, data3)
 DEFINE_FIELD_X(InputEventData, event_t, x)
 DEFINE_FIELD_X(InputEventData, event_t, y)
 
-
-CUSTOM_CVAR(Bool, I_FriendlyWindowTitle, true, CVAR_GLOBALCONFIG|CVAR_ARCHIVE|CVAR_NOINITCALL)
+CUSTOM_CVAR(Int, I_FriendlyWindowTitle, 1, CVAR_GLOBALCONFIG|CVAR_ARCHIVE|CVAR_NOINITCALL)
 {
-	if (self)
+	I_UpdateWindowTitle();
+}
+
+void I_UpdateWindowTitle()
+{
+	switch (I_FriendlyWindowTitle)
+	{
+	case 1:
+		if (level.LevelName && level.LevelName.GetChars()[0])
+		{
+			FString titlestr;
+			titlestr.Format("%s - %s", level.LevelName.GetChars(), DoomStartupInfo.Name.GetChars());
+			I_SetWindowTitle(titlestr.GetChars());
+			break;
+		}
+	case 2:
 		I_SetWindowTitle(DoomStartupInfo.Name.GetChars());
-	else
+		break;
+	default:
 		I_SetWindowTitle(NULL);
+	}
 }

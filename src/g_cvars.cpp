@@ -44,6 +44,8 @@
 EXTERN_CVAR(Int, vid_scalemode)
 EXTERN_CVAR(Float, vid_scalefactor)
 
+void I_UpdateWindowTitle();
+
 CVAR(Bool, cl_spreaddecals, true, CVAR_ARCHIVE)
 CVAR(Bool, var_pushers, true, CVAR_SERVERINFO);
 CVAR(Bool, gl_cachenodes, true, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
@@ -231,4 +233,5 @@ CUSTOM_CVAR(String, language, "auto", CVAR_ARCHIVE | CVAR_NOINITCALL | CVAR_GLOB
 	UpdateGenericUI(ui_generic);
 	if (ui_classic)
 		DisableGenericUI(true);
+	I_UpdateWindowTitle();
 }
