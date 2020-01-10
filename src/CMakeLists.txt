@@ -51,27 +51,10 @@ if( WIN32 )
 	add_definitions( -D_WIN32 )
 
 
-	if( ( MSVC14 AND NOT CMAKE_GENERATOR_TOOLSET STREQUAL "v140_xp" ) OR	# For VS 2015.
-		( MSVC15 AND NOT CMAKE_GENERATOR_TOOLSET STREQUAL "v141_xp" ) )		# For VS 2017.
+	if( MSVC AND MSVC_VERSION GREATER 1899 )	# For VS 2015 and later.
 		# for modern Windows SDKs the DirectX headers should be available by default.
 		set( DX_dinput8_LIBRARY dinput8 )
 	else()
-
-		find_path( XINPUT_INCLUDE_DIR xinput.h
-			PATHS ENV DXSDK_DIR
-			PATH_SUFFIXES Include )
-		if( NOT XINPUT_INCLUDE_DIR )
-			# Modern versions of the Windows SDK include xinput.h. Unfortunately,
-			# CMake cannot find this file via find_path, so we check for it using
-			# CHECK_INCLUDE_FILES. windows.h must be included before xinput.h.
-			CHECK_INCLUDE_FILES( "windows.h;xinput.h" XINPUT_H_FOUND )
-			if( NOT XINPUT_H_FOUND )
-				message( WARNING "Could not find xinput.h. XInput will be disabled." )
-				add_definitions( -DNO_XINPUT )
-			endif()
-		else()
-			include_directories( ${XINPUT_INCLUDE_DIR} )
-		endif()
 
 		find_library( DX_dinput8_LIBRARY dinput8
 			PATHS ENV DXSDK_DIR
