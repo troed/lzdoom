@@ -85,7 +85,6 @@ if( WIN32 )
 		opengl32
 		wsock32
 		winmm
-		d3d9
 		"${DX_dinput8_LIBRARY}"
 		ole32
 		user32
@@ -105,6 +104,7 @@ if( WIN32 )
 		if( DX_dxguid_LIBRARY )
 			list( APPEND ZDOOM_LIBS "${DX_dxguid_LIBRARY}" )
 		endif()
+		list( APPEND ZDOOM_LIBS d3d9 )
 	endif()
 else()
 	if( APPLE )
