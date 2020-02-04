@@ -53,6 +53,11 @@
 #include "poly_hwtexture.h"
 #include "doomerrors.h"
 
+#ifdef _WIN32
+extern bool d3davailable;
+EXTERN_CVAR (Bool, vid_forcegdi)
+#endif
+
 void Draw2D(F2DDrawer *drawer, FRenderState &state);
 void DoWriteSavePic(FileWriter *file, ESSType ssformat, uint8_t *scr, int width, int height, sector_t *viewsector, bool upsidedown);
 
@@ -181,8 +186,19 @@ void PolyFrameBuffer::Update()
 	Flush3D.Unclock();
 
 	FlushDrawCommands();
+#ifdef _WIN32
+	if (!d3davailable || vid_forcegdi)
+	{
+		DrawerThreads::WaitForWorkers();
+		mFrameMemory.Clear();
+		FrameDeleteList.Buffers.clear();
+		FrameDeleteList.Images.clear();
+	}
 
+	if (mCanvas && d3davailable && !vid_forcegdi)
+#else
 	if (mCanvas)
+#endif
 	{
 		int w = mCanvas->GetWidth();
 		int h = mCanvas->GetHeight();
@@ -208,11 +224,22 @@ void PolyFrameBuffer::Update()
 		}
 		FPSLimit();
 	}
+#ifdef _WIN32
+	else if (mCanvas)
+	{
+		I_PresentPolyImage(mCanvas->GetWidth(), mCanvas->GetHeight(), mCanvas->GetPixels());
+	}
 
-	DrawerThreads::WaitForWorkers();
-	mFrameMemory.Clear();
-	FrameDeleteList.Buffers.clear();
-	FrameDeleteList.Images.clear();
+	if (d3davailable && !vid_forcegdi)
+	{
+#endif
+		DrawerThreads::WaitForWorkers();
+		mFrameMemory.Clear();
+		FrameDeleteList.Buffers.clear();
+		FrameDeleteList.Images.clear();
+#ifdef _WIN32
+	}
+#endif
 
 	CheckCanvas();
 

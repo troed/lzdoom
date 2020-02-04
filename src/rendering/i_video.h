@@ -27,6 +27,9 @@ void I_PolyPresentInit();
 uint8_t *I_PolyPresentLock(int w, int h, bool vsync, int &pitch);
 void I_PolyPresentUnlock(int x, int y, int w, int h);
 void I_PolyPresentDeinit();
+#ifdef _WIN32
+void I_PresentPolyImage(int w, int h, const void *pixels);
+#endif
 
 
 // Pause a bit.

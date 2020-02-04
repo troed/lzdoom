@@ -17,6 +17,10 @@ extern HWND Window;
 #define D3DPRESENT_FORCEIMMEDIATE	0x00000100L // MinGW
 #endif
 
+bool d3davailable = true;
+
+CVAR (Bool, vid_forcegdi, false, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
+
 namespace
 {
 	int SrcWidth = 0;
@@ -25,17 +29,61 @@ namespace
 	int ClientHeight = 0;
 	bool CurrentVSync = false;
 
-	IDirect3D9Ex *d3d9 = nullptr;
-	IDirect3DDevice9Ex *device = nullptr;
+	HMODULE D3D9_dll;
+	bool d3dexavailable = true;
+	IDirect3D9 *d3d9 = nullptr;
+	IDirect3DDevice9 *device = nullptr;
+	IDirect3D9Ex *d3d9ex = nullptr;
+	IDirect3DDevice9Ex *deviceex = nullptr;
 	IDirect3DSurface9* surface = nullptr;
 }
 
 void I_PolyPresentInit()
 {
-	Direct3DCreate9Ex(D3D_SDK_VERSION, &d3d9);
-	if (!d3d9)
+	if (vid_forcegdi)
 	{
-		I_FatalError("Direct3DCreate9 failed");
+		d3davailable = false;
+		return;
+	}
+
+	// Load the Direct3D 9 library.
+	if ((D3D9_dll = LoadLibrary (L"d3d9.dll")) == NULL)
+	{
+		I_FatalError("Unable to load d3d9.dll!\n");
+	}
+
+	// Obtain an IDirect3DEx interface.
+	typedef HRESULT (WINAPI *DIRECT3DCREATE9EXFUNC)(UINT, IDirect3D9Ex**);
+	DIRECT3DCREATE9EXFUNC direct3d_create_9Ex = (DIRECT3DCREATE9EXFUNC)GetProcAddress(D3D9_dll, "Direct3DCreate9Ex");
+	if (!direct3d_create_9Ex)
+	{
+		d3dexavailable = false;
+		Printf("Direct3DCreate9Ex failed");
+	}
+
+	if (d3dexavailable)
+	{
+		(*direct3d_create_9Ex)(D3D_SDK_VERSION, &d3d9ex);
+		if (!d3d9ex)
+		{
+			d3dexavailable = false;
+			Printf("Direct3DCreate9Ex failed.");
+		}
+	}
+	else
+	{
+		d3d9 = Direct3DCreate9(D3D_SDK_VERSION);
+		if (!d3d9)
+		{
+			FreeLibrary (D3D9_dll);
+			d3davailable = false;
+			Printf("Direct3DCreate9 failed. Falling back to GDI...");
+		}
+	}
+
+	if (!d3davailable)
+	{
+		return;
 	}
 
 	RECT rect = {};
@@ -46,14 +94,15 @@ void I_PolyPresentInit()
 
 	D3DPRESENT_PARAMETERS pp = {};
 	pp.Windowed = true;
-	pp.SwapEffect = D3DSWAPEFFECT_FLIPEX;
+	pp.SwapEffect = d3dexavailable? D3DSWAPEFFECT_FLIPEX : D3DSWAPEFFECT_DISCARD;
 	pp.BackBufferWidth = ClientWidth;
 	pp.BackBufferHeight = ClientHeight;
 	pp.BackBufferCount = 1;
 	pp.hDeviceWindow = Window;
-	pp.PresentationInterval = CurrentVSync ? D3DPRESENT_INTERVAL_DEFAULT : D3DPRESENT_INTERVAL_IMMEDIATE;
+	pp.PresentationInterval = CurrentVSync ? (d3dexavailable ? D3DPRESENT_INTERVAL_DEFAULT : D3DPRESENT_INTERVAL_ONE) : D3DPRESENT_INTERVAL_IMMEDIATE;
 
-	HRESULT result = d3d9->CreateDeviceEx(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, Window, D3DCREATE_HARDWARE_VERTEXPROCESSING, &pp, nullptr, &device);
+	HRESULT result = d3dexavailable ? d3d9ex->CreateDeviceEx(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, Window, D3DCREATE_HARDWARE_VERTEXPROCESSING, &pp, nullptr, &deviceex)
+		: d3d9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, Window, D3DCREATE_HARDWARE_VERTEXPROCESSING, &pp, &device);
 	if (FAILED(result))
 	{
 		I_FatalError("IDirect3D9.CreateDevice failed");
@@ -80,13 +129,13 @@ uint8_t *I_PolyPresentLock(int w, int h, bool vsync, int &pitch)
 
 		D3DPRESENT_PARAMETERS pp = {};
 		pp.Windowed = true;
-		pp.SwapEffect = D3DSWAPEFFECT_FLIPEX;
+		pp.SwapEffect = d3dexavailable ? D3DSWAPEFFECT_FLIPEX : D3DSWAPEFFECT_DISCARD;
 		pp.BackBufferWidth = ClientWidth;
 		pp.BackBufferHeight = ClientHeight;
 		pp.BackBufferCount = 1;
 		pp.hDeviceWindow = Window;
-		pp.PresentationInterval = CurrentVSync ? D3DPRESENT_INTERVAL_DEFAULT : D3DPRESENT_INTERVAL_IMMEDIATE;
-		device->Reset(&pp);
+		pp.PresentationInterval = CurrentVSync ? (d3dexavailable ? D3DPRESENT_INTERVAL_DEFAULT : D3DPRESENT_INTERVAL_ONE) : D3DPRESENT_INTERVAL_IMMEDIATE;
+		d3dexavailable ? deviceex->Reset(&pp) : device->Reset(&pp);
 	}
 
 	if (SrcWidth != w || SrcHeight != h || !surface)
@@ -99,7 +148,8 @@ uint8_t *I_PolyPresentLock(int w, int h, bool vsync, int &pitch)
 
 		SrcWidth = w;
 		SrcHeight = h;
-		result = device->CreateOffscreenPlainSurface(SrcWidth, SrcHeight, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &surface, 0);
+		result = d3dexavailable ? deviceex->CreateOffscreenPlainSurface(SrcWidth, SrcHeight, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &surface, 0)
+			: device->CreateOffscreenPlainSurface(SrcWidth, SrcHeight, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &surface, 0);
 		if (FAILED(result))
 		{
 			I_FatalError("IDirect3DDevice9.CreateOffscreenPlainSurface failed");
@@ -123,11 +173,12 @@ void I_PolyPresentUnlock(int x, int y, int width, int height)
 	surface->UnlockRect();
 
 	IDirect3DSurface9 *backbuffer = nullptr;
-	HRESULT result = device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backbuffer);
+	HRESULT result = d3dexavailable ? deviceex->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backbuffer)
+		: device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backbuffer);
 	if (FAILED(result))
 		return;
 
-	result = device->BeginScene();
+	result = d3dexavailable ? deviceex->BeginScene() : device->BeginScene();
 	if (SUCCEEDED(result))
 	{
 		int count = 0;
@@ -165,7 +216,8 @@ void I_PolyPresentUnlock(int x, int y, int width, int height)
 			count++;
 		}
 		if (count > 0)
-			device->Clear(count, clearrects, D3DCLEAR_TARGET, 0, 0.0f, 0);
+			d3dexavailable ? deviceex->Clear(count, clearrects, D3DCLEAR_TARGET, 0, 0.0f, 0)
+				: device->Clear(count, clearrects, D3DCLEAR_TARGET, 0, 0.0f, 0);
 
 		RECT srcrect = {}, dstrect = {};
 		srcrect.right = SrcWidth;
@@ -175,13 +227,16 @@ void I_PolyPresentUnlock(int x, int y, int width, int height)
 		dstrect.right = x + width;
 		dstrect.bottom = y + height;
 		if (ViewportLinearScale())
-			device->StretchRect(surface, &srcrect, backbuffer, &dstrect, D3DTEXF_LINEAR);
+			d3dexavailable ? deviceex->StretchRect(surface, &srcrect, backbuffer, &dstrect, D3DTEXF_LINEAR)
+				: device->StretchRect(surface, &srcrect, backbuffer, &dstrect, D3DTEXF_LINEAR);
 		else
-			device->StretchRect(surface, &srcrect, backbuffer, &dstrect, D3DTEXF_POINT);
+			d3dexavailable ? deviceex->StretchRect(surface, &srcrect, backbuffer, &dstrect, D3DTEXF_POINT)
+				: device->StretchRect(surface, &srcrect, backbuffer, &dstrect, D3DTEXF_POINT);
 
-		result = device->EndScene();
+		result = d3dexavailable ? deviceex->EndScene() : device->EndScene();
 		if (SUCCEEDED(result))
-			device->PresentEx(nullptr, nullptr, 0, nullptr, CurrentVSync ? 0 : D3DPRESENT_FORCEIMMEDIATE);
+			d3dexavailable ? deviceex->PresentEx(nullptr, nullptr, 0, nullptr, CurrentVSync ? 0 : D3DPRESENT_FORCEIMMEDIATE)
+				: device->Present(nullptr, nullptr, 0, nullptr);
 	}
 
 	backbuffer->Release();
@@ -190,6 +245,31 @@ void I_PolyPresentUnlock(int x, int y, int width, int height)
 void I_PolyPresentDeinit()
 {
 	if (surface) surface->Release();
+	if (deviceex) deviceex->Release();
 	if (device) device->Release();
+	if (d3d9ex) d3d9ex->Release();
 	if (d3d9) d3d9->Release();
+}
+
+void I_PresentPolyImage(int w, int h, const void *pixels)
+{
+	BITMAPV5HEADER info = {};
+	info.bV5Size = sizeof(BITMAPV5HEADER);
+	info.bV5Width = w;
+	info.bV5Height = -h;
+	info.bV5Planes = 1;
+	info.bV5BitCount = 32;
+	info.bV5Compression = BI_RGB;
+	info.bV5SizeImage = 0;
+	info.bV5CSType = LCS_WINDOWS_COLOR_SPACE;
+
+	RECT box = {};
+	GetClientRect(Window, &box);
+
+	HDC dc = GetDC(Window);
+	if (box.right == w && box.bottom == h)
+		SetDIBitsToDevice(dc, 0, 0, w, h, 0, 0, 0, h, pixels, (const BITMAPINFO *)&info, DIB_RGB_COLORS);
+	else
+		StretchDIBits(dc, 0, 0, box.right, box.bottom, 0, 0, w, h, pixels, (const BITMAPINFO *)&info, DIB_RGB_COLORS, SRCCOPY);
+	ReleaseDC(Window, dc);
 }
