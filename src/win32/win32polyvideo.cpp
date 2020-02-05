@@ -2,6 +2,7 @@
 #include <assert.h>
 #include "hardware.h"
 #include "doomerrors.h"
+#include "v_text.h"
 #include <Windows.h>
 
 EXTERN_CVAR(Bool, vid_vsync)
@@ -58,7 +59,7 @@ void I_PolyPresentInit()
 	if (!direct3d_create_9Ex)
 	{
 		d3dexavailable = false;
-		Printf("Direct3DCreate9Ex failed");
+		Printf(TEXTCOLOR_RED "Direct3DCreate9Ex failed.\n");
 	}
 
 	if (d3dexavailable)
@@ -67,7 +68,7 @@ void I_PolyPresentInit()
 		if (!d3d9ex)
 		{
 			d3dexavailable = false;
-			Printf("Direct3DCreate9Ex failed.");
+			Printf(TEXTCOLOR_RED "Direct3DCreate9Ex failed.\n");
 		}
 	}
 	else
@@ -77,7 +78,7 @@ void I_PolyPresentInit()
 		{
 			FreeLibrary (D3D9_dll);
 			d3davailable = false;
-			Printf("Direct3DCreate9 failed. Falling back to GDI...");
+			Printf(TEXTCOLOR_RED "Direct3DCreate9 failed. Falling back to GDI...\n");
 		}
 	}
 
@@ -105,7 +106,10 @@ void I_PolyPresentInit()
 		: d3d9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, Window, D3DCREATE_HARDWARE_VERTEXPROCESSING, &pp, &device);
 	if (FAILED(result))
 	{
-		I_FatalError("IDirect3D9.CreateDevice failed");
+		FreeLibrary (D3D9_dll);
+		d3davailable = false;
+		Printf(TEXTCOLOR_RED "IDirect3D9.CreateDevice failed. Falling back to GDI...\n");
+		return;
 	}
 }
 
