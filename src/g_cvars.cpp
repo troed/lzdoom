@@ -213,7 +213,7 @@ void DisableGenericUI(bool cvar)
 	}
 }
 
-CUSTOM_CVAR(Bool, ui_classic, false, CVAR_ARCHIVE | CVAR_NOINITCALL)
+CUSTOM_CVAR(Bool, ui_classic, true, CVAR_ARCHIVE | CVAR_NOINITCALL)
 {
 	if (ui_generic && self)
 		ui_generic = false;
