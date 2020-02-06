@@ -40,6 +40,8 @@ static TArray<FString>  m_Extensions;
 RenderContext gl;
 static double realglversion;	// this is public so the statistics code can access it.
 
+EXTERN_CVAR (Int, vid_preferbackend)
+
 //==========================================================================
 //
 // 
@@ -119,7 +121,7 @@ void gl_LoadExtensions()
 		double v1 = strtod(version, NULL);
 		if (v1 >= 3.0 && v1 < 3.3)
 		{
-			v1 = 3.3;	// promote '3' to 3.3 to avoid falling back to the legacy path.
+			v1 = 3.3;	// promote '3' to 3.3.
 			version = "3.3";
 		}
 		if (realglversion < v1) version = glversion;
@@ -128,10 +130,11 @@ void gl_LoadExtensions()
 
 	float gl_version = (float)strtod(version, NULL) + 0.01f;
 
-	// Don't even start if it's lower than 2.0 or no framebuffers are available (The framebuffer extension is needed for glGenerateMipmapsEXT!)
+	// Don't even start if it's lower than 3.3 (uniform buffers are required now)
 	if (gl_version < 3.3f)
 	{
-		I_FatalError("Unsupported OpenGL version.\nAt least OpenGL 3.3 is required to run " GAMENAME ".\nFor older versions of OpenGL please download the vintage build of " GAMENAME ".\n");
+		vid_preferbackend = 2;
+		I_FatalError("Unsupported OpenGL version.\nAt least OpenGL 3.3 is required to run " GAMENAME ".\nFalling back to SoftPoly for next run.\n");
 	}
 
 
