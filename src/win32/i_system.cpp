@@ -591,9 +591,11 @@ BOOL CALLBACK IWADBoxCallback(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
 		SendDlgItemMessage( hDlg, IDC_WELCOME_FULLSCREEN, BM_SETCHECK, fullscreen ? BST_CHECKED : BST_UNCHECKED, 0 );
 		switch (vid_preferbackend)
 		{
+#if 0 // HAVE_VULKAN
 		case 1:
 			SendDlgItemMessage( hDlg, IDC_WELCOME_VULKAN2, BM_SETCHECK, BST_CHECKED, 0 );
 			break;
+#endif
 		case 2:
 			SendDlgItemMessage( hDlg, IDC_WELCOME_VULKAN3, BM_SETCHECK, BST_CHECKED, 0 );
 			break;
