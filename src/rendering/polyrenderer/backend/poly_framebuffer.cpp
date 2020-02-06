@@ -55,7 +55,6 @@
 
 #ifdef _WIN32
 extern bool d3davailable;
-EXTERN_CVAR (Bool, vid_forcegdi)
 #endif
 
 void Draw2D(F2DDrawer *drawer, FRenderState &state);
@@ -187,7 +186,7 @@ void PolyFrameBuffer::Update()
 
 	FlushDrawCommands();
 #ifdef _WIN32
-	if (!d3davailable || vid_forcegdi)
+	if (!d3davailable)
 	{
 		DrawerThreads::WaitForWorkers();
 		mFrameMemory.Clear();
@@ -195,7 +194,7 @@ void PolyFrameBuffer::Update()
 		FrameDeleteList.Images.clear();
 	}
 
-	if (mCanvas && d3davailable && !vid_forcegdi)
+	if (mCanvas && d3davailable)
 #else
 	if (mCanvas)
 #endif
@@ -230,7 +229,7 @@ void PolyFrameBuffer::Update()
 		I_PresentPolyImage(mCanvas->GetWidth(), mCanvas->GetHeight(), mCanvas->GetPixels());
 	}
 
-	if (d3davailable && !vid_forcegdi)
+	if (d3davailable)
 	{
 #endif
 		DrawerThreads::WaitForWorkers();

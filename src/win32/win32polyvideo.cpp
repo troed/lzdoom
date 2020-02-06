@@ -44,6 +44,7 @@ void I_PolyPresentInit()
 	if (vid_forcegdi)
 	{
 		d3davailable = false;
+		d3dexavailable = false;
 		return;
 	}
 
