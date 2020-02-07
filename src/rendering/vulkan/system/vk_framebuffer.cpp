@@ -67,7 +67,6 @@ EXTERN_CVAR(Bool, r_drawvoxels)
 EXTERN_CVAR(Int, gl_tonemap)
 EXTERN_CVAR(Int, screenblocks)
 EXTERN_CVAR(Bool, cl_capfps)
-EXTERN_CVAR(Bool, gl_no_skyclear)
 
 extern bool NoInterpolateView;
 extern int rendered_commandbuffers;

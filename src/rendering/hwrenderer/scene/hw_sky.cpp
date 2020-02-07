@@ -34,6 +34,7 @@
 #include "hwrenderer/textures/hw_material.h"
 
 CVAR(Bool,gl_noskyboxes, false, 0)
+CVAR(Bool, gl_no_skyclear, false, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 
 //==========================================================================
 //

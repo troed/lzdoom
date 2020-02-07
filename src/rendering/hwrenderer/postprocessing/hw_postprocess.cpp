@@ -26,6 +26,8 @@
 #include "hwrenderer/postprocessing/hw_postprocessshader.h"
 #include <random>
 
+CVAR(Int, gl_multisample, 1, CVAR_ARCHIVE|CVAR_GLOBALCONFIG);
+
 Postprocess hw_postprocess;
 
 PPResource *PPResource::First = nullptr;

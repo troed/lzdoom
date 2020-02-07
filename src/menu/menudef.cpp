@@ -1863,7 +1863,7 @@ fail:
 }
 
 
-#ifdef _WIN32
+#if defined (_WIN32) && defined (HAVE_OPENGL)
 EXTERN_CVAR(Bool, vr_enable_quadbuffered)
 #endif
 
@@ -1878,7 +1878,7 @@ void UpdateVRModes(bool considerQuadBuffered)
 	for (int i = 0; i < cnt; ++i) {
 		auto const & mode = vals[i];
 		if (mode.Value == 7) {  // Quad-buffered stereo
-#ifdef _WIN32
+#if defined (_WIN32) && defined (HAVE_OPENGL)
 			if (!vr_enable_quadbuffered) continue;
 #else
 			continue;  // Remove quad-buffered option on Mac and Linux

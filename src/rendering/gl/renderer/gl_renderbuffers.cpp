@@ -31,8 +31,6 @@
 #include "gl/system/gl_buffers.h"
 #include <random>
 
-CVAR(Int, gl_multisample, 1, CVAR_ARCHIVE|CVAR_GLOBALCONFIG);
-
 namespace OpenGLRenderer
 {
 

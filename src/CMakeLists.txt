@@ -82,7 +82,6 @@ if( WIN32 )
 	endif()
 
 	set( ZDOOM_LIBS
-		opengl32
 		wsock32
 		winmm
 		"${DX_dinput8_LIBRARY}"
@@ -95,6 +94,10 @@ if( WIN32 )
 		setupapi
 		oleaut32
 		dbghelp )
+
+	if( HAVE_OPENGL )
+		set( ZDOOM_LIBS ${ZDOOM_LIBS} opengl32 )
+	endif()
 
 	if( NOT ZD_CMAKE_COMPILER_IS_GNUCXX_COMPATIBLE )
 		set( ZDOOM_LIBS ${ZDOOM_LIBS} DelayImp )
@@ -443,16 +446,18 @@ set( PLAT_WIN32_SOURCES
 	win32/i_specialpaths.cpp
 	win32/st_start.cpp
 	win32/st_start_util.cpp
-	win32/gl_sysfb.cpp
 	win32/base_sysfb.cpp
 	win32/win32basevideo.cpp
-	win32/win32glvideo.cpp
 	win32/win32polyvideo.cpp)
 	
 if (HAVE_VULKAN)
 	set (PLAT_WIN32_SOURCES ${PLAT_WIN32_SOURCES} win32/win32vulkanvideo.cpp )
 endif()
-	
+
+if (HAVE_OPENGL)
+	set (PLAT_WIN32_SOURCES ${PLAT_WIN32_SOURCES} win32/gl_sysfb.cpp win32/win32glvideo.cpp )
+endif()
+
 set( PLAT_POSIX_SOURCES
 	posix/i_steam.cpp
 	posix/i_system_posix.cpp )
@@ -524,7 +529,7 @@ if( HAVE_MMX )
 			gamedata/textures/hires/hqnx_asm/hq2x_asm.cpp
 			gamedata/textures/hires/hqnx_asm/hq3x_asm.cpp
 			gamedata/textures/hires/hqnx_asm/hq4x_asm.cpp
-			gamedata/textures/hires/gl_hqresize.cpp
+			gamedata/textures/hires/hqresize.cpp
 			PROPERTIES COMPILE_FLAGS "-mmmx" )
 	endif( ZD_CMAKE_COMPILER_IS_GNUCXX_COMPATIBLE )
 endif( HAVE_MMX )
@@ -628,11 +633,24 @@ file( GLOB HEADER_FILES
 	rendering/hwrenderer/scene/*.h
 	rendering/hwrenderer/textures/*.h
 	rendering/hwrenderer/utility/*.h
+	*.h
+)
+
+set( VK_HEADER_FILES "" )
+set( GL_HEADER_FILES "" )
+
+if ( HAVE_VULKAN )
+file( GLOB VK_HEADER_FILES
 	rendering/vulkan/*.h
 	rendering/vulkan/system/*.h
 	rendering/vulkan/renderer/*.h
 	rendering/vulkan/shaders/*.h
 	rendering/vulkan/textures/*.h
+)
+endif()
+
+if ( HAVE_OPENGL )
+file( GLOB GL_HEADER_FILES
 	rendering/gl/*.h
 	rendering/gl/models/*.h
 	rendering/gl/renderer/*.h
@@ -641,8 +659,10 @@ file( GLOB HEADER_FILES
 	rendering/gl/system/*.h
 	rendering/gl/textures/*.h
 	rendering/gl_load/*.h
-	*.h
 )
+endif()
+
+list ( APPEND HEADER_FILES ${VK_HEADER_FILES} ${GL_HEADER_FILES} )
 
 set ( SWRENDER_SOURCES
 	rendering/swrenderer/r_swcolormaps.cpp
@@ -746,7 +766,6 @@ set( FASTMATH_SOURCES
 	gamedata/textures/hires/hqnx/hq4x.cpp
 	gamedata/textures/hires/xbr/xbrz.cpp
 	gamedata/textures/hires/xbr/xbrz_old.cpp
-	rendering/gl_load/gl_load.c
 	rendering/hwrenderer/postprocessing/hw_postprocess_cvars.cpp
 	rendering/hwrenderer/postprocessing/hw_postprocessshader.cpp
 	rendering/hwrenderer/dynlights/hw_dynlightdata.cpp
@@ -792,6 +811,29 @@ set (VULKAN_SOURCES
 
 if (HAVE_VULKAN)
 	set (FASTMATH_SOURCES ${FASTMATH_SOURCES} ${VULKAN_SOURCES})
+endif()
+
+#OpenGL stuff must go into a separate list later because it can be disabled for some platforms
+set (OPENGL_SOURCES
+	rendering/gl/renderer/gl_renderer.cpp
+	rendering/gl/renderer/gl_renderstate.cpp
+	rendering/gl/renderer/gl_renderbuffers.cpp
+	rendering/gl/renderer/gl_postprocess.cpp
+	rendering/gl/renderer/gl_postprocessstate.cpp
+	rendering/gl/renderer/gl_stereo3d.cpp
+	rendering/gl/renderer/gl_scene.cpp
+	rendering/gl/shaders/gl_shader.cpp
+	rendering/gl/shaders/gl_shaderprogram.cpp
+	rendering/gl_load/gl_interface.cpp
+	rendering/gl/system/gl_framebuffer.cpp
+	rendering/gl/system/gl_debug.cpp
+	rendering/gl/system/gl_buffers.cpp
+	rendering/gl/textures/gl_hwtexture.cpp
+	rendering/gl/textures/gl_samplers.cpp
+)
+
+if (HAVE_OPENGL)
+	set (FASTMATH_SOURCES ${FASTMATH_SOURCES} rendering/gl_load/gl_load.c)
 endif()
 
 set (POLYBACKEND_SOURCES
@@ -938,21 +980,6 @@ set (PCH_SOURCES
 	rendering/2d/v_drawtext.cpp
 	rendering/2d/v_blend.cpp
 	rendering/2d/v_draw.cpp
-	rendering/gl/renderer/gl_renderer.cpp
-	rendering/gl/renderer/gl_renderstate.cpp
-	rendering/gl/renderer/gl_renderbuffers.cpp
-	rendering/gl/renderer/gl_postprocess.cpp
-	rendering/gl/renderer/gl_postprocessstate.cpp
-	rendering/gl/renderer/gl_stereo3d.cpp
-	rendering/gl/renderer/gl_scene.cpp
-	rendering/gl/shaders/gl_shader.cpp
-	rendering/gl/shaders/gl_shaderprogram.cpp
-	rendering/gl_load/gl_interface.cpp
-	rendering/gl/system/gl_framebuffer.cpp
-	rendering/gl/system/gl_debug.cpp
-	rendering/gl/system/gl_buffers.cpp
-	rendering/gl/textures/gl_hwtexture.cpp
-	rendering/gl/textures/gl_samplers.cpp
 	rendering/hwrenderer/data/hw_vertexbuilder.cpp
 	rendering/hwrenderer/data/flatvertices.cpp
 	rendering/hwrenderer/data/hw_viewpointbuffer.cpp
@@ -1131,6 +1158,10 @@ set (PCH_SOURCES
 	utility/utf8.cpp
 	utility/zstrformat.cpp
 )
+
+if( HAVE_OPENGL )
+	set( PCH_SOURCES ${PCH_SOURCES} ${OPENGL_SOURCES} )
+endif()
 
 if( ${HAVE_VM_JIT} )
 	set( PCH_SOURCES ${PCH_SOURCES} ${VM_JIT_SOURCES} )
@@ -1352,6 +1383,7 @@ source_group("Rendering\\Hardware Renderer\\Shaders" REGULAR_EXPRESSION "^${CMAK
 source_group("Rendering\\Hardware Renderer\\System" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/hwrenderer/system/.+")
 source_group("Rendering\\Hardware Renderer\\Textures" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/hwrenderer/textures/.+")
 source_group("Rendering\\Hardware Renderer\\Utilities" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/hwrenderer/utility/.+")
+if ( HAVE_VULKAN )
 source_group("Rendering\\Vulkan Renderer\\System" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/vulkan/system/.+")
 source_group("Rendering\\Vulkan Renderer\\Renderer" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/vulkan/renderer/.+")
 source_group("Rendering\\Vulkan Renderer\\Shaders" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/vulkan/shaders/.+")
@@ -1359,6 +1391,8 @@ source_group("Rendering\\Vulkan Renderer\\Textures" REGULAR_EXPRESSION "^${CMAKE
 source_group("Rendering\\Vulkan Renderer\\Third Party" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/vulkan/thirdparty/.+")
 source_group("Rendering\\Vulkan Renderer\\Third Party\\Volk" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/vulkan/thirdparty/volk/.+")
 source_group("Rendering\\Vulkan Renderer\\Third Party\\Vk_Mem_Alloc" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/vulkan/thirdparty/vk_mem_alloc.+")
+endif()
+if ( HAVE_OPENGL )
 source_group("Rendering\\OpenGL Loader" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/gl_load/.+")
 source_group("Rendering\\OpenGL Renderer" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/gl/.+")
 source_group("Rendering\\OpenGL Renderer\\Data" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/gl/data/.+")
@@ -1369,6 +1403,7 @@ source_group("Rendering\\OpenGL Renderer\\Shaders" REGULAR_EXPRESSION "^${CMAKE_
 source_group("Rendering\\OpenGL Renderer\\System" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/gl/system/.+")
 source_group("Rendering\\OpenGL Renderer\\Textures" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/gl/textures/.+")
 source_group("Rendering\\OpenGL Renderer\\Utilities" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/gl/utility/.+")
+endif()
 source_group("Rendering\\Software Renderer" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/swrenderer/.+")
 source_group("Rendering\\Software Renderer\\Drawers" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/swrenderer/drawers/.+")
 source_group("Rendering\\Software Renderer\\Scene" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/swrenderer/scene/.+")
