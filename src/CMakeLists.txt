@@ -1320,6 +1320,7 @@ if( ZD_CMAKE_COMPILER_IS_GNUCXX_COMPATIBLE )
 			rendering/polyrenderer/poly_all.cpp
 			rendering/swrenderer/r_all.cpp
 			utility/x86.cpp
+			utility/palette.cpp
 			PROPERTIES COMPILE_FLAGS "-msse2 -mmmx" )
 	endif()
 endif()
