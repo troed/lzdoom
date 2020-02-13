@@ -1169,12 +1169,7 @@ else()
 	set( NOT_COMPILED_SOURCE_FILES ${NOT_COMPILED_SOURCE_FILES} ${VM_JIT_SOURCES} )
 endif()
 
-if( MSVC )
-	enable_precompiled_headers( g_pch.h PCH_SOURCES )
-else()
-	# Temporary solution for compilers other than MSVC
-	set_source_files_properties( ${PCH_SOURCES} PROPERTIES COMPILE_FLAGS "-include g_pch.h" )
-endif()
+enable_precompiled_headers( g_pch.h PCH_SOURCES )
 
 add_executable( zdoom WIN32 MACOSX_BUNDLE
 	${HEADER_FILES}
