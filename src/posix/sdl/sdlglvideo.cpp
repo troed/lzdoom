@@ -47,12 +47,14 @@
 
 #include "hardware.h"
 #include "gl_sysfb.h"
-#include "gl_load/gl_system.h"
 #include "r_defs.h"
 
+#if defined (HAVE_OPENGL) || defined (__APPLE__)
+#include "gl_load/gl_system.h"
 #include "gl/renderer/gl_renderer.h"
 #include "gl/system/gl_framebuffer.h"
 #include "gl/shaders/gl_shader.h"
+#endif
 
 #ifdef HAVE_VULKAN
 #include "rendering/vulkan/system/vk_framebuffer.h"
@@ -148,6 +150,7 @@ namespace Priv
 	SDL_Window *window;
 	bool vulkanEnabled;
 	bool softpolyEnabled;
+	bool softpolyForced;
 	bool fullscreenSwitch;
 
 	void CreateWindow(uint32_t extraFlags)
@@ -432,10 +435,15 @@ SDLVideo::SDLVideo ()
 	}
 #endif // !SDL2_STATIC_LIBRARY
 
+#if !defined(HAVE_OPENGL) && !defined(HAVE_VULKAN)
+	Priv::softpolyForced = true;
+#else
+	Priv::softpolyForced = false;
+#endif
+	Priv::softpolyEnabled = vid_preferbackend == 2;
 #ifdef HAVE_VULKAN
 	Priv::vulkanEnabled = vid_preferbackend == 1
 		&& Priv::Vulkan_GetDrawableSize && Priv::Vulkan_GetInstanceExtensions && Priv::Vulkan_CreateSurface;
-	Priv::softpolyEnabled = vid_preferbackend == 2;
 
 	if (Priv::vulkanEnabled)
 	{
@@ -446,11 +454,11 @@ SDLVideo::SDLVideo ()
 			Priv::vulkanEnabled = false;
 		}
 	}
-	else if (Priv::softpolyEnabled)
+#endif
+	if (Priv::softpolyEnabled || Priv::softpolyForced)
 	{
 		Priv::CreateWindow(SDL_WINDOW_HIDDEN);
 	}
-#endif
 }
 
 SDLVideo::~SDLVideo ()
@@ -486,14 +494,18 @@ DFrameBuffer *SDLVideo::CreateFrameBuffer ()
 	}
 #endif
 
-	if (Priv::softpolyEnabled)
+	if (Priv::softpolyEnabled || Priv::softpolyForced)
 	{
 		fb = new PolyFrameBuffer(nullptr, fullscreen);
 	}
 
 	if (fb == nullptr)
 	{
+#if defined (HAVE_OPENGL) || defined (__APPLE__)
 		fb = new OpenGLRenderer::OpenGLFrameBuffer(0, fullscreen);
+#else
+		I_FatalError ("Failed to initialize OpenGL framebuffer");
+#endif
 	}
 
 	return fb;
@@ -522,7 +534,7 @@ int SystemBaseFrameBuffer::GetClientWidth()
 {
 	int width = 0;
 
-	if (Priv::softpolyEnabled)
+	if (Priv::softpolyEnabled || Priv::softpolyForced)
 	{
 		if (polyrendertarget)
 			SDL_GetRendererOutputSize(polyrendertarget, &width, nullptr);
@@ -543,7 +555,7 @@ int SystemBaseFrameBuffer::GetClientHeight()
 {
 	int height = 0;
 	
-	if (Priv::softpolyEnabled)
+	if (Priv::softpolyEnabled || Priv::softpolyForced)
 	{
 		if (polyrendertarget)
 			SDL_GetRendererOutputSize(polyrendertarget, nullptr, &height);
@@ -609,7 +621,7 @@ void SystemBaseFrameBuffer::SetWindowSize(int w, int h)
 	}
 }
 
-
+#if defined (HAVE_OPENGL) || defined (__APPLE__)
 SystemGLFrameBuffer::SystemGLFrameBuffer(void *hMonitor, bool fullscreen)
 : SystemBaseFrameBuffer(hMonitor, fullscreen)
 {
@@ -714,7 +726,7 @@ void SystemGLFrameBuffer::SwapBuffers()
 {
 	SDL_GL_SwapWindow(Priv::window);
 }
-
+#endif
 
 void ProcessSDLWindowEvent(const SDL_WindowEvent &event)
 {

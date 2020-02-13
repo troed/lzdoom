@@ -121,7 +121,7 @@ CUSTOM_CVAR(Int, vid_preferbackend, 2, CVAR_ARCHIVE | CVAR_GLOBALCONFIG | CVAR_N
 
 	switch(self)
 	{
-#if defined (HAVE_OPENGL) || !defined (_WIN32)
+#if defined (HAVE_OPENGL) || defined (__APPLE__)
 	case 0:
 		Printf("Selecting OpenGL backend...\n");
 		break;

@@ -187,7 +187,7 @@ if( ${ZDOOM_TARGET_ARCH} MATCHES "x86_64" )
 	option (HAVE_VULKAN "Enable Vulkan support" OFF)
 endif()
 
-if( WIN32 )
+if( NOT APPLE )
 	option (HAVE_OPENGL "Enable OpenGL support" ON)
 else()
 	set( HAVE_OPENGL ON )
@@ -279,7 +279,7 @@ else()
 		set( ALL_C_FLAGS "-ffp-contract=off" )
 	endif()
 
-	if ( WIN32 AND HAVE_OPENGL ) # MinGW
+	if ( NOT APPLE AND HAVE_OPENGL )
 		set( ALL_C_FLAGS "${ALL_C_FLAGS} -DHAVE_OPENGL" )
 	endif()
 

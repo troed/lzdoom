@@ -24,7 +24,7 @@ public:
 protected:
 	SystemBaseFrameBuffer () {}
 };
-
+#if defined (HAVE_OPENGL) || defined (__APPLE__)
 class SystemGLFrameBuffer : public SystemBaseFrameBuffer
 {
 	typedef SystemBaseFrameBuffer Super;
@@ -44,6 +44,6 @@ protected:
 
 	SystemGLFrameBuffer() {}
 };
-
+#endif
 #endif // __POSIX_SDL_GL_SYSFB_H__
 
