@@ -35,13 +35,6 @@
 #include "palette.h"
 #include "palentry.h"
 
-#ifndef _MSC_VER
-#include <float.h>
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
-#endif // _MSC_VER
-
 /****************************/
 /* Palette management stuff */
 /****************************/
