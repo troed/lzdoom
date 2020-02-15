@@ -941,8 +941,13 @@ OptionMenu "VideoOptions" protected
 	Option "$DSPLYMNU_ROCKETTRAILS",			"cl_rockettrails", "RocketTrailTypes"
 	Option "$DSPLYMNU_BLOODTYPE",				"cl_bloodtype", "BloodTypes"
 	Option "$DSPLYMNU_PUFFTYPE",				"cl_pufftype", "PuffTypes"
+	StaticText " "
 	Slider "$DSPLYMNU_MAXPARTICLES",			"r_maxparticles", 100, 10000, 100, 0
 	Slider "$DSPLYMNU_MAXDECALS",				"cl_maxdecals", 0, 10000, 100, 0
+	Slider "$DSPLYMNU_SPRITECULL",				"r_sprite_distance_cull",	2000.0, 8000.0, 500.0, 0
+	Slider "$DSPLYMNU_LINECULL",				"r_line_distance_cull",	4000.0, 16000.0, 1000.0, 0
+	Command "$DSPLYMNU_DISABLERENDERCULL",		"disablerendercull"
+	StaticText " "
 	Option "$DSPLYMNU_PLAYERSPRITES",			"r_drawplayersprites", "OnOff"
 	Option "$DSPLYMNU_DEATHCAM",				"r_deathcamera", "OnOff"
 	Option "$DSPLYMNU_TELEZOOM",				"telezoom", "OnOff"

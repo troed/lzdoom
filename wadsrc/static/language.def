@@ -99,6 +99,11 @@ STARTUP3 = "";
 STARTUP4 = "";
 STARTUP5 = "";
 
+// Engine strings
+DSPLYMNU_SPRITECULL				= "Sprite Cull Distance";
+DSPLYMNU_LINECULL				= "Wall Cull Distance";
+DSPLYMNU_DISABLERENDERCULL		= "Disable Render Culling";
+
 // Placeholder definitions for strings that are in the game content table where the labels are needed even when that file is not loaded.
 
 // Level names
