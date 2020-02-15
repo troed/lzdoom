@@ -45,7 +45,7 @@
 #include <immintrin.h>
 #endif // ARCH_IA32
 
-CVAR(Bool, gl_multithread, true, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
+CVAR(Bool, gl_multithread, false, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
 
 thread_local bool isWorkerThread;
 ctpl::thread_pool renderPool(1);
