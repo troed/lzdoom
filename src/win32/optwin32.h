@@ -7,7 +7,7 @@
 #include <windows.h>
 #include <shlobj.h>
 
-#include "../libraries/zmusic/i_module.h"
+#include "i_module.h"
 
 extern FModule Shell32Module;
 
