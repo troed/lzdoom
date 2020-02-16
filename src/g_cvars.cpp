@@ -40,6 +40,7 @@
 #include "i_system.h"
 #include "v_font.h"
 #include "utf8.h"
+#include "gi.h"
 
 EXTERN_CVAR(Int, vid_scalemode)
 EXTERN_CVAR(Float, vid_scalefactor)
@@ -156,6 +157,7 @@ CUSTOM_CVAR(Float, teamdamage, 0.f, CVAR_SERVERINFO | CVAR_NOINITCALL)
 }
 
 bool generic_ui;
+EXTERN_CVAR(String, language)
 
 bool CheckFontComplete(FFont *font)
 {
@@ -167,7 +169,7 @@ bool CheckFontComplete(FFont *font)
 void UpdateGenericUI(bool cvar)
 {
 	auto switchstr = GStrings["USE_GENERIC_FONT"];
-	generic_ui = (cvar || (switchstr && strtoll(switchstr, nullptr, 0)));
+	generic_ui = (cvar || (switchstr && strtoll(switchstr, nullptr, 0)) || ((gameinfo.gametype & GAME_Raven) && !strnicmp(language, "el", 2)));
 	if (!generic_ui)
 	{
 		// Use the mod's SmallFont if it is complete.
