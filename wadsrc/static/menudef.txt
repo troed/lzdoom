@@ -503,6 +503,12 @@ ListMenu "PlayerMenu"
 //
 //-------------------------------------------------------------------------------------------
 
+OptionValue "Layouts"
+{
+	0, "$OPTVAL_CLASSICL"
+	1, "$OPTVAL_MODERN"
+}
+
 OptionMenu "CustomizeControls" protected
 {
 	Title "$CNTRLMNU_TITLE"
@@ -514,6 +520,9 @@ OptionMenu "CustomizeControls" protected
 	Submenu    "$CNTRLMNU_OTHER"       , "OtherControlsMenu"
 	Submenu    "$CNTRLMNU_POPUPS"      , "StrifeControlsMenu"
 	Submenu    "$MAPCNTRLMNU_CONTROLS" , "MapControlsMenu"
+	StaticText " "
+	Option "$CNTRLMNU_LAYOUT",			"k_modern", "Layouts"
+	SafeCommand "$OPTMNU_DEFAULTS",		"resetb2defaults"
 }
 
 OptionMenu "ActionControlsMenu" protected
