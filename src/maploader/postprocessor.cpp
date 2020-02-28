@@ -46,7 +46,10 @@
 #include "p_setup.h"
 #include "maploader/maploader.h"
 #include "types.h"
+#include "v_text.h"
 #include "vm.h"
+
+CVAR (Bool, sv_noautolevelcompat, false, CVAR_SERVERINFO | CVAR_LATCH)
 
 //==========================================================================
 //
@@ -66,6 +69,12 @@ IMPLEMENT_CLASS(DLevelPostProcessor, true, false);
 
 void MapLoader::PostProcessLevel(FName checksum)
 {
+	if (sv_noautolevelcompat)
+	{
+		Printf(TEXTCOLOR_ORANGE "Warning: auto level compatibility disabled. Severe problems could arise.\n");
+		return;
+	}
+
 	auto lc = Create<DLevelPostProcessor>();
 	lc->loader = this;
 	lc->Level = Level;
