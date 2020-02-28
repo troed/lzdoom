@@ -750,6 +750,12 @@ void C_BindDefaults ()
 	case 1:
 		defbinds = "DEFBIND1";
 		break;
+	case 2:
+		defbinds = "DEFBIND2";
+		break;
+	case 3:
+		defbinds = "DEFBIND3";
+		break;
 	default:
 		defbinds = "DEFBINDS";
 		break;

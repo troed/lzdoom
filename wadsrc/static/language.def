@@ -103,9 +103,11 @@ STARTUP5 = "";
 DSPLYMNU_SPRITECULL				= "Sprite Cull Distance";
 DSPLYMNU_LINECULL				= "Wall Cull Distance";
 DSPLYMNU_DISABLERENDERCULL		= "Disable Render Culling";
-CNTRLMNU_LAYOUT	= "Default Control Layout";
-OPTVAL_CLASSICL	= "Classic";
-OPTVAL_MODERN	= "Modern";
+CNTRLMNU_LAYOUT					= "Default Control Layout";
+OPTVAL_CLASSICZ					= "Classic ZDoom";
+OPTVAL_MODERN					= "Modern (WASD)";
+OPTVAL_MODERN2					= "Modern (ESDF)";
+OPTVAL_MODERN3					= "Modern (IJKL)";
 
 // Placeholder definitions for strings that are in the game content table where the labels are needed even when that file is not loaded.
 

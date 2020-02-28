@@ -505,8 +505,10 @@ ListMenu "PlayerMenu"
 
 OptionValue "Layouts"
 {
-	0, "$OPTVAL_CLASSICL"
+	0, "$OPTVAL_CLASSICZ"
 	1, "$OPTVAL_MODERN"
+	2, "$OPTVAL_MODERN2"
+	3, "$OPTVAL_MODERN3"
 }
 
 OptionMenu "CustomizeControls" protected
