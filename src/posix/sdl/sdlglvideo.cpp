@@ -276,7 +276,7 @@ namespace
 
 void I_PolyPresentInit()
 {
-	assert(Priv::softpolyEnabled);
+	assert(Priv::softpolyEnabled || Priv::softpolyForced);
 	assert(Priv::window != nullptr);
 
 	if (strcmp(vid_sdl_render_driver, "") != 0)
