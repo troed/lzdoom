@@ -100,6 +100,7 @@ STARTUP4 = "";
 STARTUP5 = "";
 
 // Engine strings
+OPTMNU_SWITCHUI					= "Switch UI";
 DSPLYMNU_SPRITECULL				= "Sprite Cull Distance";
 DSPLYMNU_LINECULL				= "Wall Cull Distance";
 DSPLYMNU_DISABLERENDERCULL		= "Disable Render Culling";
