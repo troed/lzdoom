@@ -87,6 +87,7 @@ void FMapInfoParser::ParseSkill ()
 	skill.NoPain = false;
 	skill.Infighting = 0;
 	skill.PlayerRespawn = false;
+	skill.DoubleSpawn = false;
 
 	sc.MustGetString();
 	skill.Name = sc.String;
@@ -156,6 +157,10 @@ void FMapInfoParser::ParseSkill ()
 		else if (sc.Compare ("playerrespawn"))
 		{
 			skill.PlayerRespawn = true;
+		}
+		else if (sc.Compare ("doublespawn"))
+		{
+			skill.DoubleSpawn = true;
 		}
 		else if (sc.Compare("respawntime"))
 		{
@@ -395,6 +400,9 @@ int G_SkillProperty(ESkillProperty prop)
 
 		case SKILLP_PlayerRespawn:
 			return AllSkills[gameskill].PlayerRespawn;
+
+		case SKILLP_DoubleSpawn:
+			return AllSkills[gameskill].DoubleSpawn;
 		}
 	}
 	return 0;
@@ -549,6 +557,7 @@ FSkillInfo &FSkillInfo::operator=(const FSkillInfo &other)
 	ArmorFactor = other.ArmorFactor;
 	HealthFactor = other.HealthFactor;
 	PlayerRespawn = other.PlayerRespawn;
+	DoubleSpawn = other.DoubleSpawn;
 	return *this;
 }
 

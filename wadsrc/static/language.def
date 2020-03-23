@@ -109,6 +109,9 @@ OPTVAL_CLASSICZ					= "Classic ZDoom";
 OPTVAL_MODERN					= "Modern (WASD)";
 OPTVAL_MODERN2					= "Modern (ESDF)";
 OPTVAL_MODERN3					= "Modern (IJKL)";
+SKILL_EXTREME					= "Unholy massacre.";
+MNU_EXTREME						= "1000 DEATHS AWAIT THEE";
+GMPLYMNU_DOUBLESPAWN			= "Spawn double the monsters";
 
 // Placeholder definitions for strings that are in the game content table where the labels are needed even when that file is not loaded.
 
