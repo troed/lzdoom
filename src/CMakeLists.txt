@@ -1079,7 +1079,6 @@ set (PCH_SOURCES
 	gamedata/textures/formats/tgatexture.cpp
 	gamedata/textures/formats/stbtexture.cpp
 	gamedata/textures/hires/hqresize.cpp
-	gamedata/textures/hires/hirestex.cpp
 	gamedata/fonts/singlelumpfont.cpp
 	gamedata/fonts/singlepicfont.cpp
 	gamedata/fonts/specialfont.cpp
