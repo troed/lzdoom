@@ -112,6 +112,7 @@ OPTVAL_MODERN3					= "Modern (IJKL)";
 SKILL_EXTREME					= "Unholy massacre.";
 MNU_EXTREME						= "1000 DEATHS AWAIT THEE";
 GMPLYMNU_DOUBLESPAWN			= "Spawn double the monsters";
+GGLOADED						= "game loaded.";
 
 // Placeholder definitions for strings that are in the game content table where the labels are needed even when that file is not loaded.
 
