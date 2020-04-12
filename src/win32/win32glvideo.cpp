@@ -55,6 +55,7 @@
 
 EXTERN_CVAR(Int, vid_adapter)
 EXTERN_CVAR(Bool, vid_hdr)
+EXTERN_CVAR (Int, vid_preferbackend)
 
 CUSTOM_CVAR(Bool, gl_debug, false, CVAR_ARCHIVE | CVAR_GLOBALCONFIG | CVAR_NOINITCALL)
 {
@@ -375,7 +376,8 @@ bool Win32GLVideo::SetupPixelFormat(int multisample)
 
 		if (pfd.dwFlags & PFD_GENERIC_FORMAT)
 		{
-			I_Error("R_OPENGL: OpenGL driver not accelerated!");
+			vid_preferbackend = 2;
+			I_Error("R_OPENGL: OpenGL driver not accelerated!\nFalling back to SoftPoly for next run.\n");
 			return false;
 		}
 	}
