@@ -85,6 +85,7 @@ const char *GetVersionString();
 
 // MINSAVEVER is the minimum level snapshot version that can be loaded.
 #define MINSAVEVER 4558
+#define MINGZSAVEVER 4556
 
 // Use 4500 as the base git save version, since it's higher than the
 // SVN revision ever got.

@@ -221,7 +221,7 @@ void FSavegameManager::ReadSaveStrings()
 							continue;
 						}
 
-						if (savever < MINSAVEVER)
+						if ((engine.Compare(GAMESIG) == 0 && savever < MINSAVEVER) || (engine.Compare("GZDOOM") == 0 && savever < MINGZSAVEVER))
 						{
 							// old, incompatible savegame. List as not usable.
 							oldVer = true;

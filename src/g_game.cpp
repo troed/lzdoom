@@ -1872,18 +1872,18 @@ void G_DoLoadGame ()
 		return;
 	}
 
-	if (SaveVersion < MINSAVEVER || SaveVersion > SAVEVER)
+	if ((engine.CompareNoCase(GAMESIG) == 0 && SaveVersion < MINSAVEVER) || (engine.CompareNoCase("GZDOOM") == 0 && SaveVersion < MINGZSAVEVER))
 	{
 		FString message;
-		if (SaveVersion < MINSAVEVER)
+		if (engine.CompareNoCase(GAMESIG) == 0 && SaveVersion < MINSAVEVER)
 		{
 			message = GStrings("TXT_TOOOLDSG");
 			message.Substitute("%e", FStringf("%d", MINSAVEVER));
 		}
 		else
 		{
-			message = GStrings("TXT_TOONEWSG");
-			message.Substitute("%e", FStringf("%d", SAVEVER));
+			message = GStrings("TXT_TOOOLDSG");
+			message.Substitute("%e", FStringf("%d", MINGZSAVEVER));
 		}
 		message.Substitute("%d", FStringf("%d", SaveVersion));
 		LoadGameError(message);
