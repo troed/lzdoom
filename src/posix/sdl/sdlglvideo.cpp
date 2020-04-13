@@ -476,7 +476,7 @@ DFrameBuffer *SDLVideo::CreateFrameBuffer ()
 		{
 			assert(device == nullptr);
 			device = new VulkanDevice();
-			fb = new VulkanFrameBuffer(nullptr, fullscreen, device);
+			fb = new VulkanFrameBuffer(nullptr, vid_fullscreen, device);
 		}
 		catch (CVulkanError const&)
 		{
@@ -492,13 +492,13 @@ DFrameBuffer *SDLVideo::CreateFrameBuffer ()
 
 	if (Priv::softpolyEnabled || Priv::softpolyForced)
 	{
-		fb = new PolyFrameBuffer(nullptr, fullscreen);
+		fb = new PolyFrameBuffer(nullptr, vid_fullscreen);
 	}
 
 	if (fb == nullptr)
 	{
 #if defined (HAVE_OPENGL) || defined (__APPLE__)
-		fb = new OpenGLRenderer::OpenGLFrameBuffer(0, fullscreen);
+		fb = new OpenGLRenderer::OpenGLFrameBuffer(0, vid_fullscreen);
 #else
 		I_FatalError ("Failed to initialize OpenGL framebuffer");
 #endif
@@ -581,7 +581,7 @@ void SystemBaseFrameBuffer::ToggleFullscreen(bool yes)
 		if ( !Priv::fullscreenSwitch )
 		{
 			Priv::fullscreenSwitch = true;
-			fullscreen = false;
+			vid_fullscreen = false;
 		}
 		else
 		{
@@ -600,9 +600,9 @@ void SystemBaseFrameBuffer::SetWindowSize(int w, int h)
 	}
 	win_w = w;
 	win_h = h;
-	if ( fullscreen )
+	if (vid_fullscreen )
 	{
-		fullscreen = false;
+		vid_fullscreen = false;
 	}
 	else
 	{
@@ -741,7 +741,7 @@ void ProcessSDLWindowEvent(const SDL_WindowEvent &event)
 		break;
 
 	case SDL_WINDOWEVENT_MOVED:
-		if (!fullscreen && Priv::GetWindowBordersSize)
+		if (!vid_fullscreen && Priv::GetWindowBordersSize)
 		{
 			int top = 0, left = 0;
 			Priv::GetWindowBordersSize(Priv::window, &top, &left, nullptr, nullptr);
@@ -751,7 +751,7 @@ void ProcessSDLWindowEvent(const SDL_WindowEvent &event)
 		break;
 
 	case SDL_WINDOWEVENT_RESIZED:
-		if (!fullscreen && !Priv::fullscreenSwitch)
+		if (!vid_fullscreen && !Priv::fullscreenSwitch)
 		{
 			win_w = event.data1;
 			win_h = event.data2;

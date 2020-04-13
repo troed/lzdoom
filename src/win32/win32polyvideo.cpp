@@ -1,7 +1,7 @@
 
 #include <assert.h>
 #include "hardware.h"
-#include "doomerrors.h"
+#include "engineerrors.h"
 #include "v_text.h"
 #include <Windows.h>
 

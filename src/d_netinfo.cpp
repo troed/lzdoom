@@ -50,6 +50,7 @@
 #include "serializer.h"
 #include "vm.h"
 #include "gstrings.h"
+#include "g_game.h"
 
 static FRandom pr_pickteam ("PickRandomTeam");
 
@@ -624,8 +625,17 @@ static const char *SetServerVar (char *name, ECVarType type, uint8_t **stream, b
 
 EXTERN_CVAR (Float, sv_gravity)
 
-void D_SendServerInfoChange (const FBaseCVar *cvar, UCVarValue value, ECVarType type)
+void D_SendServerInfoChange (FBaseCVar *cvar, UCVarValue value, ECVarType type)
 {
+	if (gamestate != GS_STARTUP && !demoplayback)
+	{
+		if (netgame && !players[consoleplayer].settings_controller)
+		{
+			Printf("Only setting controllers can change %s\n", cvar->GetName());
+			cvar->MarkSafe();
+			return;
+		}
+	}
 	size_t namelen;
 
 	namelen = strlen (cvar->GetName ());
@@ -643,11 +653,18 @@ void D_SendServerInfoChange (const FBaseCVar *cvar, UCVarValue value, ECVarType 
 	}
 }
 
-void D_SendServerFlagChange (const FBaseCVar *cvar, int bitnum, bool set)
+void D_SendServerFlagChange (FBaseCVar *cvar, int bitnum, bool set, bool silent)
 {
-	int namelen;
+	if (gamestate != GS_STARTUP && !demoplayback)
+	{
+		if (netgame && !players[consoleplayer].settings_controller)
+		{
+			if (!silent) Printf("Only setting controllers can change %s\n", cvar->GetName());
+			return;
+		}
+	}
 
-	namelen = (int)strlen (cvar->GetName ());
+	int namelen = (int)strlen (cvar->GetName ());
 
 	Net_WriteByte (DEM_SINFCHANGEDXOR);
 	Net_WriteByte ((uint8_t)namelen);
@@ -822,7 +839,7 @@ void D_ReadUserInfoStrings (int pnum, uint8_t **stream, bool update)
 			}
 			
 			// A few of these need special handling.
-			switch (keyname)
+			switch (keyname.GetIndex())
 			{
 			case NAME_Gender:
 				info->GenderChanged(value);
@@ -906,7 +923,7 @@ void WriteUserInfo(FSerializer &arc, userinfo_t &info)
 
 		while (it.NextPair(pair))
 		{
-			name = pair->Key;
+			name = pair->Key.GetChars();
 			name.ToLower();
 			switch (pair->Key.GetIndex())
 			{
@@ -947,7 +964,7 @@ void ReadUserInfo(FSerializer &arc, userinfo_t &info, FString &skin)
 			FBaseCVar **cvar = info.CheckKey(name);
 			if (cvar != NULL && *cvar != NULL)
 			{
-				switch (name)
+				switch (name.GetIndex())
 				{
 				case NAME_Team:			info.TeamChanged(atoi(str)); break;
 				case NAME_Skin:			skin = str; break;	// Caller must call SkinChanged() once current calss is known

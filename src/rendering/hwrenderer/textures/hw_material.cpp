@@ -20,12 +20,13 @@
 //--------------------------------------------------------------------------
 //
 
-#include "w_wad.h"
+#include "filesystem.h"
 #include "m_png.h"
 #include "sbar.h"
 #include "stats.h"
 #include "r_utility.h"
 #include "c_dispatch.h"
+#include "v_video.h"
 #include "hw_ihwtexture.h"
 #include "hw_material.h"
 

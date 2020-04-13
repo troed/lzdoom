@@ -51,7 +51,7 @@
 #include "poly_buffers.h"
 #include "poly_renderstate.h"
 #include "poly_hwtexture.h"
-#include "doomerrors.h"
+#include "engineerrors.h"
 
 #ifdef _WIN32
 extern bool d3davailable;
