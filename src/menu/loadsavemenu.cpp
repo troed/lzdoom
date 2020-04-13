@@ -213,7 +213,7 @@ void FSavegameManager::ReadSaveStrings()
 						FString title = arc.GetString("Title");
 
 
-						if (engine.Compare(GAMESIG) != 0 || savever > SAVEVER)
+						if ((engine.Compare(GAMESIG) != 0 && engine.CompareNoCase("GZDOOM") != 0) || savever > SAVEVER)
 						{
 							// different engine or newer version:
 							// not our business. Leave it alone.
