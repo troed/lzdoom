@@ -40,8 +40,8 @@
 #include "info.h"
 
 #include "doomdef.h"
-#include "textures/textures.h"
-#include "r_data/renderstyle.h"
+#include "textures.h"
+#include "renderstyle.h"
 #include "s_sound.h"
 #include "memarena.h"
 #include "g_level.h"
@@ -1557,6 +1557,8 @@ struct FTranslatedLineTarget
 	bool unlinked;	// found by a trace that went through an unlinked portal.
 };
 
+
+void StaticPointerSubstitution(AActor* old, AActor* notOld);
 
 #define S_FREETARGMOBJ	1
 

@@ -50,16 +50,6 @@
 #include "g_levellocals.h"
 #include "m_png.h"
 
-uint32_t Col2RGB8[65][256];
-uint32_t *Col2RGB8_LessPrecision[65];
-uint32_t Col2RGB8_Inverse[65][256];
-uint32_t Col2RGB8_2[63][256]; // this array's second dimension is called up by pointer as Col2RGB8_LessPrecision[] elsewhere.
-ColorTable32k RGB32k;
-ColorTable256k RGB256k;
-
-FPalette GPalette;
-FColorMatcher ColorMatcher;
-
 /* Current color blending values */
 int		BlendR, BlendG, BlendB, BlendA;
 
@@ -98,161 +88,26 @@ CCMD (bumpgamma)
 
 
 
-
-
-
-FPalette::FPalette ()
-{
-}
-
-FPalette::FPalette (const uint8_t *colors)
-{
-	SetPalette (colors);
-}
-
-void FPalette::SetPalette (const uint8_t *colors)
-{
-	for (int i = 0; i < 256; i++, colors += 3)
-	{
-		BaseColors[i] = PalEntry (colors[0], colors[1], colors[2]);
-		Remap[i] = i;
-	}
-
-	// Find white and black from the original palette so that they can be
-	// used to make an educated guess of the translucency % for a BOOM
-	// translucency map.
-	WhiteIndex = BestColor ((uint32_t *)BaseColors, 255, 255, 255, 0, 255);
-	BlackIndex = BestColor ((uint32_t *)BaseColors, 0, 0, 0, 0, 255);
-}
-
-int ReadPalette(int lumpnum, uint8_t *buffer)
-{
-	if (lumpnum < 0)
-	{
-		return 0;
-	}
-	FileData lump = fileSystem.ReadFile(lumpnum);
-	uint8_t *lumpmem = (uint8_t*)lump.GetMem();
-	memset(buffer, 0, 768);
-
-	FileReader fr;
-	fr.OpenMemory(lumpmem, lump.GetSize());
-	auto png = M_VerifyPNG(fr);
-	if (png)
-	{
-		uint32_t id, len;
-		fr.Seek(33, FileReader::SeekSet);
-		fr.Read(&len, 4);
-		fr.Read(&id, 4);
-		bool succeeded = false;
-		while (id != MAKE_ID('I', 'D', 'A', 'T') && id != MAKE_ID('I', 'E', 'N', 'D'))
-		{
-			len = BigLong((unsigned int)len);
-			if (id != MAKE_ID('P', 'L', 'T', 'E'))
-				fr.Seek(len, FileReader::SeekCur);
-			else
-			{
-				int PaletteSize = MIN<int>(len, 768);
-				fr.Read(buffer, PaletteSize);
-				return PaletteSize / 3;
-			}
-			fr.Seek(4, FileReader::SeekCur);	// Skip CRC
-			fr.Read(&len, 4);
-			id = MAKE_ID('I', 'E', 'N', 'D');
-			fr.Read(&id, 4);
-		}
-		I_Error("%s contains no palette", fileSystem.GetFileFullName(lumpnum));
-	}
-	if (memcmp(lumpmem, "JASC-PAL", 8) == 0)
-	{
-		FScanner sc;
-		
-		sc.OpenMem(fileSystem.GetFileFullName(lumpnum), (char*)lumpmem, int(lump.GetSize()));
-		sc.MustGetString();
-		sc.MustGetNumber();	// version - ignore
-		sc.MustGetNumber();	
-		int colors = MIN(256, sc.Number) * 3;
-		for (int i = 0; i < colors; i++)
-		{
-			sc.MustGetNumber();
-			if (sc.Number < 0 || sc.Number > 255)
-			{
-				sc.ScriptError("Color %d value out of range.", sc.Number);
-			}
-			buffer[i] = sc.Number;
-		}
-		return colors / 3;
-	}
-	else
-	{
-		memcpy(buffer, lumpmem, MIN<size_t>(768, lump.GetSize()));
-		return 256;
-	}
-}
-
-//==========================================================================
-//
-// BuildTransTable
-//
-// Build the tables necessary for blending
-//
-//==========================================================================
-
-static void BuildTransTable (const PalEntry *palette)
-{
-	int r, g, b;
-	
-	// create the RGB555 lookup table
-	for (r = 0; r < 32; r++)
-		for (g = 0; g < 32; g++)
-			for (b = 0; b < 32; b++)
-				RGB32k.RGB[r][g][b] = ColorMatcher.Pick ((r<<3)|(r>>2), (g<<3)|(g>>2), (b<<3)|(b>>2));
-	// create the RGB666 lookup table
-	for (r = 0; r < 64; r++)
-		for (g = 0; g < 64; g++)
-			for (b = 0; b < 64; b++)
-				RGB256k.RGB[r][g][b] = ColorMatcher.Pick ((r<<2)|(r>>4), (g<<2)|(g>>4), (b<<2)|(b>>4));
-	
-	int x, y;
-	
-	// create the swizzled palette
-	for (x = 0; x < 65; x++)
-		for (y = 0; y < 256; y++)
-			Col2RGB8[x][y] = (((palette[y].r*x)>>4)<<20) |
-			((palette[y].g*x)>>4) |
-			(((palette[y].b*x)>>4)<<10);
-	
-	// create the swizzled palette with the lsb of red and blue forced to 0
-	// (for green, a 1 is okay since it never gets added into)
-	for (x = 1; x < 64; x++)
-	{
-		Col2RGB8_LessPrecision[x] = Col2RGB8_2[x-1];
-		for (y = 0; y < 256; y++)
-		{
-			Col2RGB8_2[x-1][y] = Col2RGB8[x][y] & 0x3feffbff;
-		}
-	}
-	Col2RGB8_LessPrecision[0] = Col2RGB8[0];
-	Col2RGB8_LessPrecision[64] = Col2RGB8[64];
-	
-	// create the inverse swizzled palette
-	for (x = 0; x < 65; x++)
-		for (y = 0; y < 256; y++)
-		{
-			Col2RGB8_Inverse[x][y] = (((((255-palette[y].r)*x)>>4)<<20) |
-									  (((255-palette[y].g)*x)>>4) |
-									  ((((255-palette[y].b)*x)>>4)<<10)) & 0x3feffbff;
-		}
-}
-
-
 void InitPalette ()
 {
 	uint8_t pal[768];
 	
 	ReadPalette(fileSystem.GetNumForName("PLAYPAL"), pal);
 
-	GPalette.SetPalette (pal);
+	GPalette.Init(NUM_TRANSLATION_TABLES);
+	GPalette.SetPalette (pal, -1);
+
+	int lump = fileSystem.CheckNumForName("COLORMAP");
+	if (lump == -1) lump = fileSystem.CheckNumForName("COLORMAP", ns_colormaps);
+	if (lump != -1)
+	{
+		FileData cmap = fileSystem.ReadFile(lump);
+		uint8_t palbuffer[768];
+		ReadPalette(fileSystem.GetNumForName("PLAYPAL"), palbuffer);
+		const unsigned char* cmapdata = (const unsigned char*)cmap.GetMem();
+		GPalette.GenerateGlobalBrightmapFromColormap(cmapdata, 32);
+	}
+
 	MakeGoodRemap ((uint32_t*)GPalette.BaseColors, GPalette.Remap);
 	ColorMatcher.SetPalette ((uint32_t *)GPalette.BaseColors);
 
@@ -261,6 +116,7 @@ void InitPalette ()
 		GPalette.Remap[0] = BestColor ((uint32_t *)GPalette.BaseColors,
 			GPalette.BaseColors[0].r, GPalette.BaseColors[0].g, GPalette.BaseColors[0].b, 1, 255);
 	}
+	GPalette.BaseColors[0] = 0;
 
 	// Colormaps have to be initialized before actors are loaded,
 	// otherwise Powerup.Colormap will not work.

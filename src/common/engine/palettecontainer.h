@@ -4,6 +4,14 @@
 #include "memarena.h"
 #include "palentry.h"
 
+class FileReader;
+
+enum
+{
+	TRANSLATION_Internal = 0
+};
+
+
 struct FRemapTable
 {
 	FRemapTable(int count = 256) { NumEntries = count; }
@@ -18,7 +26,7 @@ struct FRemapTable
 	bool AddColourisation(int start, int end, int r, int g, int b);
 	bool AddTint(int start, int end, int r, int g, int b, int amount);
 	bool AddToTranslation(const char* range);
-	bool AddColors(int start, int count, const uint8_t*);
+	bool AddColors(int start, int count, const uint8_t*, int trans_color = 0);
 
 	uint8_t Remap[256];				// For the software renderer
 	PalEntry Palette[256];			// The ideal palette this maps to
@@ -26,6 +34,7 @@ struct FRemapTable
 	int Index;
 	int NumEntries;				// # of elements in this table (usually 256)
 	bool Inactive = false;				// This table is inactive and should be treated as if it was passed as NULL
+	bool ForFont = false;				// Mark font translations because they may require different handling than the ones for sprites-
 
 private:
 };
@@ -67,18 +76,38 @@ inline int GetTranslationIndex(uint32_t trans)
 
 class PaletteContainer
 {
-	FMemArena remapArena;
+public:
+	PalEntry	BaseColors[256];	// non-gamma corrected palette
+	PalEntry	RawColors[256];		// colors as read from the game data without the transparancy remap applied
+	uint8_t		Remap[256];			// remap original palette indices to in-game indices
+
+	uint8_t		WhiteIndex;			// white in original palette index
+	uint8_t		BlackIndex;			// black in original palette index
+
+	bool HasGlobalBrightmap;
+	FRemapTable GlobalBrightmap;
+	FRemapTable GrayRamp;
+	FRemapTable GrayscaleMap;
+	FRemapTable IceMap;				// This is used by the texture compositor so it must be globally accessible.
+	uint8_t GrayMap[256];
+
 	TArray<FRemapTable*> uniqueRemaps;
+
+private:
+	FMemArena remapArena;
 	TArray<TAutoGrowArray<FRemapTablePtr, FRemapTable*>> TranslationTables;
 public:
 	void Init(int numslots);	// This cannot be a constructor!!!
+	void SetPalette(const uint8_t* colors, int transparent_index = -1);
 	void Clear();
+	int DetermineTranslucency(FileReader& file);
 	FRemapTable* AddRemap(FRemapTable* remap);
 	void UpdateTranslation(int trans, FRemapTable* remap);
 	int AddTranslation(int slot, FRemapTable* remap, int count = 1);
 	void CopyTranslation(int dest, int src);
 	int StoreTranslation(int slot, FRemapTable* remap);
 	FRemapTable* TranslationToTable(int translation);
+	void GenerateGlobalBrightmapFromColormap(const uint8_t* cmapdata, int numlevels);
 
 	void PushIdentityTable(int slot)
 	{
@@ -102,5 +131,5 @@ public:
 
 };
 
-extern PaletteContainer palMgr;
+extern PaletteContainer GPalette;
 

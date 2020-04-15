@@ -62,7 +62,8 @@
 #include "p_setup.h"
 #include "po_man.h"
 #include "actorptrselect.h"
-#include "serializer.h"
+#include "serializer_doom.h"
+#include "serialize_obj.h"
 #include "decallib.h"
 #include "p_terrain.h"
 #include "version.h"
@@ -76,6 +77,7 @@
 #include "scriptutil.h"
 #include "s_music.h"
 #include "v_video.h"
+#include "texturemanager.h"
 
 	// P-codes for ACS scripts
 	enum
@@ -1875,7 +1877,6 @@ void DPlaneWatcher::Serialize(FSerializer &arc)
 {
 	Super::Serialize (arc);
 	arc("special", Special)
-		.Args("args", Args, nullptr, Special)
 		("sector", Sector)
 		("ceiling", bCeiling)
 		("watchd", WatchD)
@@ -1884,6 +1885,7 @@ void DPlaneWatcher::Serialize(FSerializer &arc)
 		("line", Line)
 		("lineside", LineSide);
 
+	SerializeArgs(arc, "args", Args, nullptr, Special);
 }
 
 void DPlaneWatcher::Tick ()
@@ -6444,7 +6446,7 @@ doplaysound:			if (funcIndex == ACSF_PlayActorSound)
 		{
 			PalEntry color = args[0];
 			bool fullbright = argCount > 1 ? !!args[1] : false;
-			int lifetime = argCount > 2 ? args[2] : 35;
+			int lifetime = argCount > 2 ? args[2] : TICRATE;
 			double size = argCount > 3 ? args[3] : 1.;
 			int x = argCount > 4 ? args[4] : 0;
 			int y = argCount > 5 ? args[5] : 0;
@@ -9610,7 +9612,7 @@ scriptwait:
 		case PCD_ENDTRANSLATION:
 			if (translation != NULL)
 			{
-				palMgr.UpdateTranslation(TRANSLATION(TRANSLATION_LevelScripted, transi), translation);
+				GPalette.UpdateTranslation(TRANSLATION(TRANSLATION_LevelScripted, transi), translation);
 				delete translation;
 				translation = NULL;
 			}

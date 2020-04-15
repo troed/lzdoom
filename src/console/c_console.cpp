@@ -65,6 +65,8 @@
 #include "vm.h"
 #include "utf8.h"
 #include "s_music.h"
+#include "i_time.h"
+#include "texturemanager.h"
 
 
 #include "gi.h"
@@ -108,7 +110,7 @@ int			ConWidth;
 bool		vidactive = false;
 bool		cursoron = false;
 int			ConBottom, ConScroll, RowAdjust;
-int			CursorTicker;
+uint64_t	CursorTicker;
 constate_e	ConsoleState = c_up;
 
 
@@ -205,37 +207,37 @@ public:
 	{
 		if (scale == 1)
 		{
-			screen->DrawChar(CurrentConsoleFont, CR_ORANGE, x, y, '\x1c', TAG_DONE);
-			screen->DrawText(CurrentConsoleFont, CR_ORANGE, x + CurrentConsoleFont->GetCharWidth(0x1c), y,
+			DrawChar(twod, CurrentConsoleFont, CR_ORANGE, x, y, '\x1c', TAG_DONE);
+			DrawText(twod, CurrentConsoleFont, CR_ORANGE, x + CurrentConsoleFont->GetCharWidth(0x1c), y,
 				&Text[StartPos], TAG_DONE);
 
 			if (cursor)
 			{
-				screen->DrawChar(CurrentConsoleFont, CR_YELLOW,
+				DrawChar(twod, CurrentConsoleFont, CR_YELLOW,
 					x + CurrentConsoleFont->GetCharWidth(0x1c) + (CursorPosCells - StartPosCells) * CurrentConsoleFont->GetCharWidth(0xb),
 					y, '\xb', TAG_DONE);
 			}
 		}
 		else
 		{
-			screen->DrawChar(CurrentConsoleFont, CR_ORANGE, x, y, '\x1c',
-				DTA_VirtualWidth, screen->GetWidth() / scale,
-				DTA_VirtualHeight, screen->GetHeight() / scale,
+			DrawChar(twod, CurrentConsoleFont, CR_ORANGE, x, y, '\x1c',
+				DTA_VirtualWidth, twod->GetWidth() / scale,
+				DTA_VirtualHeight, twod->GetHeight() / scale,
 				DTA_KeepRatio, true, TAG_DONE);
 
-			screen->DrawText(CurrentConsoleFont, CR_ORANGE, x + CurrentConsoleFont->GetCharWidth(0x1c), y,
+			DrawText(twod, CurrentConsoleFont, CR_ORANGE, x + CurrentConsoleFont->GetCharWidth(0x1c), y,
 				&Text[StartPos],
-				DTA_VirtualWidth, screen->GetWidth() / scale,
-				DTA_VirtualHeight, screen->GetHeight() / scale,
+				DTA_VirtualWidth, twod->GetWidth() / scale,
+				DTA_VirtualHeight, twod->GetHeight() / scale,
 				DTA_KeepRatio, true, TAG_DONE);
 
 			if (cursor)
 			{
-				screen->DrawChar(CurrentConsoleFont, CR_YELLOW,
+				DrawChar(twod, CurrentConsoleFont, CR_YELLOW,
 					x + CurrentConsoleFont->GetCharWidth(0x1c) + (CursorPosCells - StartPosCells) * CurrentConsoleFont->GetCharWidth(0xb),
 					y, '\xb',
-					DTA_VirtualWidth, screen->GetWidth() / scale,
-					DTA_VirtualHeight, screen->GetHeight() / scale,
+					DTA_VirtualWidth, twod->GetWidth() / scale,
+					DTA_VirtualHeight, twod->GetHeight() / scale,
 					DTA_KeepRatio, true, TAG_DONE);
 			}
 		}
@@ -280,7 +282,7 @@ public:
 		unsigned LengthCells = CalcCellSize((unsigned)Text.length());
 
 		int n = StartPosCells;
-		unsigned cols = ConCols / active_con_scale();
+		unsigned cols = ConCols / active_con_scale(twod);
 
 		if (StartPosCells >= LengthCells)
 		{ // Start of visible line is beyond end of line
@@ -294,7 +296,7 @@ public:
 		{ // The cursor is in front of the visible part of the line
 			n = CursorPosCells;
 		}
-		StartPosCells = MAX(0, n);
+		StartPosCells = std::max(0, n);
 		bool overflow;
 		StartPos = CharsForCells(StartPosCells, &overflow);
 		if (overflow)
@@ -514,6 +516,7 @@ static int HistSize;
 struct FNotifyText
 {
 	int TimeOut;
+	int Ticker;
 	int PrintLevel;
 	FString Text;
 };
@@ -718,6 +721,7 @@ void C_DeinitConsole ()
 	// Make sure all tab commands are cleared before the memory for
 	// their names is deallocated.
 	C_ClearTabCommands ();
+	C_ClearDynCCmds();
 
 	// Free AddToConsole()'s work buffer
 	if (work != NULL)
@@ -791,7 +795,7 @@ void FNotifyBuffer::AddString(int printlevel, FString source)
 		}
 	}
 
-	width = DisplayWidth / active_con_scaletext(generic_ui);
+	width = DisplayWidth / active_con_scaletext(twod, generic_ui);
 
 	FFont *font = generic_ui ? NewSmallFont : AlternativeSmallFont;
 	if (font == nullptr) return;	// Without an initialized font we cannot handle the message (this is for those which come here before the font system is ready.)
@@ -818,7 +822,8 @@ void FNotifyBuffer::AddString(int printlevel, FString source)
 		FNotifyText newline;
 
 		newline.Text = line.Text;
-		newline.TimeOut = gametic + int(con_notifytime * TICRATE);
+		newline.TimeOut = int(con_notifytime * GameTicRate);
+		newline.Ticker = 0;
 		newline.PrintLevel = printlevel;
 		if (AddType == NEWLINE || Text.Size() == 0)
 		{
@@ -888,9 +893,14 @@ void WriteLineToLog(FILE *LogFile, const char *outline)
 	fflush(LogFile);
 }
 
+extern bool gameisdead;
 
 int PrintString (int iprintlevel, const char *outline)
 {
+	if (gameisdead)
+		return 0;
+
+	if (!conbuffer) return 0;	// when called too early
 	int printlevel = iprintlevel & PRINT_TYPES;
 	if (printlevel < msglevel || *outline == '\0')
 	{
@@ -921,13 +931,8 @@ int PrintString (int iprintlevel, const char *outline)
 	return 0;	// Don't waste time on calculating this if nothing at all was printed...
 }
 
-extern bool gameisdead;
-
 int VPrintf (int printlevel, const char *format, va_list parms)
 {
-	if (gameisdead)
-		return 0;
-
 	FString outline;
 	outline.VFormat (format, parms);
 	return PrintString (printlevel, outline.GetChars());
@@ -989,14 +994,14 @@ void C_FlushDisplay ()
 void C_AdjustBottom ()
 {
 	if (gamestate == GS_FULLCONSOLE || gamestate == GS_STARTUP)
-		ConBottom = SCREENHEIGHT;
-	else if (ConBottom > SCREENHEIGHT / 2 || ConsoleState == c_down)
-		ConBottom = SCREENHEIGHT / 2;
+		ConBottom = twod->GetHeight();
+	else if (ConBottom > twod->GetHeight() / 2 || ConsoleState == c_down)
+		ConBottom = twod->GetHeight() / 2;
 }
 
 void C_NewModeAdjust ()
 {
-	C_InitConsole (SCREENWIDTH, SCREENHEIGHT, true);
+	C_InitConsole (twod->GetWidth(), twod->GetHeight(), true);
 	C_FlushDisplay ();
 	C_AdjustBottom ();
 }
@@ -1019,28 +1024,22 @@ void C_Ticker()
 	{
 		if (ConsoleState == c_falling)
 		{
-			ConBottom += (consoletic - lasttic) * (SCREENHEIGHT * 2 / 25);
-			if (ConBottom >= SCREENHEIGHT / 2)
+			ConBottom += (consoletic - lasttic) * (twod->GetHeight() * 2 / 25);
+			if (ConBottom >= twod->GetHeight() / 2)
 			{
-				ConBottom = SCREENHEIGHT / 2;
+				ConBottom = twod->GetHeight() / 2;
 				ConsoleState = c_down;
 			}
 		}
 		else if (ConsoleState == c_rising)
 		{
-			ConBottom -= (consoletic - lasttic) * (SCREENHEIGHT * 2 / 25);
+			ConBottom -= (consoletic - lasttic) * (twod->GetHeight() * 2 / 25);
 			if (ConBottom <= 0)
 			{
 				ConsoleState = c_up;
 				ConBottom = 0;
 			}
 		}
-	}
-
-	if (--CursorTicker <= 0)
-	{
-		cursoron ^= 1;
-		CursorTicker = C_BLINKRATE;
 	}
 
 	lasttic = consoletic;
@@ -1062,12 +1061,19 @@ void FNotifyBuffer::Tick()
 	unsigned i;
 	for (i = 0; i < Text.Size(); ++i)
 	{
-		if (Text[i].TimeOut != 0 && Text[i].TimeOut > gametic)
+		Text[i].Ticker++;
+	}
+	
+	for (i = 0; i < Text.Size(); ++i)
+	{
+		if (Text[i].TimeOut != 0 && Text[i].TimeOut > Text[i].Ticker)
 			break;
 	}
 	if (i > 0)
 	{
 		Text.Delete(0, i);
+		FFont* font = generic_ui ? NewSmallFont : AlternativeSmallFont;
+		Top += font->GetHeight();
 	}
 }
 
@@ -1077,7 +1083,7 @@ void FNotifyBuffer::Draw()
 	int line, lineadv, color, j;
 	bool canskip;
 	
-	if (gamestate == GS_FULLCONSOLE || gamestate == GS_DEMOSCREEN/* || menuactive != MENU_Off*/)
+	if (gamestate == GS_FULLCONSOLE || gamestate == GS_DEMOSCREEN)
 		return;
 
 	FFont* font = generic_ui ? NewSmallFont : AlternativeSmallFont;
@@ -1094,7 +1100,7 @@ void FNotifyBuffer::Draw()
 		if (notify.TimeOut == 0)
 			continue;
 
-		j = notify.TimeOut - gametic;
+		j = notify.TimeOut - notify.Ticker;
 		if (j > 0)
 		{
 			if (!show_messages && notify.PrintLevel != 128)
@@ -1107,19 +1113,19 @@ void FNotifyBuffer::Draw()
 			else
 				color = PrintColors[notify.PrintLevel];
 
-			int scale = active_con_scaletext(generic_ui);
+			int scale = active_con_scaletext(twod, generic_ui);
 			if (!center)
-				screen->DrawText (font, color, 0, line, notify.Text,
-					DTA_VirtualWidth, screen->GetWidth() / scale,
-					DTA_VirtualHeight, screen->GetHeight() / scale,
+				DrawText(twod, font, color, 0, line, notify.Text,
+					DTA_VirtualWidth, twod->GetWidth() / scale,
+					DTA_VirtualHeight, twod->GetHeight() / scale,
 					DTA_KeepRatio, true,
 					DTA_Alpha, alpha, TAG_DONE);
 			else
-				screen->DrawText (font, color, (screen->GetWidth() -
+				DrawText(twod, font, color, (twod->GetWidth() -
 					font->StringWidth (notify.Text) * scale) / 2 / scale,
 					line, notify.Text,
-					DTA_VirtualWidth, screen->GetWidth() / scale,
-					DTA_VirtualHeight, screen->GetHeight() / scale,
+					DTA_VirtualWidth, twod->GetWidth() / scale,
+					DTA_VirtualHeight, twod->GetHeight() / scale,
 					DTA_KeepRatio, true,
 					DTA_Alpha, alpha, TAG_DONE);
 			line += lineadv;
@@ -1127,11 +1133,6 @@ void FNotifyBuffer::Draw()
 		}
 		else
 		{
-			if (canskip)
-			{
-				Top += lineadv;
-				line += lineadv;
-			}
 			notify.TimeOut = 0;
 		}
 	}
@@ -1146,7 +1147,7 @@ void C_DrawConsole ()
 	static int oldbottom = 0;
 	int lines, left, offset;
 
-	int textScale = active_con_scale();
+	int textScale = active_con_scale(twod);
 
 	left = LEFTMARGIN;
 	lines = (ConBottom/textScale-CurrentConsoleFont->GetHeight()*2)/CurrentConsoleFont->GetHeight();
@@ -1174,32 +1175,32 @@ void C_DrawConsole ()
 
 		visheight = ConBottom;
 
-		screen->DrawTexture (conpic, 0, visheight - screen->GetHeight(),
-			DTA_DestWidth, screen->GetWidth(),
-			DTA_DestHeight, screen->GetHeight(),
+		DrawTexture(twod, conpic, 0, visheight - twod->GetHeight(),
+			DTA_DestWidth, twod->GetWidth(),
+			DTA_DestHeight, twod->GetHeight(),
 			DTA_ColorOverlay, conshade,
 			DTA_Alpha, (gamestate != GS_FULLCONSOLE) ? (double)con_alpha : 1.,
 			DTA_Masked, false,
 			TAG_DONE);
-		if (conline && visheight < screen->GetHeight())
+		if (conline && visheight < twod->GetHeight())
 		{
-			screen->Clear (0, visheight, screen->GetWidth(), visheight+1, 0, 0);
+			ClearRect(twod, 0, visheight, twod->GetWidth(), visheight+1, 0, 0);
 		}
 
 		if (ConBottom >= 12)
 		{
 			if (textScale == 1)
-				screen->DrawText (CurrentConsoleFont, CR_ORANGE, SCREENWIDTH - 8 -
+				DrawText(twod, CurrentConsoleFont, CR_ORANGE, twod->GetWidth() - 8 -
 					CurrentConsoleFont->StringWidth (GetVersionString()),
 					ConBottom / textScale - CurrentConsoleFont->GetHeight() - 4,
 					GetVersionString(), TAG_DONE);
 			else
-				screen->DrawText(CurrentConsoleFont, CR_ORANGE, SCREENWIDTH / textScale - 8 -
+				DrawText(twod, CurrentConsoleFont, CR_ORANGE, twod->GetWidth() / textScale - 8 -
 					CurrentConsoleFont->StringWidth(GetVersionString()),
 					ConBottom / textScale - CurrentConsoleFont->GetHeight() - 4,
 					GetVersionString(),
-					DTA_VirtualWidth, screen->GetWidth() / textScale,
-					DTA_VirtualHeight, screen->GetHeight() / textScale,
+					DTA_VirtualWidth, twod->GetWidth() / textScale,
+					DTA_VirtualHeight, twod->GetHeight() / textScale,
 					DTA_KeepRatio, true, TAG_DONE);
 
 		}
@@ -1225,13 +1226,13 @@ void C_DrawConsole ()
 		{
 			if (textScale == 1)
 			{
-				screen->DrawText(CurrentConsoleFont, CR_TAN, LEFTMARGIN, offset + lines * CurrentConsoleFont->GetHeight(), p->Text, TAG_DONE);
+				DrawText(twod, CurrentConsoleFont, CR_TAN, LEFTMARGIN, offset + lines * CurrentConsoleFont->GetHeight(), p->Text, TAG_DONE);
 			}
 			else
 			{
-				screen->DrawText(CurrentConsoleFont, CR_TAN, LEFTMARGIN, offset + lines * CurrentConsoleFont->GetHeight(), p->Text,
-					DTA_VirtualWidth, screen->GetWidth() / textScale,
-					DTA_VirtualHeight, screen->GetHeight() / textScale,
+				DrawText(twod, CurrentConsoleFont, CR_TAN, LEFTMARGIN, offset + lines * CurrentConsoleFont->GetHeight(), p->Text,
+					DTA_VirtualWidth, twod->GetWidth() / textScale,
+					DTA_VirtualHeight, twod->GetHeight() / textScale,
 					DTA_KeepRatio, true, TAG_DONE);
 			}
 		}
@@ -1240,6 +1241,12 @@ void C_DrawConsole ()
 		{
 			if (gamestate != GS_STARTUP)
 			{
+				auto now = I_msTime();
+				if (now > CursorTicker)
+				{
+					CursorTicker = now + 500;
+					cursoron = !cursoron;
+				}
 				CmdLine.Draw(left, bottomline, textScale, cursoron);
 			}
 			if (RowAdjust && ConBottom >= CurrentConsoleFont->GetHeight()*7/2)
@@ -1247,11 +1254,11 @@ void C_DrawConsole ()
 				// Indicate that the view has been scrolled up (10)
 				// and if we can scroll no further (12)
 				if (textScale == 1)
-					screen->DrawChar (CurrentConsoleFont, CR_GREEN, 0, bottomline, RowAdjust == conbuffer->GetFormattedLineCount() ? 12 : 10, TAG_DONE);
+					DrawChar(twod, CurrentConsoleFont, CR_GREEN, 0, bottomline, RowAdjust == conbuffer->GetFormattedLineCount() ? 12 : 10, TAG_DONE);
 				else
-					screen->DrawChar(CurrentConsoleFont, CR_GREEN, 0, bottomline, RowAdjust == conbuffer->GetFormattedLineCount() ? 12 : 10,
-						DTA_VirtualWidth, screen->GetWidth() / textScale,
-						DTA_VirtualHeight, screen->GetHeight() / textScale,
+					DrawChar(twod, CurrentConsoleFont, CR_GREEN, 0, bottomline, RowAdjust == conbuffer->GetFormattedLineCount() ? 12 : 10,
+						DTA_VirtualWidth, twod->GetWidth() / textScale,
+						DTA_VirtualHeight, twod->GetHeight() / textScale,
 						DTA_KeepRatio, true, TAG_DONE);
 			}
 		}
@@ -1275,7 +1282,7 @@ void C_FullConsole ()
 		gamestate = GS_FULLCONSOLE;
 		primaryLevel->Music = "";
 		S_Start ();
-		S_StartMusic();
+		S_StopMusic(true);
 		P_FreeLevelData ();
 	}
 	else
@@ -1314,22 +1321,6 @@ void C_HideConsole ()
 		ConBottom = 0;
 		HistPos = NULL;
 	}
-}
-
-DEFINE_ACTION_FUNCTION(_Console, HideConsole)
-{
-	C_HideConsole();
-	return 0;
-}
-
-DEFINE_ACTION_FUNCTION(_Console, Printf)
-{
-	PARAM_PROLOGUE;
-	PARAM_VA_POINTER(va_reginfo)	// Get the hidden type information array
-
-	FString s = FStringFormat(VM_ARGS_NAMES);
-	Printf("%s\n", s.GetChars());
-	return 0;
 }
 
 static bool C_HandleKey (event_t *ev, FCommandBuffer &buffer)
@@ -1388,7 +1379,7 @@ static bool C_HandleKey (event_t *ev, FCommandBuffer &buffer)
 		case GK_PGUP:
 			if (ev->data3 & (GKM_SHIFT|GKM_CTRL))
 			{ // Scroll console buffer up one page
-				RowAdjust += (SCREENHEIGHT-4)/active_con_scale() /
+				RowAdjust += (twod->GetHeight()-4)/active_con_scale(twod) /
 					((gamestate == GS_FULLCONSOLE || gamestate == GS_STARTUP) ? CurrentConsoleFont->GetHeight() : CurrentConsoleFont->GetHeight()*2) - 3;
 			}
 			else if (RowAdjust < conbuffer->GetFormattedLineCount())
@@ -1411,7 +1402,7 @@ static bool C_HandleKey (event_t *ev, FCommandBuffer &buffer)
 		case GK_PGDN:
 			if (ev->data3 & (GKM_SHIFT|GKM_CTRL))
 			{ // Scroll console buffer down one page
-				const int scrollamt = (SCREENHEIGHT-4)/active_con_scale() /
+				const int scrollamt = (twod->GetHeight()-4)/active_con_scale(twod) /
 					((gamestate == GS_FULLCONSOLE || gamestate == GS_STARTUP) ? CurrentConsoleFont->GetHeight() : CurrentConsoleFont->GetHeight()*2) - 3;
 				if (RowAdjust < scrollamt)
 				{
@@ -1426,7 +1417,7 @@ static bool C_HandleKey (event_t *ev, FCommandBuffer &buffer)
 			{ // Scroll console buffer down
 				if (ev->subtype == EV_GUI_WheelDown)
 				{
-					RowAdjust = MAX (0, RowAdjust - 3);
+					RowAdjust = std::max (0, RowAdjust - 3);
 				}
 				else
 				{
@@ -1713,7 +1704,7 @@ static bool C_HandleKey (event_t *ev, FCommandBuffer &buffer)
 	buffer.AppendToYankBuffer = keepappending;
 
 	// Ensure that the cursor is always visible while typing
-	CursorTicker = C_BLINKRATE;
+	CursorTicker = I_msTime() + 500;
 	cursoron = 1;
 	return true;
 }
@@ -1807,18 +1798,6 @@ void C_MidPrint (FFont *font, const char *msg, bool bold)
 	{
 		StatusBar->DetachMessage (MAKE_ID('C','N','T','R'));
 	}
-}
-
-DEFINE_ACTION_FUNCTION(_Console, MidPrint)
-{
-	PARAM_PROLOGUE;
-	PARAM_POINTER(fnt, FFont);
-	PARAM_STRING(text);
-	PARAM_BOOL(bold);
-
-	const char *txt = text[0] == '$'? GStrings(&text[1]) : text.GetChars();
-	C_MidPrint(fnt, txt, bold);
-	return 0;
 }
 
 /****** Tab completion code ******/
@@ -2047,7 +2026,7 @@ static bool C_TabCompleteList ()
 				}
 			}
 			nummatches++;
-			maxwidth = MAX (maxwidth, strlen (TabCommands[i].TabName.GetChars()));
+			maxwidth = std::max (maxwidth, strlen (TabCommands[i].TabName.GetChars()));
 		}
 	}
 	if (nummatches > 1)
@@ -2072,7 +2051,7 @@ static bool C_TabCompleteList ()
 
 			Printf ("%s%-*s", colorcode, int(maxwidth), TabCommands[i].TabName.GetChars());
 			x += maxwidth;
-			if (x > ConCols / active_con_scale() - maxwidth)
+			if (x > ConCols / active_con_scale(twod) - maxwidth)
 			{
 				x = 0;
 				Printf ("\n");

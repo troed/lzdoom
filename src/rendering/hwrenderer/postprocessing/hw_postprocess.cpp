@@ -25,6 +25,7 @@
 #include "hwrenderer/postprocessing/hw_postprocess_cvars.h"
 #include "hwrenderer/postprocessing/hw_postprocessshader.h"
 #include <random>
+#include "texturemanager.h"
 
 CVAR(Int, gl_multisample, 1, CVAR_ARCHIVE|CVAR_GLOBALCONFIG);
 

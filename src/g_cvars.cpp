@@ -229,7 +229,7 @@ CUSTOM_CVAR(Bool, ui_classic, true, CVAR_ARCHIVE | CVAR_NOINITCALL)
 
 CUSTOM_CVAR(String, language, "auto", CVAR_ARCHIVE | CVAR_NOINITCALL | CVAR_GLOBALCONFIG)
 {
-	GStrings.UpdateLanguage();
+	GStrings.UpdateLanguage(self);
 	for (auto Level : AllLevels())
 	{
 		// does this even make sense on secondary levels...?

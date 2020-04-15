@@ -44,9 +44,10 @@
 #include "g_levellocals.h"
 #include "a_dynlight.h"
 #include "v_video.h"
-#include "textures/skyboxtexture.h"
+#include "skyboxtexture.h"
 #include "hwrenderer/postprocessing/hw_postprocessshader.h"
-#include "hwrenderer/textures/hw_material.h"
+#include "hw_material.h"
+#include "texturemanager.h"
 
 void AddLightDefaults(FLightDefaults *defaults, double attnFactor);
 void AddLightAssociation(const char *actor, const char *frame, const char *light);

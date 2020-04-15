@@ -10,8 +10,8 @@
 #define DIRECT_PALETTE -2
 
 #include "tarray.h"
-#include "gl_load/gl_interface.h"
-#include "hwrenderer/textures/hw_ihwtexture.h"
+#include "gl_interface.h"
+#include "hw_ihwtexture.h"
 
 class FCanvasTexture;
 class AActor;

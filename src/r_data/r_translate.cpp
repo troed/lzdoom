@@ -54,45 +54,6 @@
 
 #include "gi.h"
 
-PaletteContainer palMgr;
-
-
-
-const uint8_t IcePalette[16][3] =
-{
-	{  10,  8, 18 },
-	{  15, 15, 26 },
-	{  20, 16, 36 },
-	{  30, 26, 46 },
-	{  40, 36, 57 },
-	{  50, 46, 67 },
-	{  59, 57, 78 },
-	{  69, 67, 88 },
-	{  79, 77, 99 },
-	{  89, 87,109 },
-	{  99, 97,120 },
-	{ 109,107,130 },
-	{ 118,118,141 },
-	{ 128,128,151 },
-	{ 138,138,162 },
-	{ 148,148,172 }
-};
-
-//----------------------------------------------------------------------------
-//
-//
-//
-//----------------------------------------------------------------------------
-
-bool FRemapTable::operator==(const FRemapTable &o)
-{
-	// Two translations are identical when they have the same amount of colors
-	// and the palette values for both are identical.
-	if (&o == this) return true;
-	if (o.NumEntries != NumEntries) return false;
-	return !memcmp(o.Palette, Palette, NumEntries * sizeof(*Palette));
-}
-
 //----------------------------------------------------------------------------
 //
 //
@@ -115,10 +76,10 @@ void StaticSerializeTranslations(FSerializer &arc)
 		int w;
 		if (arc.isWriting())
 		{
-			auto size = palMgr.NumTranslations(TRANSLATION_LevelScripted);
+			auto size = GPalette.NumTranslations(TRANSLATION_LevelScripted);
 			for (unsigned int i = 0; i < size; ++i)
 			{
-				trans = palMgr.TranslationToTable(TRANSLATION(TRANSLATION_LevelScripted, i));
+				trans = GPalette.TranslationToTable(TRANSLATION(TRANSLATION_LevelScripted, i));
 				if (trans != NULL && !trans->IsIdentity())
 				{
 					if (arc.BeginObject(nullptr))
@@ -137,7 +98,7 @@ void StaticSerializeTranslations(FSerializer &arc)
 				arc("index", w);
 				FRemapTable remap;
 				SerializeRemap(arc, remap);
-				palMgr.UpdateTranslation(TRANSLATION(TRANSLATION_LevelScripted, w), &remap);
+				GPalette.UpdateTranslation(TRANSLATION(TRANSLATION_LevelScripted, w), &remap);
 				arc.EndObject();
 			}
 		}
@@ -160,7 +121,7 @@ int CreateBloodTranslation(PalEntry color)
 	if (BloodTranslationColors.Size() == 0)
 	{
 		// Don't use the first slot.
-		palMgr.PushIdentityTable(TRANSLATION_Blood);
+		GPalette.PushIdentityTable(TRANSLATION_Blood);
 		BloodTranslationColors.Push(0);
 	}
 
@@ -190,7 +151,7 @@ int CreateBloodTranslation(PalEntry color)
 		trans.Palette[i] = pe;
 		trans.Remap[i] = entry;
 	}
-	palMgr.AddTranslation(TRANSLATION_Blood, &trans);
+	GPalette.AddTranslation(TRANSLATION_Blood, &trans);
 	return BloodTranslationColors.Push(color);
 }
 
@@ -212,16 +173,16 @@ void R_InitTranslationTables ()
 	// maps until then so they won't be invalid.
 	for (i = 0; i < MAXPLAYERS; ++i)
 	{
-		palMgr.PushIdentityTable(TRANSLATION_Players);
-		palMgr.PushIdentityTable(TRANSLATION_PlayersExtra);
-		palMgr.PushIdentityTable(TRANSLATION_RainPillar);
+		GPalette.PushIdentityTable(TRANSLATION_Players);
+		GPalette.PushIdentityTable(TRANSLATION_PlayersExtra);
+		GPalette.PushIdentityTable(TRANSLATION_RainPillar);
 	}
 	// The menu player also gets a separate translation table
-	palMgr.PushIdentityTable(TRANSLATION_Players);
+	GPalette.PushIdentityTable(TRANSLATION_Players);
 
 	// The three standard translations from Doom or Heretic (seven for Strife),
 	// plus the generic ice translation.
-	FRemapTable stdremaps[10];
+	FRemapTable stdremaps[8];
 	for (i = 0; i < 8; ++i)
 	{
 		stdremaps[i].MakeIdentity();
@@ -231,7 +192,7 @@ void R_InitTranslationTables ()
 	// color if the player who created them changes theirs.
 	for (i = 0; i < FLevelLocals::BODYQUESIZE; ++i)
 	{
-		palMgr.PushIdentityTable(TRANSLATION_PlayerCorpses);
+		GPalette.PushIdentityTable(TRANSLATION_PlayerCorpses);
 	}
 
 	// Create the standard translation tables
@@ -321,53 +282,8 @@ void R_InitTranslationTables ()
 		}
 	}
 
-	// Create the ice translation table, based on Hexen's. Alas, the standard
-	// Doom palette has no good substitutes for these bluish-tinted grays, so
-	// they will just look gray unless you use a different PLAYPAL with Doom.
-
-	uint8_t IcePaletteRemap[16];
-	for (i = 0; i < 16; ++i)
-	{
-		IcePaletteRemap[i] = ColorMatcher.Pick (IcePalette[i][0], IcePalette[i][1], IcePalette[i][2]);
-	}
-	FRemapTable *remap = &stdremaps[STD_Ice];
-	remap->Remap[0] = 0;
-	remap->Palette[0] = 0;
-	for (i = 1; i < 256; ++i)
-	{
-		int r = GPalette.BaseColors[i].r;
-		int g = GPalette.BaseColors[i].g;
-		int b = GPalette.BaseColors[i].b;
-		int v = (r*77 + g*143 + b*37) >> 12;
-		remap->Remap[i] = IcePaletteRemap[v];
-		remap->Palette[i] = PalEntry(255, IcePalette[v][0], IcePalette[v][1], IcePalette[v][2]);
-	}
-
-	// The alphatexture translation. This is just a standard index as gray mapping.
-	remap = &stdremaps[STD_Gray];
-	remap->Remap[0] = 0;
-	remap->Palette[0] = 0;
-	for (i = 1; i < 256; i++)
-	{
-		remap->Remap[i] = i;
-		remap->Palette[i] = PalEntry(255, i, i, i);
-	}
-
-	// Palette to grayscale ramp. For internal use only, because the remap does not map to the palette.
-	remap = &stdremaps[STD_Grayscale];
-	remap->Remap[0] = 0;
-	remap->Palette[0] = 0;
-	for (i = 1; i < 256; i++)
-	{
-		int r = GPalette.BaseColors[i].r;
-		int g = GPalette.BaseColors[i].g;
-		int b = GPalette.BaseColors[i].b;
-		int v = (r * 77 + g * 143 + b * 37) >> 8;
-
-		remap->Remap[i] = v;
-		remap->Palette[i] = PalEntry(255, v, v, v);
-	}
-	palMgr.AddTranslation(TRANSLATION_Standard, stdremaps, 10);
+	stdremaps[7] = GPalette.IceMap; // this must also be inserted into the translation manager to be usable by sprites.
+	GPalette.AddTranslation(TRANSLATION_Standard, stdremaps, 8);
 
 }
 
@@ -645,9 +561,9 @@ void R_BuildPlayerTranslation (int player)
 	FRemapTable remaps[3];
 	R_CreatePlayerTranslation (h, s, v, colorset, &Skins[players[player].userinfo.GetSkin()], &remaps[0], &remaps[1], &remaps[2]);
 
-	palMgr.UpdateTranslation(TRANSLATION(TRANSLATION_Players, player), &remaps[0]);
-	palMgr.UpdateTranslation(TRANSLATION(TRANSLATION_PlayersExtra, player), &remaps[1]);
-	palMgr.UpdateTranslation(TRANSLATION(TRANSLATION_RainPillar, player), &remaps[2]);
+	GPalette.UpdateTranslation(TRANSLATION(TRANSLATION_Players, player), &remaps[0]);
+	GPalette.UpdateTranslation(TRANSLATION(TRANSLATION_PlayersExtra, player), &remaps[1]);
+	GPalette.UpdateTranslation(TRANSLATION(TRANSLATION_RainPillar, player), &remaps[2]);
 }
 
 //----------------------------------------------------------------------------
@@ -694,7 +610,7 @@ DEFINE_ACTION_FUNCTION(_Translation, SetPlayerTranslation)
 		FRemapTable remap;
 		R_GetPlayerTranslation(PlayerColor, GetColorSet(cls->Type, PlayerColorset),
 			&Skins[PlayerSkin], &remap);
-		palMgr.UpdateTranslation(TRANSLATION(tgroup, tnum), &remap);
+		GPalette.UpdateTranslation(TRANSLATION(tgroup, tnum), &remap);
 	}
 	ACTION_RETURN_BOOL(true);
 }
@@ -758,7 +674,7 @@ DEFINE_ACTION_FUNCTION(_Translation, GetID)
 void R_ParseTrnslate()
 {
 	customTranslationMap.Clear();
-	palMgr.ClearTranslationSlot(TRANSLATION_Custom);
+	GPalette.ClearTranslationSlot(TRANSLATION_Custom);
 
 	int lump;
 	int lastlump = 0;
@@ -781,7 +697,7 @@ void R_ParseTrnslate()
 					{
 						sc.ScriptError("Translation must be in the range [0,%d]", max);
 					}
-					NewTranslation = *palMgr.TranslationToTable(TRANSLATION(TRANSLATION_Standard, sc.Number));
+					NewTranslation = *GPalette.TranslationToTable(TRANSLATION(TRANSLATION_Standard, sc.Number));
 				}
 				else if (sc.TokenType == TK_Identifier)
 				{
@@ -790,7 +706,7 @@ void R_ParseTrnslate()
 					{
 						sc.ScriptError("Base translation '%s' not found in '%s'", sc.String, newtrans.GetChars());
 					}
-					NewTranslation = *palMgr.TranslationToTable(tnum);
+					NewTranslation = *GPalette.TranslationToTable(tnum);
 				}
 				else
 				{
@@ -829,7 +745,7 @@ void R_ParseTrnslate()
 				}
 			} while (sc.CheckToken(','));
 
-			int trans = palMgr.StoreTranslation(TRANSLATION_Custom, &NewTranslation);
+			int trans = GPalette.StoreTranslation(TRANSLATION_Custom, &NewTranslation);
 			customTranslationMap[newtrans] = trans;
 		}
 	}
@@ -856,7 +772,7 @@ DEFINE_ACTION_FUNCTION(_Translation, AddTranslation)
 	{
 		NewTranslation.Remap[i] = ColorMatcher.Pick(self->colors[i]);
 	}
-	int trans = palMgr.StoreTranslation(TRANSLATION_Custom, &NewTranslation);
+	int trans = GPalette.StoreTranslation(TRANSLATION_Custom, &NewTranslation);
 	ACTION_RETURN_INT(trans);
 }
 

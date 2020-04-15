@@ -73,7 +73,7 @@
 #include "a_sharedglobal.h"
 #include "r_utility.h"
 #include "p_spec.h"
-#include "serializer.h"
+#include "serializer_doom.h"
 #include "vm.h"
 #include "events.h"
 #include "i_music.h"
@@ -81,6 +81,7 @@
 #include "p_conversation.h"
 #include "p_effect.h"
 #include "stringtable.h"
+#include "c_buttons.h"
 
 #include "gi.h"
 
@@ -90,6 +91,7 @@
 #include "i_time.h"
 #include "p_maputl.h"
 #include "s_music.h"
+#include "texturemanager.h"
 
 void STAT_StartNewGame(const char *lev);
 void STAT_ChangeLevel(const char *newl, FLevelLocals *Level);
@@ -1053,7 +1055,7 @@ void G_DoLoadLevel(const FString &nextmapname, int position, bool autosave, bool
 	gameaction = ga_nothing;
 
 	// clear cmd building stuff
-	ResetButtonStates();
+	buttonMap.ResetButtonStates();
 
 	SendItemUse = nullptr;
 	SendItemDrop = nullptr;
@@ -1526,7 +1528,7 @@ int FLevelLocals::FinishTravel ()
 		pawn->flags2 &= ~MF2_BLASTED;
 		if (oldpawn != nullptr)
 		{
-			DObject::StaticPointerSubstitution (oldpawn, pawn);
+			StaticPointerSubstitution (oldpawn, pawn);
 			oldpawn->Destroy();
 		}
 		if (pawndup != NULL)

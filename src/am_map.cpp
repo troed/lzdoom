@@ -40,7 +40,7 @@
 #include "gi.h"
 #include "p_setup.h"
 #include "c_bind.h"
-#include "serializer.h"
+#include "serializer_doom.h"
 #include "r_sky.h"
 #include "sbar.h"
 #include "d_player.h"
@@ -65,6 +65,9 @@
 #include "g_levellocals.h"
 #include "actorinlines.h"
 #include "earcut.hpp"
+#include "c_buttons.h"
+#include "d_buttons.h"
+#include "texturemanager.h"
 
 
 //=============================================================================
@@ -1184,11 +1187,11 @@ void DAutomap::findMinMaxBoundaries ()
 void DAutomap::calcMinMaxMtoF()
 {
 	const double safe_frame = 1.0 - am_emptyspacemargin / 100.0;
-	double a = safe_frame * (SCREENWIDTH / max_w);
+	double a = safe_frame * (twod->GetWidth() / max_w);
 	double b = safe_frame * (StatusBar->GetTopOfStatusbar() / max_h);
 
 	min_scale_mtof = a < b ? a : b;
-	max_scale_mtof = SCREENHEIGHT / (2*PLAYERRADIUS);
+	max_scale_mtof = twod->GetHeight() / (2*PLAYERRADIUS);
 }
 
 //=============================================================================
@@ -1271,8 +1274,8 @@ void DAutomap::changeWindowLoc ()
 	incx = m_paninc.x;
 	incy = m_paninc.y;
 
-	oincx = incx = m_paninc.x * SCREENWIDTH / 320;
-	oincy = incy = m_paninc.y * SCREENHEIGHT / 200;
+	oincx = incx = m_paninc.x * twod->GetWidth() / 320;
+	oincy = incy = m_paninc.y * twod->GetHeight() / 200;
 	if (am_rotate == 1 || (am_rotate == 2 && viewactive))
 	{
 		rotate(&incx, &incy, players[consoleplayer].camera->Angles.Yaw - 90.);
@@ -1302,8 +1305,8 @@ void DAutomap::startDisplay()
 	m_paninc.x = m_paninc.y = 0;
 	mtof_zoommul = 1.;
 
-	m_w = FTOM(SCREENWIDTH);
-	m_h = FTOM(SCREENHEIGHT);
+	m_w = FTOM(twod->GetWidth());
+	m_h = FTOM(twod->GetHeight());
 
 	// find player to center on initially
 	if (!playeringame[pnum = consoleplayer])
@@ -1409,7 +1412,7 @@ void DAutomap::NewResolution()
 		minOutWindowScale();
 	else if (scale_mtof > max_scale_mtof)
 		maxOutWindowScale();
-	f_w = screen->GetWidth();
+	f_w = twod->GetWidth();
 	f_h = StatusBar->GetTopOfStatusbar();
 	activateNewScale();
 }
@@ -1429,7 +1432,7 @@ bool DAutomap::Responder (event_t *ev, bool last)
 		{
 			// check for am_pan* and ignore in follow mode
 			const char *defbind = AutomapBindings.GetBind(ev->data1);
-			if (!strnicmp(defbind, "+am_pan", 7)) return false;
+			if (defbind && !strnicmp(defbind, "+am_pan", 7)) return false;
 		}
 
 		bool res = C_DoKey(ev, &AutomapBindings, nullptr);
@@ -1438,7 +1441,7 @@ bool DAutomap::Responder (event_t *ev, bool last)
 			// If this is a release event we also need to check if it released a button in the main Bindings
 			// so that that button does not get stuck.
 			const char *defbind = Bindings.GetBind(ev->data1);
-			return (defbind[0] != '+'); // Let G_Responder handle button releases
+			return (!defbind || defbind[0] != '+'); // Let G_Responder handle button releases
 		}
 		return res;
 	}
@@ -1464,11 +1467,11 @@ void DAutomap::changeWindowScale ()
 	{
 		mtof_zoommul = M_ZOOMOUT / -am_zoomdir;
 	}
-	else if (Button_AM_ZoomIn.bDown)
+	else if (buttonMap.ButtonDown(Button_AM_ZoomIn))
 	{
 		mtof_zoommul = M_ZOOMIN;
 	}
-	else if (Button_AM_ZoomOut.bDown)
+	else if (buttonMap.ButtonDown(Button_AM_ZoomOut))
 	{
 		mtof_zoommul = M_ZOOMOUT;
 	}
@@ -1545,14 +1548,14 @@ void DAutomap::Ticker ()
 	else
 	{
 		m_paninc.x = m_paninc.y = 0;
-		if (Button_AM_PanLeft.bDown) m_paninc.x -= FTOM(F_PANINC);
-		if (Button_AM_PanRight.bDown) m_paninc.x += FTOM(F_PANINC);
-		if (Button_AM_PanUp.bDown) m_paninc.y += FTOM(F_PANINC);
-		if (Button_AM_PanDown.bDown) m_paninc.y -= FTOM(F_PANINC);
+		if (buttonMap.ButtonDown(Button_AM_PanLeft)) m_paninc.x -= FTOM(F_PANINC);
+		if (buttonMap.ButtonDown(Button_AM_PanRight)) m_paninc.x += FTOM(F_PANINC);
+		if (buttonMap.ButtonDown(Button_AM_PanUp)) m_paninc.y += FTOM(F_PANINC);
+		if (buttonMap.ButtonDown(Button_AM_PanDown)) m_paninc.y -= FTOM(F_PANINC);
 	}
 
 	// Change the zoom if necessary
-	if (Button_AM_ZoomIn.bDown || Button_AM_ZoomOut.bDown || am_zoomdir != 0)
+	if (buttonMap.ButtonDown(Button_AM_ZoomIn) || buttonMap.ButtonDown(Button_AM_ZoomOut) || am_zoomdir != 0)
 		changeWindowScale();
 
 	// Change x,y location
@@ -1581,7 +1584,7 @@ void DAutomap::clearFB (const AMColor &color)
 
 	if (!drawback)
 	{
-		screen->Clear (0, 0, f_w, f_h, -1, color.RGB);
+		ClearRect(twod, 0, 0, f_w, f_h, -1, color.RGB);
 	}
 	else
 	{
@@ -1597,7 +1600,7 @@ void DAutomap::clearFB (const AMColor &color)
 			{
 				for (x = int(mapxstart); x < f_w; x += pwidth)
 				{
-					screen->DrawTexture (backtex, x, y, DTA_ClipBottom, f_h, DTA_TopOffset, 0, DTA_LeftOffset, 0, TAG_DONE);
+					DrawTexture(twod, backtex, x, y, DTA_ClipBottom, f_h, DTA_TopOffset, 0, DTA_LeftOffset, 0, TAG_DONE);
 				}
 			}
 		}
@@ -1748,7 +1751,7 @@ void DAutomap::drawMline (mline_t *ml, const AMColor &color)
 
 	if (clipMline (ml, &fl))
 	{
-		screen->DrawLine (f_x + fl.a.x, f_y + fl.a.y, f_x + fl.b.x, f_y + fl.b.y, -1, color.RGB);
+		twod->AddLine (f_x + fl.a.x, f_y + fl.a.y, f_x + fl.b.x, f_y + fl.b.y, -1, -1, INT_MAX, INT_MAX, color.RGB);
 	}
 }
 
@@ -2129,7 +2132,25 @@ void DAutomap::drawSubsectors()
 			}
 			else indices.clear();
 
-			screen->FillSimplePoly(TexMan.GetTexture(maptex, true),
+			// Use an equation similar to player sprites to determine shade
+
+			// Convert a light level into an unbounded colormap index (shade). 
+			// Why the +12? I wish I knew, but experimentation indicates it
+			// is necessary in order to best reproduce Doom's original lighting.
+			double fadelevel;
+
+			if (vid_rendermode != 4 || primaryLevel->lightMode == ELightMode::Doom || primaryLevel->lightMode == ELightMode::ZDoomSoftware || primaryLevel->lightMode == ELightMode::DoomSoftware)
+			{
+				double map = (NUMCOLORMAPS * 2.) - ((floorlight + 12) * (NUMCOLORMAPS / 128.));
+				fadelevel = clamp((map - 12) / NUMCOLORMAPS, 0.0, 1.0);
+			}
+			else
+			{
+				// The hardware renderer's light modes 0, 1 and 4 use a linear light scale which must be used here as well. Otherwise the automap gets too dark.
+				fadelevel = 1. - clamp(floorlight, 0, 255) / 255.f;
+			}
+
+			twod->AddPoly(TexMan.GetTexture(maptex, true),
 				&points[0], points.Size(),
 				originx, originy,
 				scale / scalex,
@@ -2137,8 +2158,7 @@ void DAutomap::drawSubsectors()
 				rotation,
 				colormap,
 				flatcolor,
-				floorlight,
-				f_y + f_h,
+				fadelevel,
 				indices.data(), indices.size());
 		}
 	}
@@ -3014,7 +3034,7 @@ void DAutomap::DrawMarker (FTexture *tex, double x, double y, int yadjust,
 	{
 		rotatePoint (&x, &y);
 	}
-	screen->DrawTexture (tex, CXMTOF(x) + f_x, CYMTOF(y) + yadjust + f_y,
+	DrawTexture(twod, tex, CXMTOF(x) + f_x, CYMTOF(y) + yadjust + f_y,
 		DTA_DestWidthF, tex->GetDisplayWidthDouble() * CleanXfac * xscale,
 		DTA_DestHeightF, tex->GetDisplayHeightDouble() * CleanYfac * yscale,
 		DTA_ClipTop, f_y,
@@ -3066,7 +3086,7 @@ void DAutomap::drawMarks ()
 					rotatePoint (&x, &y);
 				}
 
-				screen->DrawText(font, am_markcolor, CXMTOF(x), CYMTOF(y), numstr, TAG_DONE);
+				DrawText(twod, font, am_markcolor, CXMTOF(x), CYMTOF(y), numstr, TAG_DONE);
 			}
 		}
 	}
@@ -3146,7 +3166,7 @@ void DAutomap::drawAuthorMarkers ()
 
 void DAutomap::drawCrosshair (const AMColor &color)
 {
-	screen->DrawPixel(f_w/2, (f_h+1)/2, -1, color.RGB);
+	twod->AddPixel(f_w/2, (f_h+1)/2, color.RGB);
 }
 
 //=============================================================================
@@ -3178,7 +3198,7 @@ void DAutomap::Drawer (int bottom)
 		// [RH] Set f_? here now to handle automap overlaying
 		// and view size adjustments.
 		f_x = f_y = 0;
-		f_w = screen->GetWidth ();
+		f_w = twod->GetWidth ();
 		f_h = bottom;
 
 		clearFB(AMColors[AMColors.Background]);
@@ -3337,12 +3357,12 @@ void AM_ToggleMap()
 	if (!automapactive)
 	{
 		// Reset AM buttons
-		Button_AM_PanLeft.Reset();
-		Button_AM_PanRight.Reset();
-		Button_AM_PanUp.Reset();
-		Button_AM_PanDown.Reset();
-		Button_AM_ZoomIn.Reset();
-		Button_AM_ZoomOut.Reset();
+		buttonMap.ClearButton(Button_AM_PanLeft);
+		buttonMap.ClearButton(Button_AM_PanRight);
+		buttonMap.ClearButton(Button_AM_PanUp);
+		buttonMap.ClearButton(Button_AM_PanDown);
+		buttonMap.ClearButton(Button_AM_ZoomIn);
+		buttonMap.ClearButton(Button_AM_ZoomOut);
 
 		primaryLevel->automap->startDisplay();
 		automapactive = true;

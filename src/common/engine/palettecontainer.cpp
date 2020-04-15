@@ -39,9 +39,11 @@
 #include "colormatcher.h"
 #include "templates.h"
 #include "palettecontainer.h"
+#include "files.h"
 
-#include "v_palette.h"
-
+PaletteContainer GPalette;
+FColorMatcher ColorMatcher;
+extern uint8_t IcePalette[16][3];
 
 //----------------------------------------------------------------------------
 //
@@ -51,14 +53,99 @@
 
 void PaletteContainer::Init(int numslots)	// This cannot be a constructor!!!
 {
+	if (numslots < 1) numslots = 1;
 	Clear();
+	HasGlobalBrightmap = false;
 	// Make sure that index 0 is always the identity translation.
 	FRemapTable remap;
 	remap.MakeIdentity();
 	remap.Inactive = true;
-	AddRemap(&remap);
 	TranslationTables.Resize(numslots);
+	StoreTranslation(0, &remap);	// make sure that translation ID 0 is the identity.
+	ColorMatcher.SetPalette(BaseColors);
 }
+
+void PaletteContainer::SetPalette(const uint8_t* colors, int transparent_index)
+{
+	// Initialize all tables to the original palette.
+	// At this point we do not care about the transparent index yet.
+	for (int i = 0; i < 256; i++, colors += 3)
+	{
+		uniqueRemaps[0]->Palette[i] = BaseColors[i] = RawColors[i] = PalEntry(255, colors[0], colors[1], colors[2]);
+		Remap[i] = i;
+	}
+
+	uniqueRemaps[0]->MakeIdentity();	// update the identity remap.
+
+	// If the palette already has a transparent index, clear that color now
+	if (transparent_index >= 0 && transparent_index <= 255)
+	{
+		BaseColors[transparent_index] = 0;
+		uniqueRemaps[0]->Palette[transparent_index] = 0;
+	}
+
+	uniqueRemaps[0]->crc32 = CalcCRC32((uint8_t*)uniqueRemaps[0]->Palette, sizeof(uniqueRemaps[0]->Palette));
+
+
+	// Find white and black from the original palette so that they can be
+	// used to make an educated guess of the translucency % for a 
+	// translucency map.
+	WhiteIndex = BestColor((uint32_t*)RawColors, 255, 255, 255, 0, 255);
+	BlackIndex = BestColor((uint32_t*)RawColors, 0, 0, 0, 0, 255);
+
+	// The alphatexture translation. This is just a standard index as gray mapping and has no association with the palette.
+	auto remap = &GrayRamp;
+	remap->Remap[0] = 0;
+	remap->Palette[0] = 0;
+	for (int i = 1; i < 256; i++)
+	{
+		remap->Remap[i] = i;
+		remap->Palette[i] = PalEntry(255, i, i, i);
+	}
+
+	// Palette to grayscale ramp. For internal use only, because the remap does not map to the palette.
+	remap = &GrayscaleMap;
+	remap->Remap[0] = 0;
+	remap->Palette[0] = 0;
+	for (int i = 1; i < 256; i++)
+	{
+		int r = GPalette.BaseColors[i].r;
+		int g = GPalette.BaseColors[i].g;
+		int b = GPalette.BaseColors[i].b;
+		int v = (r * 77 + g * 143 + b * 37) >> 8;
+
+		remap->Remap[i] = v;
+		remap->Palette[i] = PalEntry(255, v, v, v);
+	}
+
+	for (int i = 0; i < 256; ++i)
+	{
+		GrayMap[i] = ColorMatcher.Pick(i, i, i);
+	}
+
+	// Create the ice translation table, based on Hexen's. Alas, the standard
+	// Doom palette has no good substitutes for these bluish-tinted grays, so
+	// they will just look gray unless you use a different PLAYPAL with Doom.
+
+	uint8_t IcePaletteRemap[16];
+	for (int i = 0; i < 16; ++i)
+	{
+		IcePaletteRemap[i] = ColorMatcher.Pick(IcePalette[i][0], IcePalette[i][1], IcePalette[i][2]);
+	}
+	remap = &IceMap;
+	remap->Remap[0] = 0;
+	remap->Palette[0] = 0;
+	for (int i = 1; i < 256; ++i)
+	{
+		int r = GPalette.BaseColors[i].r;
+		int g = GPalette.BaseColors[i].g;
+		int b = GPalette.BaseColors[i].b;
+		int v = (r * 77 + g * 143 + b * 37) >> 12;
+		remap->Remap[i] = IcePaletteRemap[v];
+		remap->Palette[i] = PalEntry(255, IcePalette[v][0], IcePalette[v][1], IcePalette[v][2]);
+	}
+}
+
 
 //----------------------------------------------------------------------------
 //
@@ -71,6 +158,35 @@ void PaletteContainer::Clear()
 	remapArena.FreeAllBlocks();
 	uniqueRemaps.Reset();
 	TranslationTables.Reset();
+}
+
+//===========================================================================
+//
+//
+//
+//===========================================================================
+
+int PaletteContainer::DetermineTranslucency(FileReader& tranmap)
+{
+	uint8_t index;
+	PalEntry newcolor;
+	PalEntry newcolor2;
+
+	if (!tranmap.isOpen()) return 255;
+	tranmap.Seek(GPalette.BlackIndex * 256 + GPalette.WhiteIndex, FileReader::SeekSet);
+	tranmap.Read(&index, 1);
+
+	newcolor = GPalette.BaseColors[GPalette.Remap[index]];
+
+	tranmap.Seek(GPalette.WhiteIndex * 256 + GPalette.BlackIndex, FileReader::SeekSet);
+	tranmap.Read(&index, 1);
+	newcolor2 = GPalette.BaseColors[GPalette.Remap[index]];
+	if (newcolor2.r == 255)	// if black on white results in white it's either
+							// fully transparent or additive
+	{
+		return -newcolor.r;
+	}
+	return newcolor.r;
 }
 
 //----------------------------------------------------------------------------
@@ -87,7 +203,7 @@ FRemapTable* PaletteContainer::AddRemap(FRemapTable* remap)
 
 	for (auto uremap : uniqueRemaps)
 	{
-		if (uremap->crc32 == remap->crc32 && uremap->NumEntries == remap->NumEntries && *uremap == *remap)
+		if (uremap->crc32 == remap->crc32 && uremap->NumEntries == remap->NumEntries && *uremap == *remap && remap->Inactive == uremap->Inactive)
 			return uremap;
 	}
 	auto newremap = (FRemapTable*)remapArena.Alloc(sizeof(FRemapTable));
@@ -134,7 +250,7 @@ int PaletteContainer::AddTranslation(int slot, FRemapTable* remap, int count)
 
 void PaletteContainer::CopyTranslation(int dest, int src)
 {
-	TranslationTables[GetTranslationType(dest)][GetTranslationType(src)] = TranslationToTable(src);
+	TranslationTables[GetTranslationType(dest)].SetVal(GetTranslationIndex(dest), TranslationToTable(src));
 }
 
 //----------------------------------------------------------------------------
@@ -148,9 +264,9 @@ FRemapTable *PaletteContainer::TranslationToTable(int translation)
 	unsigned int type = GetTranslationType(translation);
 	unsigned int index = GetTranslationIndex(translation);
 
-	if (type <= 0 || type >= TranslationTables.Size() || index >= NumTranslations(type))
+	if (type < 0 || type >= TranslationTables.Size() || index >= NumTranslations(type))
 	{
-		return NULL;
+		return uniqueRemaps[0]; // this is the identity table.
 	}
 	return GetTranslation(type, index);
 }
@@ -168,7 +284,7 @@ int PaletteContainer::StoreTranslation(int slot, FRemapTable *remap)
 	auto size = NumTranslations(slot);
 	for (i = 0; i < size; i++)
 	{
-		if (*remap == *palMgr.TranslationToTable(TRANSLATION(slot, i)))
+		if (*remap == *TranslationToTable(TRANSLATION(slot, i)))
 		{
 			// A duplicate of this translation already exists
 			return TRANSLATION(slot, i);
@@ -179,6 +295,39 @@ int PaletteContainer::StoreTranslation(int slot, FRemapTable *remap)
 		I_Error("Too many DECORATE translations");
 	}
 	return AddTranslation(slot, remap);
+}
+
+//===========================================================================
+// 
+// Examines the colormap to see if some of the colors have to be
+// considered fullbright all the time.
+//
+//===========================================================================
+
+void PaletteContainer::GenerateGlobalBrightmapFromColormap(const uint8_t *cmapdata, int numlevels)
+{
+	GlobalBrightmap.MakeIdentity();
+	memset(GlobalBrightmap.Remap, WhiteIndex, 256);
+	for (int i = 0; i < 256; i++) GlobalBrightmap.Palette[i] = PalEntry(255, 255, 255, 255);
+	for (int j = 0; j < numlevels; j++)
+	{
+		for (int i = 0; i < 256; i++)
+		{
+			// the palette comparison should be for ==0 but that gives false positives with Heretic
+			// and Hexen.
+			uint8_t mappedcolor = cmapdata[i];	// consider colormaps which already remap the base level.
+			if (cmapdata[i + j * 256] != mappedcolor || (RawColors[mappedcolor].r < 10 && RawColors[mappedcolor].g < 10 && RawColors[mappedcolor].b < 10))
+			{
+				GlobalBrightmap.Remap[i] = BlackIndex;
+				GlobalBrightmap.Palette[i] = PalEntry(255, 0, 0, 0);
+			}
+		}
+	}
+	for (int i = 0; i < 256; i++)
+	{
+		HasGlobalBrightmap |= GlobalBrightmap.Remap[i] == WhiteIndex;
+		if (GlobalBrightmap.Remap[i] == WhiteIndex) DPrintf(DMSG_NOTIFY, "Marked color %d as fullbright\n", i);
+	}
 }
 
 //----------------------------------------------------------------------------
@@ -209,6 +358,21 @@ static bool IndexOutOfRange(const int start1, const int end1, const int start2, 
 {
 	const bool outOfRange = IndexOutOfRange(start1, end1);
 	return IndexOutOfRange(start2, end2) || outOfRange;
+}
+
+//----------------------------------------------------------------------------
+//
+//
+//
+//----------------------------------------------------------------------------
+
+bool FRemapTable::operator==(const FRemapTable& o)
+{
+	// Two translations are identical when they have the same amount of colors
+	// and the palette values for both are identical.
+	if (&o == this) return true;
+	if (o.NumEntries != NumEntries) return false;
+	return !memcmp(o.Palette, Palette, NumEntries * sizeof(*Palette));
 }
 
 //----------------------------------------------------------------------------
@@ -633,10 +797,10 @@ bool FRemapTable::AddToTranslation(const char *range)
 //
 //----------------------------------------------------------------------------
 
-bool FRemapTable::AddColors(int start, int count, const uint8_t*colors)
+bool FRemapTable::AddColors(int start, int count, const uint8_t*colors, int trans_color)
 {
 	int end = start + count;
-	if (IndexOutOfRange(start, end))
+	if (IndexOutOfRange(start, end-1))
 	{
 		return false;
 	}
@@ -649,10 +813,11 @@ bool FRemapTable::AddColors(int start, int count, const uint8_t*colors)
 		colors += 3;
 
 		int j = GPalette.Remap[i];
-		Palette[j] = PalEntry(j == 0 ? 0 : 255, br, bg, bb);
+		Palette[j] = PalEntry(j == trans_color ? 0 : 255, br, bg, bb);
 		Remap[j] = ColorMatcher.Pick(Palette[j]);
 	}
 	return true;
 
 }
+
 

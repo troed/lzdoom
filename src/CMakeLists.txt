@@ -214,24 +214,17 @@ endif()
 
 # Decide on SSE setup
 
-set( SSE_MATTERS NO )
-
-# with global use of SSE 2 we do not need special handling for selected files
-if (NOT ZDOOM_USE_SSE2)
-	# SSE only matters on 32-bit targets. We check compiler flags to know if we can do it.
-	if( CMAKE_SIZEOF_VOID_P MATCHES "4" AND NOT CMAKE_OSX_ARCHITECTURES MATCHES ppc )
+# SSE only matters on 32-bit targets. We check compiler flags to know if we can do it.
+if( CMAKE_SIZEOF_VOID_P MATCHES "4" AND NOT CMAKE_OSX_ARCHITECTURES MATCHES ppc )
 		CHECK_CXX_COMPILER_FLAG( "-msse2 -mfpmath=sse" CAN_DO_MFPMATH )
 		CHECK_CXX_COMPILER_FLAG( -arch:SSE2 CAN_DO_ARCHSSE2 )
 		if( CAN_DO_MFPMATH )
 			set( SSE1_ENABLE "-msse -mfpmath=sse" )
 			set( SSE2_ENABLE "-msse2 -mfpmath=sse" )
-			set( SSE_MATTERS YES )
 		elseif( CAN_DO_ARCHSSE2 )
 			set( SSE1_ENABLE -arch:SSE )
 			set( SSE2_ENABLE -arch:SSE2 )
-			set( SSE_MATTERS YES )
 		endif()
-	endif()
 endif()
 
 if( X64 )
@@ -538,17 +531,17 @@ if( HAVE_MMX )
 	add_definitions( -DHAVE_MMX=1 )
 
 	set( SYSTEM_SOURCES ${SYSTEM_SOURCES}
-		gamedata/textures/hires/hqnx_asm/hq2x_asm.cpp
-		gamedata/textures/hires/hqnx_asm/hq3x_asm.cpp
-		gamedata/textures/hires/hqnx_asm/hq4x_asm.cpp
-		gamedata/textures/hires/hqnx_asm/hqnx_asm_Image.cpp)
+		common/textures/hires/hqnx_asm/hq2x_asm.cpp
+		common/textures/hires/hqnx_asm/hq3x_asm.cpp
+		common/textures/hires/hqnx_asm/hq4x_asm.cpp
+		common/textures/hires/hqnx_asm/hqnx_asm_Image.cpp)
 
 	if( ZD_CMAKE_COMPILER_IS_GNUCXX_COMPATIBLE )
 		set_source_files_properties(
-			gamedata/textures/hires/hqnx_asm/hq2x_asm.cpp
-			gamedata/textures/hires/hqnx_asm/hq3x_asm.cpp
-			gamedata/textures/hires/hqnx_asm/hq4x_asm.cpp
-			gamedata/textures/hires/hqresize.cpp
+			common/textures/hires/hqnx_asm/hq2x_asm.cpp
+			common/textures/hires/hqnx_asm/hq3x_asm.cpp
+			common/textures/hires/hqnx_asm/hq4x_asm.cpp
+			common/textures/hires/hqresize.cpp
 			PROPERTIES COMPILE_FLAGS "-mmmx" )
 	endif( ZD_CMAKE_COMPILER_IS_GNUCXX_COMPATIBLE )
 endif( HAVE_MMX )
@@ -575,8 +568,8 @@ add_custom_command( OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/xlat_parser.c ${CMAKE_CUR
 	DEPENDS lemon ${CMAKE_CURRENT_SOURCE_DIR}/gamedata/xlat/xlat_parser.y )
 
 add_custom_command( OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/zcc-parse.c ${CMAKE_CURRENT_BINARY_DIR}/zcc-parse.h
-	COMMAND lemon -C${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/scripting/zscript/zcc-parse.lemon
-	DEPENDS lemon ${CMAKE_CURRENT_SOURCE_DIR}/scripting/zscript/zcc-parse.lemon )
+	COMMAND lemon -C${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/common/scripting/frontend/zcc-parse.lemon
+	DEPENDS lemon ${CMAKE_CURRENT_SOURCE_DIR}/common/scripting/frontend/zcc-parse.lemon )
 
 add_custom_command( OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/sc_man_scanner.h
 	COMMAND re2c --no-generation-date -s -o ${CMAKE_CURRENT_BINARY_DIR}/sc_man_scanner.h ${CMAKE_CURRENT_SOURCE_DIR}/common/engine/sc_man_scanner.re
@@ -602,37 +595,47 @@ file( GLOB HEADER_FILES
 	gamedata/*.h
 	gamedata/resourcefiles/*.h
 	gamedata/fonts/*.h
-	gamedata/textures/*.h
-	gamedata/textures/hires/hqnx/*.h
-	gamedata/textures/hires/hqnx_asm/*.h
-	gamedata/textures/hires/xbr/*.h
 	gamedata/xlat/*.h
 	intermission/*.h
 	maploader/*.h
 	menu/*.h
 	sound/*.h
 	sound/backend/*.h*
-	sound/music/*.h*
 	posix/*.h
 	posix/cocoa/*.h
 	posix/sdl/*.h
 	win32/*.h
 	r_data/*.h
 	r_data/models/*.h
+	common/audio/sound/thirdparty/*.h
+	common/audio/sound/*.h
+	common/audio/music/*.h*
+	common/2d/*.h
+	common/console/*.h
 	common/utility/*.h
 	common/engine/*.h
+	common/fonts/*.h
+	common/objects/*.h
 	common/filesystem/*.h
+	common/textures/*.h
+	common/textures/hires/hqnx/*.h
+	common/textures/hires/hqnx_asm/*.h
+	common/textures/hires/xbr/*.h
 	common/thirdparty/*.h
 	common/thirdparty/rapidjson/*.h
-	common/thirdparty/math./*h
+	common/thirdparty/math/*h
+	common/scripting/core/*h
+	common/scripting/vm/*h
+	common/scripting/jit/*h
+	common/scripting/interface/*.h
+	common/scripting/backend/*.h
+	common/scripting/frontend/*.h
 	utility/*.h
 	scripting/*.h
 	scripting/backend/*.h
 	scripting/decorate/*.h
 	scripting/zscript/*.h
-	scripting/vm/*.h
 	sound/midisources/*.h
-	sound/thirdparty/*.h
 	rendering/*.h
 	rendering/2d/*.h
 	rendering/swrenderer/*.h
@@ -680,7 +683,7 @@ file( GLOB GL_HEADER_FILES
 	rendering/gl/shaders/*.h
 	rendering/gl/system/*.h
 	rendering/gl/textures/*.h
-	rendering/gl_load/*.h
+	common/rendering/gl_load/*.h
 )
 endif()
 
@@ -754,21 +757,21 @@ set( NOT_COMPILED_SOURCE_FILES
 	gamedata/xlat/xlat_parser.y
 	xlat_parser.c
 	xlat_parser.h
-	scripting/zscript/zcc-parse.lemon
+	common/scripting/frontend/zcc-parse.lemon
 	zcc-parse.c
 	zcc-parse.h
 	win32/zdoom.natvis
 )
 
 set( VM_JIT_SOURCES
-	scripting/vm/jit.cpp
-	scripting/vm/jit_runtime.cpp
-	scripting/vm/jit_call.cpp
-	scripting/vm/jit_flow.cpp
-	scripting/vm/jit_load.cpp
-	scripting/vm/jit_math.cpp
-	scripting/vm/jit_move.cpp
-	scripting/vm/jit_store.cpp
+	common/scripting/jit/jit.cpp
+	common/scripting/jit/jit_runtime.cpp
+	common/scripting/jit/jit_call.cpp
+	common/scripting/jit/jit_flow.cpp
+	common/scripting/jit/jit_load.cpp
+	common/scripting/jit/jit_math.cpp
+	common/scripting/jit/jit_move.cpp
+	common/scripting/jit/jit_store.cpp
 )
 
 # This is disabled for now because I cannot find a way to give the .pch file a different name.
@@ -780,14 +783,12 @@ set( FASTMATH_SOURCES
 	rendering/swrenderer/r_all.cpp
 	rendering/swrenderer/r_swscene.cpp
 	rendering/polyrenderer/poly_all.cpp
-	sound/music/music_midi_base.cpp
-	sound/backend/oalsound.cpp
-	gamedata/textures/hires/hqnx/init.cpp
-	gamedata/textures/hires/hqnx/hq2x.cpp
-	gamedata/textures/hires/hqnx/hq3x.cpp
-	gamedata/textures/hires/hqnx/hq4x.cpp
-	gamedata/textures/hires/xbr/xbrz.cpp
-	gamedata/textures/hires/xbr/xbrz_old.cpp
+	common/textures/hires/hqnx/init.cpp
+	common/textures/hires/hqnx/hq2x.cpp
+	common/textures/hires/hqnx/hq3x.cpp
+	common/textures/hires/hqnx/hq4x.cpp
+	common/textures/hires/xbr/xbrz.cpp
+	common/textures/hires/xbr/xbrz_old.cpp
 	rendering/hwrenderer/postprocessing/hw_postprocess_cvars.cpp
 	rendering/hwrenderer/postprocessing/hw_postprocessshader.cpp
 	rendering/hwrenderer/dynlights/hw_dynlightdata.cpp
@@ -846,7 +847,7 @@ set (OPENGL_SOURCES
 	rendering/gl/renderer/gl_scene.cpp
 	rendering/gl/shaders/gl_shader.cpp
 	rendering/gl/shaders/gl_shaderprogram.cpp
-	rendering/gl_load/gl_interface.cpp
+	common/rendering/gl_load/gl_interface.cpp
 	rendering/gl/system/gl_framebuffer.cpp
 	rendering/gl/system/gl_debug.cpp
 	rendering/gl/system/gl_buffers.cpp
@@ -855,7 +856,7 @@ set (OPENGL_SOURCES
 )
 
 if (HAVE_OPENGL)
-	set (FASTMATH_SOURCES ${FASTMATH_SOURCES} rendering/gl_load/gl_load.c)
+	set (FASTMATH_SOURCES ${FASTMATH_SOURCES} common/rendering/gl_load/gl_load.c)
 endif()
 
 set (POLYBACKEND_SOURCES
@@ -874,14 +875,8 @@ set (PCH_SOURCES
 	playsim/bots/b_move.cpp
 	playsim/bots/b_think.cpp
 	bbannouncer.cpp
-	console/c_commandline.cpp
-	console/c_bind.cpp
 	console/c_cmds.cpp
 	console/c_console.cpp
-	console/c_consolebuffer.cpp
-	console/c_cvars.cpp
-	console/c_dispatch.cpp
-	console/c_expr.cpp
 	console/c_functions.cpp
 	ct_chat.cpp
 	d_iwad.cpp
@@ -890,9 +885,6 @@ set (PCH_SOURCES
 	d_net.cpp
 	d_netinfo.cpp
 	d_protocol.cpp
-	dobject.cpp
-	dobjgc.cpp
-	dobjtype.cpp
 	doomstat.cpp
 	g_cvars.cpp
 	g_dumpinfo.cpp
@@ -930,13 +922,10 @@ set (PCH_SOURCES
 	rendering/r_sky.cpp
 	rendering/r_videoscale.cpp
 	sound/s_advsound.cpp
-	sound/s_environment.cpp
 	sound/s_reverbedit.cpp
 	sound/s_sndseq.cpp
 	sound/s_doomsound.cpp
-	sound/s_sound.cpp
-	sound/s_music.cpp
-	serializer.cpp
+	serializer_doom.cpp
 	scriptutil.cpp
 	st_stuff.cpp
 	rendering/v_framebuffer.cpp
@@ -949,7 +938,6 @@ set (PCH_SOURCES
 	gamedata/g_mapinfo.cpp
 	gamedata/g_skill.cpp
 	gamedata/gi.cpp
-	gamedata/stringtable.cpp
 	gamedata/umapinfo.cpp
 	gamedata/d_dehacked.cpp
 	gamedata/g_doomedmap.cpp
@@ -998,10 +986,7 @@ set (PCH_SOURCES
 	g_statusbar/sbar_mugshot.cpp
 	g_statusbar/shared_sbar.cpp
 	rendering/2d/f_wipe.cpp
-	rendering/2d/v_2ddrawer.cpp
-	rendering/2d/v_drawtext.cpp
 	rendering/2d/v_blend.cpp
-	rendering/2d/v_draw.cpp
 	rendering/hwrenderer/data/hw_vertexbuilder.cpp
 	rendering/hwrenderer/data/flatvertices.cpp
 	rendering/hwrenderer/data/hw_viewpointbuffer.cpp
@@ -1015,7 +1000,6 @@ set (PCH_SOURCES
 	rendering/hwrenderer/postprocessing/hw_postprocess.cpp
 	rendering/hwrenderer/postprocessing/hw_postprocess_cvars.cpp
 	rendering/hwrenderer/postprocessing/hw_postprocessshader.cpp
-	rendering/hwrenderer/textures/hw_material.cpp
 	rendering/hwrenderer/textures/hw_precache.cpp
 	rendering/hwrenderer/utility/hw_clock.cpp
 	rendering/hwrenderer/utility/hw_cvars.cpp
@@ -1045,40 +1029,7 @@ set (PCH_SOURCES
 	menu/resolutionmenu.cpp
 	gamedata/textures/animations.cpp
 	gamedata/textures/anim_switches.cpp
-	gamedata/textures/bitmap.cpp
-	gamedata/textures/texture.cpp
-	gamedata/textures/image.cpp
-	gamedata/textures/imagetexture.cpp
-	gamedata/textures/texturemanager.cpp
-	gamedata/textures/multipatchtexturebuilder.cpp
-	gamedata/textures/skyboxtexture.cpp
-	gamedata/textures/formats/automaptexture.cpp
-	gamedata/textures/formats/brightmaptexture.cpp
-	gamedata/textures/formats/buildtexture.cpp
-	gamedata/textures/formats/canvastexture.cpp
-	gamedata/textures/formats/ddstexture.cpp
-	gamedata/textures/formats/flattexture.cpp
-	gamedata/textures/formats/fontchars.cpp
-	gamedata/textures/formats/imgztexture.cpp
-	gamedata/textures/formats/jpegtexture.cpp
-	gamedata/textures/formats/md5check.cpp
-	gamedata/textures/formats/multipatchtexture.cpp
-	gamedata/textures/formats/patchtexture.cpp
-	gamedata/textures/formats/pcxtexture.cpp
-	gamedata/textures/formats/pngtexture.cpp
-	gamedata/textures/formats/rawpagetexture.cpp
-	gamedata/textures/formats/emptytexture.cpp
-	gamedata/textures/formats/shadertexture.cpp
-	gamedata/textures/formats/tgatexture.cpp
-	gamedata/textures/formats/stbtexture.cpp
-	gamedata/textures/hires/hqresize.cpp
-	gamedata/fonts/singlelumpfont.cpp
-	gamedata/fonts/singlepicfont.cpp
-	gamedata/fonts/specialfont.cpp
-	gamedata/fonts/font.cpp
-	gamedata/fonts/hexfont.cpp
-	gamedata/fonts/v_font.cpp
-	gamedata/fonts/v_text.cpp	
+	gamedata/textures/buildloader.cpp
 	gamedata/p_xlat.cpp
 	gamedata/xlat/parse_xlat.cpp
 	gamedata/xlat/parsecontext.cpp
@@ -1101,7 +1052,6 @@ set (PCH_SOURCES
 	r_data/sprites.cpp
 	r_data/portalgroups.cpp
 	r_data/voxels.cpp
-	r_data/renderstyle.cpp
 	r_data/r_canvastexture.cpp
 	r_data/r_interpolate.cpp
 	r_data/r_vanillatrans.cpp
@@ -1111,38 +1061,80 @@ set (PCH_SOURCES
 	r_data/models/models_voxel.cpp
 	r_data/models/models_ue1.cpp
 	r_data/models/models_obj.cpp
-	scripting/dictionary.cpp
-	scripting/symbols.cpp
 	scripting/vmiterators.cpp
 	scripting/vmthunks.cpp
 	scripting/vmthunks_actors.cpp
-	scripting/types.cpp
 	scripting/thingdef.cpp
 	scripting/thingdef_data.cpp
 	scripting/thingdef_properties.cpp
-	scripting/backend/codegen.cpp
-	scripting/backend/scopebarrier.cpp
-	scripting/backend/dynarrays.cpp
-	scripting/backend/vmbuilder.cpp
-	scripting/backend/vmdisasm.cpp
+	scripting/backend/codegen_doom.cpp
 	scripting/decorate/olddecorations.cpp
 	scripting/decorate/thingdef_exp.cpp
 	scripting/decorate/thingdef_parse.cpp
 	scripting/decorate/thingdef_states.cpp
-	scripting/vm/vmexec.cpp
-	scripting/vm/vmframe.cpp
-	scripting/zscript/ast.cpp
-	scripting/zscript/zcc_compile.cpp
-	scripting/zscript/zcc_parser.cpp
-	sound/music/i_music.cpp
-	sound/music/i_soundfont.cpp
-	sound/backend/i_sound.cpp
-	sound/music/music_config.cpp
+	scripting/zscript/zcc_compile_doom.cpp
 	rendering/swrenderer/textures/r_swtexture.cpp
 	rendering/swrenderer/textures/warptexture.cpp
 	rendering/swrenderer/textures/swcanvastexture.cpp
 	events.cpp
+	common/audio/sound/i_sound.cpp
+	common/audio/sound/oalsound.cpp
+	common/audio/sound/s_environment.cpp
+	common/audio/sound/s_sound.cpp
+	common/audio/music/music_midi_base.cpp
+	common/audio/music/music.cpp
+	common/audio/music/i_music.cpp
+	common/audio/music/i_soundfont.cpp
+	common/audio/music/music_config.cpp
+	common/2d/v_2ddrawer.cpp
+	common/2d/v_drawtext.cpp
+	common/2d/v_draw.cpp
 	common/thirdparty/sfmt/SFMT.cpp
+	common/fonts/singlelumpfont.cpp
+	common/fonts/singlepicfont.cpp
+	common/fonts/specialfont.cpp
+	common/fonts/font.cpp
+	common/fonts/hexfont.cpp
+	common/fonts/v_font.cpp
+	common/fonts/v_text.cpp	
+	common/textures/hw_ihwtexture.cpp
+	common/textures/hw_material.cpp
+	common/textures/bitmap.cpp
+	common/textures/m_png.cpp
+	common/textures/texture.cpp
+	common/textures/image.cpp
+	common/textures/imagetexture.cpp
+	common/textures/texturemanager.cpp
+	common/textures/multipatchtexturebuilder.cpp
+	common/textures/skyboxtexture.cpp
+	common/textures/animtexture.cpp
+	common/textures/formats/automaptexture.cpp
+	common/textures/formats/brightmaptexture.cpp
+	common/textures/formats/buildtexture.cpp
+	common/textures/formats/ddstexture.cpp
+	common/textures/formats/flattexture.cpp
+	common/textures/formats/fontchars.cpp
+	common/textures/formats/imgztexture.cpp
+	common/textures/formats/jpegtexture.cpp
+	common/textures/formats/md5check.cpp
+	common/textures/formats/multipatchtexture.cpp
+	common/textures/formats/patchtexture.cpp
+	common/textures/formats/pcxtexture.cpp
+	common/textures/formats/pngtexture.cpp
+	common/textures/formats/rawpagetexture.cpp
+	common/textures/formats/emptytexture.cpp
+	common/textures/formats/shadertexture.cpp
+	common/textures/formats/tgatexture.cpp
+	common/textures/formats/stbtexture.cpp
+	common/textures/hires/hqresize.cpp
+	common/console/c_commandline.cpp
+	common/console/c_buttons.cpp
+	common/console/c_bind.cpp
+	common/console/c_enginecmds.cpp
+	common/console/c_consolebuffer.cpp
+	common/console/c_cvars.cpp
+	common/console/c_dispatch.cpp
+	common/console/c_expr.cpp
 	common/utility/engineerrors.cpp
 	common/utility/i_module.cpp
 	common/utility/m_alloc.cpp
@@ -1172,18 +1164,41 @@ set (PCH_SOURCES
 	common/filesystem/file_whres.cpp
 	common/filesystem/file_directory.cpp
 	common/filesystem/resourcefile.cpp
+	common/engine/stats.cpp
 	common/engine/sc_man.cpp
 	common/engine/palettecontainer.cpp
+	common/engine/stringtable.cpp
+	common/engine/i_interface.cpp
+	common/engine/renderstyle.cpp
+	common/engine/v_colortables.cpp
+	common/engine/serializer.cpp
+	common/engine/m_random.cpp
+	common/objects/dobject.cpp
+	common/objects/dobjgc.cpp
+	common/objects/dobjtype.cpp
+	common/scripting/core/dictionary.cpp
+	common/scripting/core/dynarrays.cpp
+	common/scripting/core/symbols.cpp
+	common/scripting/core/types.cpp
+	common/scripting/core/scopebarrier.cpp
+	common/scripting/core/vmdisasm.cpp
+	common/scripting/core/imports.cpp
+	common/scripting/vm/vmexec.cpp
+	common/scripting/vm/vmframe.cpp
+	common/scripting/interface/stringformat.cpp
+	#common/scripting/interface/exports.cpp
+	common/scripting/frontend/ast.cpp
+	common/scripting/frontend/zcc_compile.cpp
+	common/scripting/frontend/zcc_parser.cpp
+	common/scripting/backend/vmbuilder.cpp
+	common/scripting/backend/codegen.cpp
 	
-	utility/m_png.cpp
-	utility/m_random.cpp
 	utility/nodebuilder/nodebuild.cpp
 	utility/nodebuilder/nodebuild_classify_nosse2.cpp
 	utility/nodebuilder/nodebuild_events.cpp
 	utility/nodebuilder/nodebuild_extract.cpp
 	utility/nodebuilder/nodebuild_gl.cpp
 	utility/nodebuilder/nodebuild_utility.cpp
-	utility/stats.cpp
 	utility/m_bbox.cpp
 	utility/v_collection.cpp
 )
@@ -1258,10 +1273,28 @@ endif()
 target_link_libraries( zdoom ${ZDOOM_LIBS} gdtoa lzma ${ZMUSIC_LIBRARIES} )
 
 include_directories( .
+	common/audio/sound
+	common/audio/music
+	common/2d
 	common/thirdparty
+	common/textures
+	common/textures/formats
+	common/textures/hires
+	common/textures
 	common/filesystem
 	common/utility
+	common/console
 	common/engine
+	common/fonts
+	common/objects
+	common/rendering
+	common/rendering/gl_load
+	common/scripting/vm
+	common/scripting/jit
+	common/scripting/core
+	common/scripting/interface
+	common/scripting/frontend
+	common/scripting/backend
 	g_statusbar
 	console
 	playsim
@@ -1274,13 +1307,12 @@ include_directories( .
 	rendering/2d
 	r_data
 	sound
-	sound/music
 	sound/backend
 	xlat
 	utility
 	utility/nodebuilder
 	scripting
-	scripting/vm
+	scripting/zscript
 	rendering
 	rendering/vulkan/thirdparty
 	../libraries/gdtoa
@@ -1385,17 +1417,8 @@ install(TARGETS zdoom
 		COMPONENT "Game executable")
 
 source_group("Audio Files" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/sound/.+")
-source_group("Audio Files\\Backend" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/sound/backend/.+")
-source_group("Audio Files\\Music formats" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/sound/musicformats/.+")
-source_group("Audio Files\\Third-party" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/sound/thirdparty/.+")
 source_group("Game Data" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/gamedata/.+")
 source_group("Game Data\\Fonts" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/gamedata/fonts/.+")
-source_group("Game Data\\Textures" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/gamedata/textures/.+")
-source_group("Game Data\\Textures\\Hires" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/gamedata/textures/hires/.+")
-source_group("Game Data\\Textures\\Hires\\HQ Resize" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/gamedata/textures/hires/hqnx/.+")
-source_group("Game Data\\Textures\\Hires\\HQ Resize MMX version" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/gamedata/textures/hires/hqnx_asm/.+")
-source_group("Game Data\\Textures\\Hires\\XBRZ" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/gamedata/textures/hires/xbr/.+")
-source_group("Game Data\\Textures\\Formats" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/gamedata/textures/formats/.+")
 source_group("Intermission" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/intermission/.+")
 source_group("Map Loader" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/maploader/.+")
 source_group("Menu" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/menu/.+")
@@ -1427,7 +1450,6 @@ source_group("Rendering\\Vulkan Renderer\\Third Party\\Volk" REGULAR_EXPRESSION 
 source_group("Rendering\\Vulkan Renderer\\Third Party\\Vk_Mem_Alloc" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/vulkan/thirdparty/vk_mem_alloc.+")
 endif()
 if ( HAVE_OPENGL )
-source_group("Rendering\\OpenGL Loader" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/gl_load/.+")
 source_group("Rendering\\OpenGL Renderer" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/gl/.+")
 source_group("Rendering\\OpenGL Renderer\\Data" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/gl/data/.+")
 source_group("Rendering\\OpenGL Renderer\\Dynamic Lights" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/gl/dynlights/.+")
@@ -1460,13 +1482,38 @@ source_group("Platforms\\Unix Files" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE
 source_group("Platforms\\SDL Files" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/posix/sdl/.+")
 source_group("Platforms\\Win32 Files" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/win32/.+")
 source_group("Scripting\\Decorate frontend" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/scripting/decorate/.+")
-source_group("Scripting\\ZScript frontend" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/scripting/zscript/.+" FILES ${CMAKE_CURRENT_BINARY_DIR}/zcc-parse.c ${CMAKE_CURRENT_BINARY_DIR}/zcc-parse.h)
+source_group("Scripting\\ZScript frontend" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/scripting/zscript/.+")
 source_group("Scripting\\Compiler backend" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/scripting/backend/.+")
-source_group("Scripting\\VM" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/scripting/vm/.+")
 source_group("Scripting" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/scripting/.+")
 source_group("Common" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/.+")
-source_group("Common\\Utility" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/utility/.+")
-source_group("Common\\File System" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/filesystem/.+")
+source_group("Common\\Audio" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/audio/.+")
+source_group("Common\\Audio\\Sound" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/audio/sound/.+")
+source_group("Common\\Audio\\Sound\\Third-party" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/audio/sound/thirdparty/.+")
+source_group("Common\\Audio\\Music" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/audio/music.+")
+source_group("Common\\Console" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/console/.+")
+source_group("Common\\Utility" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/utility/.+")
+source_group("Common\\Engine" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/engine/.+")
+source_group("Common\\2D" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/2d/.+")
+source_group("Common\\Objects" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/objects/.+")
+source_group("Common\\Fonts" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/fonts/.+")
+source_group("Common\\File System" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/filesystem/.+")
+source_group("Common\\Scripting" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/scripting/.+")
+source_group("Common\\Scripting\\Interface" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/scripting/interface/.+")
+source_group("Common\\Scripting\\Frontend" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/scripting/frontend/.+" FILES ${CMAKE_CURRENT_BINARY_DIR}/zcc-parse.c ${CMAKE_CURRENT_BINARY_DIR}/zcc-parse.h)
+source_group("Common\\Scripting\\Backend" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/scripting/backend/.+")
+source_group("Common\\Scripting\\Core" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/scripting/core/.+")
+source_group("Common\\Scripting\\JIT" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/scripting/jit/.+")
+source_group("Common\\Scripting\\VM" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/scripting/vm/.+")
+source_group("Common\\Rendering" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/rendering/.+")
+if ( HAVE_OPENGL )
+source_group("Common\\Rendering\\OpenGL Loader" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/rendering/gl_load/.+")
+endif()
+source_group("Common\\Textures" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/textures/.+")
+source_group("Common\\Textures\\Hires" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/textures/hires/.+")
+source_group("Common\\Textures\\Hires\\HQ Resize" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/textures/hires/hqnx/.+")
+source_group("Common\\Textures\\Hires\\HQ Resize MMX version" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/textures/hires/hqnx_asm/.+")
+source_group("Common\\Textures\\Hires\\XBRZ" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/textures/hires/xbr/.+")
+source_group("Common\\Textures\\Formats" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/textures/formats/.+")
 source_group("Common\\Third Party" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/thirdparty/.+")
 source_group("Common\\Third Party\\Math" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/thirdparty/math/.+")
 source_group("Common\\Third Party\\RapidJSON" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/thirdparty/rapidjson/.+")

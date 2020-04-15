@@ -50,7 +50,7 @@
 #include "r_defs.h"
 
 #if defined (HAVE_OPENGL) || defined (__APPLE__)
-#include "gl_load/gl_system.h"
+#include "gl_system.h"
 #include "gl/renderer/gl_renderer.h"
 #include "gl/system/gl_framebuffer.h"
 #include "gl/shaders/gl_shader.h"

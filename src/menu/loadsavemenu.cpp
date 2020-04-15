@@ -204,7 +204,7 @@ void FSavegameManager::ReadSaveStrings()
 						continue;
 					}
 					void *data = info->Lock();
-					FSerializer arc(nullptr);
+					FSerializer arc;
 					if (arc.OpenReader((const char *)data, info->LumpSize))
 					{
 						int savever = 0;
@@ -488,7 +488,7 @@ unsigned FSavegameManager::ExtractSaveData(int index)
 			return index;
 		}
 		void *data = info->Lock();
-		FSerializer arc(nullptr);
+		FSerializer arc;
 		if (arc.OpenReader((const char *)data, info->LumpSize))
 		{
 			FString comment;
@@ -596,7 +596,7 @@ DEFINE_ACTION_FUNCTION(FSavegameManager, ClearSaveStuff)
 bool FSavegameManager::DrawSavePic(int x, int y, int w, int h)
 {
 	if (SavePic == nullptr) return false;
-	screen->DrawTexture(SavePic, x, y, 	DTA_DestWidth, w, DTA_DestHeight, h, DTA_Masked, false,	TAG_DONE);
+	DrawTexture(twod, SavePic, x, y, 	DTA_DestWidth, w, DTA_DestHeight, h, DTA_Masked, false,	TAG_DONE);
 	return true;
 }
 

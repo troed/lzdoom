@@ -50,12 +50,13 @@
 #include "thingdef.h"
 #include "a_morph.h"
 #include "teaminfo.h"
-#include "backend/vmbuilder.h"
+#include "vmbuilder.h"
 #include "a_keys.h"
 #include "g_levellocals.h"
 #include "types.h"
 #include "a_dynlight.h"
 #include "v_video.h"
+#include "texturemanager.h"
 
 //==========================================================================
 //
@@ -756,7 +757,7 @@ DEFINE_PROPERTY(translation, L, Actor)
 				}
 			}
 		}
-		defaults->Translation = palMgr.StoreTranslation (TRANSLATION_Decorate, &CurrentTranslation);
+		defaults->Translation = GPalette.StoreTranslation (TRANSLATION_Decorate, &CurrentTranslation);
 	}
 }
 
@@ -1276,7 +1277,7 @@ DEFINE_CLASS_PROPERTY_PREFIX(powerup, colormap, FFFfff, Inventory)
 		PROP_FLOAT_PARM(r, 0);
 		PROP_FLOAT_PARM(g, 1);
 		PROP_FLOAT_PARM(b, 2);
-		BlendColor = MakeSpecialColormap(AddSpecialColormap(0, 0, 0, r, g, b));
+		BlendColor = MakeSpecialColormap(AddSpecialColormap(GPalette.BaseColors, 0, 0, 0, r, g, b));
 	}
 	else if (PROP_PARM_COUNT == 6)
 	{
@@ -1286,7 +1287,7 @@ DEFINE_CLASS_PROPERTY_PREFIX(powerup, colormap, FFFfff, Inventory)
 		PROP_FLOAT_PARM(r2, 3);
 		PROP_FLOAT_PARM(g2, 4);
 		PROP_FLOAT_PARM(b2, 5);
-		BlendColor = MakeSpecialColormap(AddSpecialColormap(r1, g1, b1, r2, g2, b2));
+		BlendColor = MakeSpecialColormap(AddSpecialColormap(GPalette.BaseColors, r1, g1, b1, r2, g2, b2));
 	}
 	else
 	{
