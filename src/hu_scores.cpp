@@ -341,10 +341,10 @@ static void HU_DoDrawScores (player_t *player, player_t *sortedplayers[MAXPLAYER
 		*text_name = GStrings("SCORE_NAME"),
 		*text_delay = GStrings("SCORE_DELAY");
 
-	col2 = (displayFont->StringWidth(text_color) + ui_classic? 8 : 16) * FontScale;
-	col3 = col2 + (displayFont->StringWidth(text_frags) + ui_classic? 8 : 16) * FontScale;
+	col2 = (displayFont->StringWidth(text_color) + (ui_classic? 8 : 16)) * FontScale;
+	col3 = col2 + (displayFont->StringWidth(text_frags) + (ui_classic? 8 : 16)) * FontScale;
 	col4 = col3 + maxscorewidth * FontScale;
-	col5 = col4 + (maxnamewidth + ui_classic? 8 : 16) * FontScale;
+	col5 = col4 + (maxnamewidth + (ui_classic? 8 : 16)) * FontScale;
 	x = (twod->GetWidth() >> 1) - (((displayFont->StringWidth(text_delay) * FontScale) + col5) >> 1);
 
 	//HU_DrawFontScaled(x, y, color, text_color);
