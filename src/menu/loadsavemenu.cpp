@@ -523,7 +523,6 @@ unsigned FSavegameManager::ExtractSaveData(int index)
 					{
 						delete SavePic;
 						SavePic = nullptr;
-						SavePicData.Clear();
 					}
 				}
 			}
@@ -555,7 +554,6 @@ void FSavegameManager::UnloadSaveData()
 
 	SaveCommentString = "";
 	SavePic = nullptr;
-	SavePicData.Clear();
 }
 
 DEFINE_ACTION_FUNCTION(FSavegameManager, UnloadSaveData)
