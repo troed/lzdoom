@@ -1710,7 +1710,7 @@ void FLevelLocals::DoReborn (int playernum, bool freshbot)
 	}
 	else
 	{
-		bool isUnfriendly = players[playernum].mo && !(players[playernum].mo->flags & MF_FRIENDLY);
+		bool isUnfriendly = players[playernum].mo && !(players[playernum].mo->flags & MF_FRIENDLY) && !(players[playernum].mo->IsKindOf("BloodySkull"));
 
 		// respawn at the start
 		// first disassociate the corpse
