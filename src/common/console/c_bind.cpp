@@ -49,8 +49,6 @@
 
 #include "d_event.h"
 
-CVAR (Int, k_modern, 1, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
-
 extern int chatmodeon;
 
 const char *KeyNames[NUM_KEYS] =
@@ -721,7 +719,7 @@ CCMD(rebind)
 		bindings->SetBind(key, argv[1]);
 	}
 }
-/*
+
 //=============================================================================
 //
 //
@@ -794,90 +792,26 @@ void C_SetDefaultKeys(const char* baseconfig)
 			ReadBindings(lump, true);
 	}
 }
-*/
+
 //=============================================================================
 //
 //
 //
 //=============================================================================
-
-void C_BindLump(int lump)
-{
-	FScanner sc(lump);
-
-	while (sc.GetString())
-	{
-		FKeyBindings *dest = &Bindings;
-		int key;
-
-		// bind destination is optional and is the same as the console command
-		if (sc.Compare("bind"))
-		{
-			sc.MustGetString();
-		}
-		else if (sc.Compare("doublebind"))
-		{
-			dest = &DoubleBindings;
-			sc.MustGetString();
-		}
-		else if (sc.Compare("mapbind"))
-		{
-			dest = &AutomapBindings;
-			sc.MustGetString();
-		}
-		key = GetConfigKeyFromName(sc.String);
-		sc.MustGetString();
-		dest->SetBind(key, sc.String);
-	}
-}
-
-void C_BindDefaults ()
-{
-	int lump, lastlump = 0;
-	FString defbinds;
-
-	switch (k_modern)
-	{
-	case 0:
-		defbinds = "DEFBIND0";
-		break;
-	case 1:
-		defbinds = "DEFBIND1";
-		break;
-	case 2:
-		defbinds = "DEFBIND2";
-		break;
-	case 3:
-		defbinds = "DEFBIND3";
-		break;
-	}
-
-	while ((lump = fileSystem.FindLump("DEFBINDS", &lastlump)) != -1)
-		C_BindLump(lump);
-	lump = 0;
-	lastlump = 0;
-	while ((lump = fileSystem.FindLump(defbinds, &lastlump)) != -1)
-		C_BindLump(lump);
-}
-/*
-//=============================================================================
-//
-//
-//
-//=============================================================================
-CVAR(Int, cl_defaultconfiguration, 2, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
+CVAR(Int, cl_defaultconfiguration, 0, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
 
 
 void C_BindDefaults()
 {
-	C_SetDefaultKeys(cl_defaultconfiguration == 1 ? "engine/origbinds.txt" : cl_defaultconfiguration == 2 ? "engine/leftbinds.txt" : "engine/defbinds.txt");
+	C_SetDefaultKeys(cl_defaultconfiguration == 1 ? "engine/origbinds.txt" : cl_defaultconfiguration == 2 ? "engine/leftbinds.txt"
+		: cl_defaultconfiguration == 3 ? "engine/altbinds.txt" : "engine/defbinds.txt");
 }
 
 CCMD(controlpreset)
 {
 	if (argv.argc() < 2)
 	{
-		Printf("Usage: Controlpreset {0,1,2}\n");
+		Printf("Usage: Controlpreset {0,1,2,3}\n");
 		return;
 	}
 	int v = atoi(argv[1]);
@@ -885,7 +819,7 @@ CCMD(controlpreset)
 	cl_defaultconfiguration = v;
 	C_BindDefaults();
 }
-*/
+
 CCMD(binddefaults)
 {
 	C_BindDefaults();

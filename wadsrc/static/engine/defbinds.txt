@@ -1,4 +1,4 @@
-/* Default keybindings for all games */
+/* Default WASD keybindings for all games */
 
 w +forward
 s +back
@@ -7,4 +7,3 @@ d +moveright
 e +jump
 x crouch
 mouse2 +altattack
-mouse3 +speed

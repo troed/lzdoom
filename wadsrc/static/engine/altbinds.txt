@@ -1,4 +1,4 @@
-/* Default keybindings for all games */
+/* Default ESDF keybindings for all games */
 
 e +forward
 d +back
@@ -7,4 +7,3 @@ f +moveright
 w +jump
 c crouch
 mouse2 +altattack
-mouse3 +speed
