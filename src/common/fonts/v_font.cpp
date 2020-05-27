@@ -93,6 +93,7 @@ FFont* SmallFont, * SmallFont2, * BigFont, * BigUpper, * ConFont, * Intermission
 
 FFont *FFont::FirstFont = nullptr;
 int NumTextColors;
+static bool translationsLoaded;
 
 // PRIVATE DATA DEFINITIONS ------------------------------------------------
 
@@ -142,22 +143,27 @@ FFont *V_GetFont(const char *name, const char *fontlumpname)
 				head == MAKE_ID(0xE1,0xE6,0xD5,0x1A))
 			{
 				FFont *CreateSingleLumpFont (const char *fontname, int lump);
-				return CreateSingleLumpFont (name, lump);
+				font = CreateSingleLumpFont (name, lump);
+				if (translationsLoaded) font->LoadTranslations();
+				return font;
 			}
 		}
 		FTextureID picnum = TexMan.CheckForTexture (name, ETextureType::Any);
 		if (picnum.isValid())
 		{
-			FTexture *tex = TexMan.GetTexture(picnum);
+			auto tex = TexMan.GetGameTexture(picnum);
 			if (tex && tex->GetSourceLump() >= folderfile)
 			{
 				FFont *CreateSinglePicFont(const char *name);
-				return CreateSinglePicFont (name);
+				font =  CreateSinglePicFont (name);
+				return font;
 			}
 		}
 		if (folderdata.Size() > 0)
 		{
-			return new FFont(name, nullptr, name, HU_FONTSTART, HU_FONTSIZE, 1, -1);
+			font = new FFont(name, nullptr, name, HU_FONTSTART, HU_FONTSIZE, 1, -1);
+			if (translationsLoaded) font->LoadTranslations();
+			return font;
 		}
 	}
 	return font;
@@ -174,7 +180,7 @@ FFont *V_GetFont(const char *name, const char *fontlumpname)
 void V_InitCustomFonts()
 {
 	FScanner sc;
-	FTexture *lumplist[256];
+	FGameTexture *lumplist[256];
 	bool notranslate[256];
 	bool donttranslate;
 	FString namebuffer, templatebuf;
@@ -270,12 +276,12 @@ void V_InitCustomFonts()
 				else
 				{
 					if (format == 1) goto wrong;
-					FTexture **p = &lumplist[*(unsigned char*)sc.String];
+					FGameTexture **p = &lumplist[*(unsigned char*)sc.String];
 					sc.MustGetString();
 					FTextureID texid = TexMan.CheckForTexture(sc.String, ETextureType::MiscPatch);
 					if (texid.Exists())
 					{
-						*p = TexMan.GetTexture(texid);
+						*p = TexMan.GetGameTexture(texid);
 					}
 					else if (fileSystem.GetFileContainer(sc.LumpNum) >= fileSystem.GetIwadNum())
 					{
@@ -311,7 +317,7 @@ void V_InitCustomFonts()
 				}
 				if (count > 0)
 				{
-					FFont *CreateSpecialFont (const char *name, int first, int count, FTexture **lumplist, const bool *notranslate, int lump, bool donttranslate);
+					FFont *CreateSpecialFont (const char *name, int first, int count, FGameTexture **lumplist, const bool *notranslate, int lump, bool donttranslate);
 					FFont *fnt = CreateSpecialFont (namebuffer, first, count, &lumplist[first], notranslate, llump, donttranslate);
 					fnt->SetCursor(cursor);
 					fnt->SetKerning(kerning);
@@ -732,13 +738,6 @@ void V_InitFonts()
 		OriginalSmallFont = new FFont("OriginalSmallFont", "STCFN%.3d", "defsmallfont", HU_FONTSTART, HU_FONTSIZE, HU_FONTSTART, -1, -1, false, true);
 	}
 
-	if (SmallFont)
-	{
-		uint32_t colors[256] = {};
-		SmallFont->RecordAllTextureColors(colors);
-		if (OriginalSmallFont != nullptr) OriginalSmallFont->SetDefaultTranslation(colors);
-		NewSmallFont->SetDefaultTranslation(colors);
-	}
 
 	if (!(SmallFont2 = V_GetFont("SmallFont2")))	// Only used by Strife
 	{
@@ -772,13 +771,6 @@ void V_InitFonts()
 	else
 	{
 		OriginalBigFont = new FFont("OriginalBigFont", nullptr, "bigfont", HU_FONTSTART, HU_FONTSIZE, 1, -1, -1, false, true);
-	}
-
-	if (BigFont)
-	{
-		uint32_t colors[256] = {};
-		BigFont->RecordAllTextureColors(colors);
-		if (OriginalBigFont != nullptr) OriginalBigFont->SetDefaultTranslation(colors);
 	}
 
 	// let PWAD BIGFONTs override the stock BIGUPPER font. (This check needs to be made smarter.)
@@ -832,6 +824,29 @@ void V_InitFonts()
 	AlternativeSmallFont = OriginalSmallFont;
 	if (ui_classic)
 		DisableGenericUI(true);
+}
+
+void V_LoadTranslations()
+{
+	for (auto font = FFont::FirstFont; font; font = font->Next)
+	{
+		if (!font->noTranslate) font->LoadTranslations();
+		else font->ActiveColors = 0;
+	}
+	if (BigFont)
+	{
+		uint32_t colors[256] = {};
+		BigFont->RecordAllTextureColors(colors);
+		if (OriginalBigFont != nullptr) OriginalBigFont->SetDefaultTranslation(colors);
+	}
+	if (SmallFont)
+	{
+		uint32_t colors[256] = {};
+		SmallFont->RecordAllTextureColors(colors);
+		if (OriginalSmallFont != nullptr) OriginalSmallFont->SetDefaultTranslation(colors);
+		NewSmallFont->SetDefaultTranslation(colors);
+	}
+	translationsLoaded = true;
 }
 
 void V_ClearFonts()

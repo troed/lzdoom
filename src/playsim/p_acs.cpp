@@ -6600,7 +6600,7 @@ doplaysound:			if (funcIndex == ACSF_PlayActorSound)
 			auto a = Level->SingleActorFromTID(args[0], activator);
 			if (a != nullptr)
 			{
-				return GlobalACSStrings.AddString(TexMan.GetTexture(a->floorpic)->GetName());
+				return GlobalACSStrings.AddString(TexMan.GetGameTexture(a->floorpic)->GetName());
 			}
 			else
 			{

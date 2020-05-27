@@ -1118,7 +1118,7 @@ void M_ParseMenuDefs()
 //
 //=============================================================================
 
-void M_StartupEpisodeMenu(FGameStartup *gs)
+void M_StartupEpisodeMenu(FNewGameStartup *gs)
 {
 	// Build episode menu
 	bool success = false;
@@ -1159,7 +1159,7 @@ void M_StartupEpisodeMenu(FGameStartup *gs)
 
 			if (totalheight < 190 || AllEpisodes.Size() == 1)
 			{
-				int newtop = (200 - totalheight + topy) / 2;
+				int newtop = (200 - totalheight) / 2;
 				int topdelta = newtop - topy;
 				if (topdelta < 0)
 				{
@@ -1167,7 +1167,8 @@ void M_StartupEpisodeMenu(FGameStartup *gs)
 					{
 						ld->mItems[i]->OffsetPositionY(topdelta);
 					}
-					posy -= topdelta;
+					posy += topdelta;
+					ld->mYpos += topdelta;
 				}
 
 				if (!isOld) ld->mSelectedItem = ld->mItems.Size();
@@ -1675,7 +1676,7 @@ DEFINE_ACTION_FUNCTION(DMenu, UpdateSkinOptions)
 //=============================================================================
 extern int restart;
 
-void M_StartupSkillMenu(FGameStartup *gs)
+void M_StartupSkillMenu(FNewGameStartup *gs)
 {
 	static int done = -1;
 	bool success = false;
@@ -1756,7 +1757,7 @@ void M_StartupSkillMenu(FGameStartup *gs)
 
 				if (totalheight < 190 || MenuSkills.Size() == 1)
 				{
-					int newtop = (200 - totalheight + topy) / 2;
+					int newtop = (200 - totalheight) / 2;
 					int topdelta = newtop - topy;
 					if (topdelta < 0)
 					{
@@ -1764,7 +1765,7 @@ void M_StartupSkillMenu(FGameStartup *gs)
 						{
 							ld->mItems[i]->OffsetPositionY(topdelta);
 						}
-						ld->mYpos = y = posy - topdelta;
+						ld->mYpos = y = posy + topdelta;
 					}
 				}
 				else

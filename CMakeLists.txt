@@ -156,6 +156,7 @@ macro( use_fast_math )
 	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ZD_FASTMATH_FLAG}" )
 endmacro()
 
+
 include( CheckFunctionExists )
 
 macro( require_stricmp )
@@ -184,7 +185,7 @@ target_architecture(ZDOOM_TARGET_ARCH)
 
 if( ${ZDOOM_TARGET_ARCH} MATCHES "x86_64" )
 	set( HAVE_VM_JIT ON )
-	option (HAVE_VULKAN "Enable Vulkan support" OFF)
+	option (HAVE_VULKAN "Enable Vulkan support" ON)
 endif()
 
 if( NOT APPLE )
