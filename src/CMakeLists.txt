@@ -1286,8 +1286,6 @@ include_directories( .
 	common/objects
 	common/rendering
 	common/rendering/hwrenderer/data
-	common/rendering/gl_load
-	common/rendering/gl
 	common/rendering/vulkan/thirdparty
 	common/rendering/polyrenderer/backend
 	common/rendering/polyrenderer/drawers
@@ -1323,6 +1321,13 @@ include_directories( .
 	${CMAKE_BINARY_DIR}/libraries/gdtoa
 	${SYSTEM_SOURCES_DIR}
 )
+
+if( HAVE_OPENGL )
+	include_directories(
+		common/rendering/gl_load
+		common/rendering/gl
+	)
+endif()
 
 add_dependencies( zdoom revision_check )
 
