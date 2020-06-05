@@ -300,9 +300,11 @@ static SDLInputJoystickManager *JoystickManager;
 
 void I_StartupJoysticks()
 {
+#ifndef NO_SDL_JOYSTICK
 	SDL_SetHint("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", "1");
 	if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) >= 0)
 		JoystickManager = new SDLInputJoystickManager();
+#endif
 }
 void I_ShutdownInput()
 {
@@ -317,7 +319,8 @@ void I_GetJoysticks(TArray<IJoystickConfig *> &sticks)
 {
 	sticks.Clear();
 
-	JoystickManager->GetDevices(sticks);
+	if (JoystickManager)
+		JoystickManager->GetDevices(sticks);
 }
 
 void I_GetAxes(float axes[NUM_JOYAXIS])
@@ -326,7 +329,7 @@ void I_GetAxes(float axes[NUM_JOYAXIS])
 	{
 		axes[i] = 0;
 	}
-	if (use_joystick)
+	if (use_joystick && JoystickManager)
 	{
 		JoystickManager->AddAxes(axes);
 	}
@@ -334,7 +337,7 @@ void I_GetAxes(float axes[NUM_JOYAXIS])
 
 void I_ProcessJoysticks()
 {
-	if (use_joystick)
+	if (use_joystick && JoystickManager)
 		JoystickManager->ProcessInput();
 }
 
