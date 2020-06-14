@@ -1,9 +1,9 @@
 /*
-** optionmenu.cpp
-** Handler class for the option menus and associated items
+** messagebox.cpp
+** Confirmation, notification screns
 **
 **---------------------------------------------------------------------------
-** Copyright 2010-2017 Christoph Oelckers
+** Copyright 2010 Christoph Oelckers
 ** All rights reserved.
 **
 ** Redistribution and use in source and binary forms, with or without
@@ -32,37 +32,74 @@
 **
 */
 
-#include "v_video.h"
-#include "menu/menu.h"
+#include <ctype.h>
+#include "menu.h"
+#include "gstrings.h"
+#include "i_video.h"
+#include "c_dispatch.h"
 #include "vm.h"
+#include "menustate.h"
 
+void M_StartControlPanel(bool makeSound, bool scaleoverride = false);
+FName MessageBoxClass = NAME_MessageBoxMenu;
 
-//=============================================================================
-//
-//
-//
-//=============================================================================
+CVAR(Bool, m_quickexit, false, CVAR_ARCHIVE)
 
-DMenuItemBase *DOptionMenuDescriptor::GetItem(FName name)
-{
-	for(unsigned i=0;i<mItems.Size(); i++)
-	{
-		FName nm = mItems[i]->mAction;
-		if (nm == name) return mItems[i];
-	}
-	return NULL;
-}
-
-void SetCVarDescription(FBaseCVar* cvar, const FString* label)
-{
-	cvar->AddDescription(*label);
-}
-
-DEFINE_ACTION_FUNCTION_NATIVE(_OptionMenuItemOption, SetCVarDescription, SetCVarDescription)
+typedef void(*hfunc)();
+DEFINE_ACTION_FUNCTION(DMessageBoxMenu, CallHandler)
 {
 	PARAM_PROLOGUE;
-	PARAM_POINTER(cv, FBaseCVar);
-	PARAM_STRING(label);
-	SetCVarDescription(cv, &label);
+	PARAM_POINTERTYPE(Handler, hfunc);
+	Handler();
+	return 0;
+}
+
+//=============================================================================
+//
+//
+//
+//=============================================================================
+
+DMenu *CreateMessageBoxMenu(DMenu *parent, const char *message, int messagemode, bool playsound, FName action = NAME_None, hfunc handler = nullptr)
+{
+	auto c = PClass::FindClass(MessageBoxClass);
+	if (!c->IsDescendantOf(NAME_MessageBoxMenu)) c = PClass::FindClass(NAME_MessageBoxMenu);
+	auto p = c->CreateNew();
+	FString namestr = message;
+
+	IFVIRTUALPTRNAME(p, NAME_MessageBoxMenu, Init)
+	{
+		VMValue params[] = { p, parent, &namestr, messagemode, playsound, action.GetIndex(), reinterpret_cast<void*>(handler) };
+		VMCall(func, params, countof(params), nullptr, 0);
+		return (DMenu*)p;
+	}
+	return nullptr;
+}
+
+//=============================================================================
+//
+//
+//
+//=============================================================================
+
+void M_StartMessage(const char *message, int messagemode, FName action)
+{
+	if (CurrentMenu == NULL) 
+	{
+		// only play a sound if no menu was active before
+		M_StartControlPanel(menuactive == MENU_Off);
+	}
+	DMenu *newmenu = CreateMessageBoxMenu(CurrentMenu, message, messagemode, false, action);
+	newmenu->mParentMenu = CurrentMenu;
+	M_ActivateMenu(newmenu);
+}
+
+DEFINE_ACTION_FUNCTION(DMenu, StartMessage)
+{
+	PARAM_PROLOGUE;
+	PARAM_STRING(msg);
+	PARAM_INT(mode);
+	PARAM_NAME(action);
+	M_StartMessage(msg, mode, action);
 	return 0;
 }

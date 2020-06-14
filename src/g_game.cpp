@@ -38,7 +38,7 @@
 #include "intermission/intermission.h"
 #include "m_argv.h"
 #include "m_misc.h"
-#include "menu/menu.h"
+#include "menu.h"
 #include "m_crc32.h"
 #include "p_saveg.h"
 #include "p_tick.h"
@@ -83,6 +83,7 @@
 #include "c_buttons.h"
 #include "d_buttons.h"
 #include "hwrenderer/scene/hw_drawinfo.h"
+#include "doommenu.h"
 
 
 static FRandom pr_dmspawn ("DMSpawn");
@@ -966,6 +967,10 @@ CCMD (spycancel)
 //
 bool G_Responder (event_t *ev)
 {
+	// check events
+	if (ev->type != EV_Mouse && primaryLevel->localEventManager->Responder(ev)) // [ZZ] ZScript ate the event // update 07.03.17: mouse events are handled directly
+		return true;
+	
 	// any other key pops up menu if in demos
 	// [RH] But only if the key isn't bound to a "special" command
 	if (gameaction == ga_nothing && 
