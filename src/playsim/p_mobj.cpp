@@ -5289,7 +5289,7 @@ AActor *FLevelLocals::SpawnPlayer (FPlayerStart *mthing, int playernum, int flag
 	return mobj;
 }
 
-bool CheckDoubleSpawn (FLevelLocals *Level, AActor *mobj, const AActor *info, const FMapThing *mthing, const DVector3 &pos, const double sz, PClassActor *type, bool first)
+bool CheckDoubleSpawn (FLevelLocals *Level, AActor *&mobj, const AActor *info, const FMapThing *mthing, const DVector3 &pos, const double sz, PClassActor *type, bool first)
 {
 	bool spawned = true;
 
