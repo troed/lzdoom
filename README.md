@@ -1,10 +1,10 @@
-# Welcome to GZDoom!
+# Welcome to LZDoom!
 
-[![Build Status](https://github.com/coelckers/gzdoom/workflows/Continuous%20Integration/badge.svg)](https://github.com/coelckers/gzdoom/actions?query=workflow%3A%22Continuous+Integration%22)
+[![Build Status](https://github.com/drfrag666/gzdoom/workflows/Continuous%20Integration/badge.svg)](https://github.com/drfrag666/gzdoom/actions?query=workflow%3A%22Continuous+Integration%22)
 
-## GZDoom is a modder-friendly OpenGL and Vulkan source port based on the DOOM engine
+## LZDoom is a classic style GZDoom fork with lower system requirements
 
-Copyright (c) 1998-2019 ZDoom + GZDoom teams, and contributors
+Copyright (c) 1998-2020 ZDoom + GZDoom teams, and contributors
 
 Doom Source (c) 1997 id Software, Raven Software, and contributors
 
@@ -16,7 +16,7 @@ Special thanks to Coraline of the 3DGE team for allowing us to use her README.md
 ##### https://www.gnu.org/licenses/quick-guide-gplv3.en.html
 ---
 
-## How to build GZDoom
+## How to build LZDoom
 
-To build GZDoom, please see the [wiki](https://zdoom.org/wiki/) and see the "Programmer's Corner" on the bottom-right corner of the page to build for your platform.
+To build LZDoom, please see the [wiki](https://zdoom.org/wiki/) and see the "Programmer's Corner" on the bottom-right corner of the page to build for your platform.
 
