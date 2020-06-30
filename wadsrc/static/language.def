@@ -114,6 +114,7 @@ MNU_EXTREME						= "1000 DEATHS AWAIT THEE";
 GMPLYMNU_DOUBLESPAWN			= "Spawn double the monsters";
 GMPLYMNU_MULTIPLAYERTHINGS		= "Spawn multi. things";
 GGLOADED						= "game loaded.";
+CMPTMNU_OLDRANDOM				= "Use original Doom pseudo-RNG";
 
 // Placeholder definitions for strings that are in the game content table where the labels are needed even when that file is not loaded.
 

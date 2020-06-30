@@ -510,6 +510,7 @@ void G_InitNew (const char *mapname, bool bTitleLevel)
 			rngseed = use_staticrng ? staticrngseed : (rngseed + 1);
 		}
 		FRandom::StaticClearRandom ();
+		M_ClearRandom();
 		P_ClearACSVars(true);
 		primaryLevel->time = 0;
 		primaryLevel->maptime = 0;
