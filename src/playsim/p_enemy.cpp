@@ -54,7 +54,7 @@
 
 static FRandom pr_checkmissilerange ("CheckMissileRange", false);
 static FRandom pr_opendoor ("OpenDoor", false);
-static FRandom pr_trywalk ("TryWalk", false);
+static FRandom pr_trywalk ("TryWalk");
 static FRandom pr_newchasedir ("NewChaseDir", false);
 static FRandom pr_lookformonsters ("LookForMonsters", false);
 static FRandom pr_lookforplayers ("LookForPlayers", false);
