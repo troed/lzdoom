@@ -56,6 +56,9 @@
 #include "r_data/r_interpolate.h"
 #include "doom_aabbtree.h"
 
+EXTERN_CVAR(Int, compatmode)
+EXTERN_CVAR(Bool, sv_stricterdoommode)
+
 //============================================================================
 //
 // This is used to mark processed portals for some collection functions.
@@ -679,7 +682,7 @@ public:
 
 	bool IsJumpingAllowed() const
 	{
-		if (dmflags & DF_NO_JUMP)
+		if (dmflags & DF_NO_JUMP || (compatmode == 2 && sv_stricterdoommode))
 			return false;
 		if (dmflags & DF_YES_JUMP)
 			return true;
@@ -693,7 +696,7 @@ public:
 
 	bool IsCrouchingAllowed() const
 	{
-		if (dmflags & DF_NO_CROUCH)
+		if (dmflags & DF_NO_CROUCH || (compatmode == 2 && sv_stricterdoommode))
 			return false;
 		if (dmflags & DF_YES_CROUCH)
 			return true;
@@ -707,7 +710,7 @@ public:
 
 	bool IsFreelookAllowed() const
 	{
-		if (dmflags & DF_NO_FREELOOK)
+		if (dmflags & DF_NO_FREELOOK || (compatmode == 2 && sv_stricterdoommode))
 			return false;
 		if (dmflags & DF_YES_FREELOOK)
 			return true;
