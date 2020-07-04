@@ -1074,7 +1074,8 @@ static uint32_t StaticSumSeeds()
 		pr_spawnmobj.Seed() +
 		pr_acs.Seed() +
 		pr_chase.Seed() +
-		pr_damagemobj.Seed();
+		pr_damagemobj.Seed() +
+		prndindex;
 }
 
 //

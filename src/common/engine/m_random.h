@@ -45,8 +45,10 @@ class FRandom : public SFMTObj
 {
 public:
 	FRandom ();
-	FRandom (const char *name);
+	FRandom (const char *name, bool useold = true);
 	~FRandom ();
+
+	unsigned int GetRandom(); // [ED850]
 
 	int Seed() const
 	{
@@ -56,7 +58,7 @@ public:
 	// Returns a random number in the range [0,255]
 	int operator()()
 	{
-		return GenRand32() & 255;
+		return GetRandom() & 255;
 	}
 
 	// Returns a random number in the range [0,mod)
@@ -64,7 +66,7 @@ public:
 	{
 		return (0 == mod)
 			? 0
-			: (GenRand32() % mod);
+			: (GetRandom() % mod);
 	}
 
 	// Returns rand# - rand#
@@ -76,14 +78,14 @@ public:
 // Returns (rand# & mask) - (rand# & mask)
 	int Random2(int mask)
 	{
-		int t = GenRand32() & mask & 255;
-		return t - (GenRand32() & mask & 255);
+		int t = GetRandom() & mask & 255;
+		return t - (GetRandom() & mask & 255);
 	}
 
 	// HITDICE macro used in Heretic and Hexen
 	int HitDice(int count)
 	{
-		return (1 + (GenRand32() & 7)) * count;
+		return (1 + (GetRandom() & 7)) * count;
 	}
 
 	int Random()				// synonym for ()
@@ -184,6 +186,9 @@ private:
 	uint32_t NameCRC;
 
 	static FRandom *RNGList;
+
+	// Use the old PRNG table if/when requested [ED850]
+	bool useOldRNG;
 };
 
 extern uint32_t rngseed;			// The starting seed (not part of state)
@@ -196,7 +201,7 @@ extern bool use_staticrng;
 extern FRandom M_Random;
 
 // Returns a number from 0 to 255, from a lookup table.
-int P_Random (void);
+unsigned int P_Random (void);
 void M_ClearRandom (void);
 
 extern int prndindex;

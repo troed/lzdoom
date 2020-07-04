@@ -111,7 +111,7 @@ int 	prndindex = 0;
 
 // EXTERNAL DATA DECLARATIONS ----------------------------------------------
 
-FRandom pr_exrandom("EX_Random");
+FRandom pr_exrandom("EX_Random", false);
 
 // PUBLIC DATA DEFINITIONS -------------------------------------------------
 
@@ -164,7 +164,7 @@ static TDeletingArray<FRandom *> NewRNGs;
 // CODE --------------------------------------------------------------------
 
 // Which one is deterministic?
-int P_Random (void)
+unsigned int P_Random (void)
 {
 	prndindex = (prndindex+1)&0xff;
 	return rndtable[prndindex];
@@ -184,7 +184,7 @@ void M_ClearRandom (void)
 //==========================================================================
 
 FRandom::FRandom ()
-: NameCRC (0)
+: NameCRC (0), useOldRNG (false)
 {
 #ifndef NDEBUG
 	Name = NULL;
@@ -202,9 +202,10 @@ FRandom::FRandom ()
 //
 //==========================================================================
 
-FRandom::FRandom (const char *name)
+FRandom::FRandom (const char *name, bool useold)
 {
 	NameCRC = CalcCRC32 ((const uint8_t *)name, (unsigned int)strlen (name));
+	useOldRNG = useold;
 #ifndef NDEBUG
 	Name = name;
 	// A CRC of 0 is reserved for nameless RNGs that don't get stored
@@ -262,6 +263,21 @@ FRandom::~FRandom ()
 	{
 		*prev = rng->Next;
 	}
+}
+
+//==========================================================================
+//
+// FRandom::GetRandom()
+//
+// Returns either an old PRNG value or an SFMT value
+//
+//==========================================================================
+
+unsigned int FRandom::GetRandom()
+{
+	if (useOldRNG && (compatflags2 & COMPATF2_OLD_RANDOM_GENERATOR))
+		return P_Random();
+	else return GenRand32();
 }
 
 //==========================================================================
