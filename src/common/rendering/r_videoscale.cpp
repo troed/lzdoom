@@ -113,7 +113,7 @@ namespace
 		{ true,				[](uint32_t Width, uint32_t Height)->uint32_t { return 640; },		            		[](uint32_t Width, uint32_t Height)->uint32_t { return 400; },				        1.2f,  				 	false   },	// 3  - 640x400
 		{ true,				[](uint32_t Width, uint32_t Height)->uint32_t { return 1280; },		           			[](uint32_t Width, uint32_t Height)->uint32_t { return 800; },	        			1.2f,   				false   },	// 4  - 1280x800
 		{ true,				[](uint32_t Width, uint32_t Height)->uint32_t { return vid_scale_customwidth; },		[](uint32_t Width, uint32_t Height)->uint32_t { return vid_scale_customheight; },	1.0f,   				true    },	// 5  - Custom
-		{ true,				[](uint32_t Width, uint32_t Height)->uint32_t { return 320; },		            		[](uint32_t Width, uint32_t Height)->uint32_t { return 200; },			        	1.0f,   				false   },	// 6  - 320x200 Wide
+		{ true,				[](uint32_t Width, uint32_t Height)->uint32_t { return Width/2; },		        		[](uint32_t Width, uint32_t Height)->uint32_t { return Height/2; },	        		1.0f,	  				false   },	// 6  - Native / 2
 	};
 	bool isOutOfBounds(int x)
 	{
@@ -134,7 +134,7 @@ CUSTOM_CVAR(Float, vid_scalefactor, 1.0, CVAR_ARCHIVE | CVAR_GLOBALCONFIG | CVAR
 	R_ShowCurrentScaling();
 }
 
-CUSTOM_CVAR(Int, vid_scalemode, 0, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
+CUSTOM_CVAR(Int, vid_scalemode, 6, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
 {
 	setsizeneeded = true;
 	if (!ui_classic && self == 2) self = 3;	// block 320x200 setting.
