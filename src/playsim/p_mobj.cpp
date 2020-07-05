@@ -5831,7 +5831,8 @@ AActor *P_SpawnPuff (AActor *source, PClassActor *pufftype, const DVector3 &pos1
 
 	if (!(flags & PF_TEMPORARY))
 	{
-		if (cl_pufftype && updown != 3 && (puff->flags4 & MF4_ALLOWPARTICLES))
+		if (cl_pufftype && updown != 3 && (puff->flags4 & MF4_ALLOWPARTICLES)
+			&& !(compatmode == 2 && sv_stricterdoommode))
 		{
 			P_DrawSplash2 (source->Level, 32, pos, particledir, updown, 1);
 			if (cl_pufftype == 1) puff->renderflags |= RF_INVISIBLE;
@@ -5953,10 +5954,11 @@ void P_SpawnBlood (const DVector3 &pos1, DAngle dir, int damage, AActor *origina
 		}
 
 	statedone:
-		if (!(bloodtype <= 1)) th->renderflags |= RF_INVISIBLE;
+		if (!(bloodtype <= 1) && !(compatmode == 2 && sv_stricterdoommode))
+			th->renderflags |= RF_INVISIBLE;
 	}
 
-	if (bloodtype >= 1)
+	if (bloodtype >= 1 && !(compatmode == 2 && sv_stricterdoommode))
 		P_DrawSplash2 (originator->Level, 40, pos, dir, 2, originator->BloodColor);
 }
 
