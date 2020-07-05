@@ -85,7 +85,7 @@ public:
 	// HITDICE macro used in Heretic and Hexen
 	int HitDice(int count)
 	{
-		return (1 + (GetRandom() & 7)) * count;
+		return (1 + (GenRand32() & 7)) * count;
 	}
 
 	int Random()				// synonym for ()
