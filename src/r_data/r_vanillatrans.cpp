@@ -44,6 +44,9 @@
 #include "c_dispatch.h"
 #endif
 
+EXTERN_CVAR(Int, compatmode)
+EXTERN_CVAR(Bool, sv_stricterdoommode)
+
 bool r_UseVanillaTransparency;
 CVAR (Int, r_vanillatrans, 0, CVAR_ARCHIVE)
 
@@ -91,6 +94,9 @@ bool UseVanillaTransparency()
 		}
 		firstTime = false;
 	}
+
+	if (compatmode == 2 && sv_stricterdoommode)
+		return true;
 
 	switch (r_vanillatrans)
 	{
