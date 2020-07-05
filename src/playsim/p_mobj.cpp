@@ -3607,7 +3607,8 @@ void AActor::Tick ()
 				{
 					th->tics -= pr_rockettrail()&3;
 					if (th->tics < 1) th->tics = 1;
-					if (!(cl_rockettrails & 2)) th->renderflags |= RF_INVISIBLE;
+					if (!(cl_rockettrails & 2) || (compatmode == 2 && sv_stricterdoommode))
+						th->renderflags |= RF_INVISIBLE;
 				}
 			}
 		}
