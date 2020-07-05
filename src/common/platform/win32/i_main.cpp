@@ -41,7 +41,6 @@
 #include <commctrl.h>
 #include <richedit.h>
 
-#include <processenv.h>
 #include <shellapi.h>
 
 #ifdef _MSC_VER
