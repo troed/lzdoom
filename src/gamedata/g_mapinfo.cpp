@@ -38,6 +38,7 @@
 #include "g_level.h"
 #include "filesystem.h"
 #include "cmdlib.h"
+#include "m_argv.h"
 #include "v_video.h"
 #include "p_lnspec.h"
 #include "p_setup.h"
@@ -2461,6 +2462,14 @@ void G_ParseMapInfo (FString basemapinfo)
 	if (AllSkills.Size() == 0)
 	{
 		I_FatalError ("You cannot use clearskills in a MAPINFO if you do not define any new skills after it.");
+	}
+
+	for(unsigned int i = 0; i < AllSkills.Size(); i++)
+	{
+		if (Args->CheckParm("-nod2monsters") && gameinfo.gametype == GAME_Doom) // Play with only Doom 1 monsters
+		{
+			AllSkills[i].SetClassicModeReplacements();
+		}
 	}
 }
 

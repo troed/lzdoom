@@ -3153,13 +3153,17 @@ void A_BossDeath(AActor *self)
 	}
 	if (Level->flags & LEVEL_MAP07SPECIAL)
 	{
+		PClassActor *fatso = PClass::FindActor(NAME_Fatso);
+		PClassActor *arachnotron = PClass::FindActor(NAME_Arachnotron);
+		bool samereplacement = fatso->GetReplacement(Level) == arachnotron->GetReplacement(Level);
 		if (type == NAME_Fatso)
 		{
 			Level->EV_DoFloor (DFloor::floorLowerToLowest, NULL, 666, 1., 0, -1, 0, false);
-			return;
+			if (!samereplacement)
+				return;
 		}
-		
-		if (type == NAME_Arachnotron)
+
+		if (type == NAME_Arachnotron || samereplacement)
 		{
 			Level->EV_DoFloor (DFloor::floorRaiseByTexture, NULL, 667, 1., 0, -1, 0, false);
 			return;

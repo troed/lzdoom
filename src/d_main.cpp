@@ -2104,14 +2104,6 @@ static void AddAutoloadFiles(const char *autoname)
 	{
 		FString file;
 
-		// nod2monsters.pk3 - Play with only Doom 1 monsters
-		if (Args->CheckParm("-nod2monsters") && gameinfo.gametype == GAME_Doom)
-		{
-			const char *wad = BaseFileSearch ("nod2monsters.pk3", NULL, false, GameConfig);
-			if (wad)
-				D_AddFile (allwads, wad, true, -1, GameConfig);
-		}
-
 		// [RH] Add any .wad files in the skins directory
 #ifdef __unix__
 		file = SHARE_DIR;
