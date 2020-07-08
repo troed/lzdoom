@@ -52,6 +52,8 @@
 #include "events.h"
 #include "i_system.h"
 
+CVAR(Bool, sv_nodoom2monsters, false, CVAR_SERVERINFO | CVAR_ARCHIVE)
+
 static TArray<cluster_info_t> wadclusterinfos;
 TArray<level_info_t> wadlevelinfos;
 
@@ -2466,7 +2468,7 @@ void G_ParseMapInfo (FString basemapinfo)
 
 	for(unsigned int i = 0; i < AllSkills.Size(); i++)
 	{
-		if (Args->CheckParm("-nod2monsters") && gameinfo.gametype == GAME_Doom) // Play with only Doom 1 monsters
+		if ((Args->CheckParm("-nod2monsters") || sv_nodoom2monsters) && gameinfo.gametype == GAME_Doom) // Play with only original Doom monsters
 		{
 			AllSkills[i].SetClassicModeReplacements();
 		}

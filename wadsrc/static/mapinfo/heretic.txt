@@ -313,7 +313,6 @@ skill extreme_lzd
 	DisableCheats
 	SpawnFilter = Hard
 	Name = "$MNU_EXTREME"
-	MustConfirm
 }
 
 skill nightmare
