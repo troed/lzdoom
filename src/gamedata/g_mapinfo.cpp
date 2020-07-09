@@ -2468,7 +2468,7 @@ void G_ParseMapInfo (FString basemapinfo)
 
 	for(unsigned int i = 0; i < AllSkills.Size(); i++)
 	{
-		if ((Args->CheckParm("-nod2monsters") || sv_nodoom2monsters) && gameinfo.gametype == GAME_Doom) // Play with only original Doom monsters
+		if ((Args->CheckParm("-nod2monsters") || sv_nodoom2monsters) && !netcompat && gameinfo.gametype == GAME_Doom) // Play with only original Doom monsters
 		{
 			AllSkills[i].SetClassicModeReplacements();
 		}

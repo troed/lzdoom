@@ -69,7 +69,7 @@ IMPLEMENT_CLASS(DLevelPostProcessor, true, false);
 
 void MapLoader::PostProcessLevel(FName checksum)
 {
-	if (sv_noautolevelcompat)
+	if (sv_noautolevelcompat && !netcompat)
 	{
 		Printf(TEXTCOLOR_ORANGE "Warning: auto level compatibility disabled. Severe problems could arise.\n");
 		return;
