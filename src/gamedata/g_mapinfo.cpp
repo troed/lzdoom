@@ -52,7 +52,7 @@
 #include "events.h"
 #include "i_system.h"
 
-CVAR(Bool, sv_nodoom2monsters, false, CVAR_SERVERINFO | CVAR_ARCHIVE)
+CVAR(Bool, sv_nodoom2monsters, false, CVAR_SERVERINFO | CVAR_ARCHIVE | CVAR_DOWNSTREAM)
 
 static TArray<cluster_info_t> wadclusterinfos;
 TArray<level_info_t> wadlevelinfos;

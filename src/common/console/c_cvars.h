@@ -70,6 +70,7 @@ enum
 	CVAR_VIRTUAL       = 1 << 17, // do not invoke the callback recursively so it can be used to
 	                              // mirror an external variable.
 	CVAR_CONFIG_ONLY   = 1 << 18, // do not save var to savegame and do not send it across network.
+	CVAR_DOWNSTREAM    = 1 << 19, // do not send var across network.
 };
 
 union UCVarValue

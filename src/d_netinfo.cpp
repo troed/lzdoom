@@ -625,6 +625,8 @@ static const char *SetServerVar (char *name, ECVarType type, uint8_t **stream, b
 
 EXTERN_CVAR (Float, sv_gravity)
 
+CVAR (Bool, netcompat, false, CVAR_ARCHIVE | CVAR_GLOBALCONFIG) // GZDoom compatible
+
 bool D_SendServerInfoChange (FBaseCVar *cvar, UCVarValue value, ECVarType type)
 {
 	if (gamestate != GS_STARTUP && !demoplayback)
@@ -635,6 +637,10 @@ bool D_SendServerInfoChange (FBaseCVar *cvar, UCVarValue value, ECVarType type)
 			cvar->MarkSafe();
 			return true;
 		}
+		
+		if (netcompat && cvar->GetFlags() & CVAR_DOWNSTREAM)
+			return true;
+
 		size_t namelen;
 
 		namelen = strlen(cvar->GetName());
@@ -667,6 +673,9 @@ bool D_SendServerFlagChange (FBaseCVar *cvar, int bitnum, bool set, bool silent)
 			}
 			return true;
 		}
+
+		if (netcompat && cvar->GetFlags() & CVAR_DOWNSTREAM)
+			return true;
 
 		int namelen = (int)strlen(cvar->GetName());
 

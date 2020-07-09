@@ -44,6 +44,7 @@
 #include "printf.h"
 #include "palutil.h"
 
+EXTERN_CVAR (Bool, netcompat)
 
 struct FLatchedValue
 {
@@ -1094,7 +1095,7 @@ void FilterCompactCVars (TArray<FBaseCVar *> &cvars, uint32_t filter)
 	// Accumulate all cvars that match the filter flags.
 	for (FBaseCVar *cvar = CVars; cvar != NULL; cvar = cvar->m_Next)
 	{
-		if ((cvar->Flags & filter) && !(cvar->Flags & CVAR_IGNORE))
+		if ((cvar->Flags & filter) && !(cvar->Flags & CVAR_IGNORE) && !(netcompat && cvar->Flags & CVAR_DOWNSTREAM))
 			cvars.Push(cvar);
 	}
 	// Now sort them, so they're in a deterministic order and not whatever
@@ -1133,7 +1134,7 @@ FString C_GetMassCVarString (uint32_t filter, bool compact)
 	{
 		for (cvar = CVars; cvar != NULL; cvar = cvar->m_Next)
 		{
-			if ((cvar->Flags & filter) && !(cvar->Flags & (CVAR_NOSAVE|CVAR_IGNORE)))
+			if ((cvar->Flags & filter) && !(cvar->Flags & (CVAR_NOSAVE|CVAR_IGNORE))&& !(netcompat && cvar->Flags & CVAR_DOWNSTREAM))
 			{
 				UCVarValue val = cvar->GetGenericRep(CVAR_String);
 				dump << '\\' << cvar->GetName() << '\\' << val.String;

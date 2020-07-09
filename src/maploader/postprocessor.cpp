@@ -49,7 +49,7 @@
 #include "v_text.h"
 #include "vm.h"
 
-CVAR (Bool, sv_noautolevelcompat, false, CVAR_SERVERINFO | CVAR_LATCH)
+CVAR (Bool, sv_noautolevelcompat, false, CVAR_SERVERINFO | CVAR_LATCH | CVAR_DOWNSTREAM)
 
 //==========================================================================
 //

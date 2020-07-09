@@ -789,7 +789,7 @@ CVAR (Flag, compat_explode2,			compatflags2, COMPATF2_EXPLODE2);
 CVAR (Flag, compat_railing,				compatflags2, COMPATF2_RAILING);
 CVAR (Flag, compat_oldrandom,			compatflags2, COMPATF2_OLD_RANDOM_GENERATOR);
 
-CVAR (Bool, sv_stricterdoommode, false, CVAR_ARCHIVE | CVAR_SERVERINFO)
+CVAR (Bool, sv_stricterdoommode, false, CVAR_ARCHIVE | CVAR_SERVERINFO | CVAR_DOWNSTREAM)
 
 CVAR(Bool, vid_activeinbackground, false, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
 
