@@ -72,7 +72,8 @@ void I_PolyPresentInit()
 			Printf(TEXTCOLOR_RED "Direct3DCreate9Ex failed.\n");
 		}
 	}
-	else
+
+	if (!d3dexavailable)
 	{
 		d3d9 = Direct3DCreate9(D3D_SDK_VERSION);
 		if (!d3d9)
@@ -103,8 +104,17 @@ void I_PolyPresentInit()
 	pp.hDeviceWindow = Window;
 	pp.PresentationInterval = CurrentVSync ? (d3dexavailable ? D3DPRESENT_INTERVAL_DEFAULT : D3DPRESENT_INTERVAL_ONE) : D3DPRESENT_INTERVAL_IMMEDIATE;
 
-	HRESULT result = d3dexavailable ? d3d9ex->CreateDeviceEx(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, Window, D3DCREATE_HARDWARE_VERTEXPROCESSING, &pp, nullptr, &deviceex)
-		: d3d9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, Window, D3DCREATE_HARDWARE_VERTEXPROCESSING, &pp, &device);
+	HRESULT result;
+	if (d3dexavailable)
+	{
+		result = d3d9ex->CreateDeviceEx(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, Window, D3DCREATE_HARDWARE_VERTEXPROCESSING, &pp, nullptr, &deviceex);
+	}
+	else
+	{
+		result = d3d9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, Window, D3DCREATE_HARDWARE_VERTEXPROCESSING, &pp, &device);
+		if (FAILED(result) && (result != D3DERR_DEVICELOST || device == NULL))
+			result = d3d9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, Window, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &pp, &device);
+	}
 	if (FAILED(result))
 	{
 		FreeLibrary (D3D9_dll);
