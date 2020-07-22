@@ -426,7 +426,7 @@ DEFINE_ACTION_FUNCTION(DMenu, MakeScreenShot)
 //
 //=============================================================================
 
-bool M_SetSpecialMenu(FName menu, int param);	// game specific checks
+bool M_SetSpecialMenu(FName& menu, int param);	// game specific checks
 
 void M_SetMenu(FName menu, int param)
 {
