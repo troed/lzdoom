@@ -498,7 +498,8 @@ void ProcessMouseMoveInGame(NSEvent* theEvent)
 
 	if (!m_noprescale)
 	{
-		x <<= 2;
+		x *= 2;
+		y *= 2;
 	}
 
 	event_t event = {};
