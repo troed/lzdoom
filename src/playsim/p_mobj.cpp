@@ -5720,7 +5720,8 @@ AActor *FLevelLocals::SpawnMapThing (FMapThing *mthing, int position)
 		mobj->AdjustFloorClip();
 	}
 
-	if ((G_SkillProperty(SKILLP_DoubleSpawn) || (dmflags2 & DF2_DOUBLESPAWN)) && info->flags3 & MF3_ISMONSTER && (gameinfo.gametype == GAME_Doom || gameinfo.gametype == GAME_Heretic))
+	if ((G_SkillProperty(SKILLP_DoubleSpawn) || (dmflags2 & DF2_DOUBLESPAWN)) && info->flags3 & MF3_ISMONSTER
+		&& i->TypeName != NAME_SpiderMastermind && (gameinfo.gametype == GAME_Doom || gameinfo.gametype == GAME_Heretic))
 	{
 		spawned = CheckDoubleSpawn (this, mobj, info, mthing, sz, i, true); // previously double spawned monster might block
 	}
@@ -5730,7 +5731,8 @@ AActor *FLevelLocals::SpawnMapThing (FMapThing *mthing, int position)
 		SetMobj(this, mobj, mthing, i);
 	}
 
-	if ((G_SkillProperty(SKILLP_DoubleSpawn) || (dmflags2 & DF2_DOUBLESPAWN)) && info->flags3 & MF3_ISMONSTER && (gameinfo.gametype == GAME_Doom || gameinfo.gametype == GAME_Heretic))
+	if ((G_SkillProperty(SKILLP_DoubleSpawn) || (dmflags2 & DF2_DOUBLESPAWN)) && info->flags3 & MF3_ISMONSTER
+		&& i->TypeName != NAME_SpiderMastermind && (gameinfo.gametype == GAME_Doom || gameinfo.gametype == GAME_Heretic))
 	{
 		mobj2 = AActor::StaticSpawn (this, i, DVector3(mthing->pos.X + 2 * info->radius, mthing->pos.Y, sz), NO_REPLACE, true);
 		spawned = CheckDoubleSpawn (this, mobj2, info, mthing, sz, i, false);
