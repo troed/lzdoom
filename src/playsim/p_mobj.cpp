@@ -5290,7 +5290,7 @@ AActor *FLevelLocals::SpawnPlayer (FPlayerStart *mthing, int playernum, int flag
 	return mobj;
 }
 
-bool CheckDoubleSpawn (FLevelLocals *Level, AActor *&mobj, const AActor *info, const FMapThing *mthing, const DVector3 &pos, const double sz, PClassActor *type, bool first)
+bool CheckDoubleSpawn (FLevelLocals *Level, AActor *&mobj, const AActor *info, const FMapThing *mthing, const double sz, PClassActor *type, bool first)
 {
 	bool spawned = true;
 
@@ -5722,7 +5722,7 @@ AActor *FLevelLocals::SpawnMapThing (FMapThing *mthing, int position)
 
 	if ((G_SkillProperty(SKILLP_DoubleSpawn) || (dmflags2 & DF2_DOUBLESPAWN)) && info->flags3 & MF3_ISMONSTER && (gameinfo.gametype == GAME_Doom || gameinfo.gametype == GAME_Heretic))
 	{
-		spawned = CheckDoubleSpawn (this, mobj, info, mthing, mobj->Pos(), sz, i, true); // previously double spawned monster might block
+		spawned = CheckDoubleSpawn (this, mobj, info, mthing, sz, i, true); // previously double spawned monster might block
 	}
 
 	if (spawned)
@@ -5733,7 +5733,7 @@ AActor *FLevelLocals::SpawnMapThing (FMapThing *mthing, int position)
 	if ((G_SkillProperty(SKILLP_DoubleSpawn) || (dmflags2 & DF2_DOUBLESPAWN)) && info->flags3 & MF3_ISMONSTER && (gameinfo.gametype == GAME_Doom || gameinfo.gametype == GAME_Heretic))
 	{
 		mobj2 = AActor::StaticSpawn (this, i, DVector3(mthing->pos.X + 2 * info->radius, mthing->pos.Y, sz), NO_REPLACE, true);
-		spawned = CheckDoubleSpawn (this, mobj2, info, mthing, mobj2->Pos(), sz, i, false);
+		spawned = CheckDoubleSpawn (this, mobj2, info, mthing, sz, i, false);
 		if (spawned)
 		{
 			SetMobj(this, mobj2, mthing, i);
