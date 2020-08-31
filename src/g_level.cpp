@@ -1564,6 +1564,7 @@ int FLevelLocals::FinishTravel ()
 		{
 			inv->ChangeStatNum (STAT_INVENTORY);
 			inv->LinkToWorld (nullptr);
+			P_FindFloorCeiling(inv, FFCF_ONLYSPAWNPOS);
 
 			IFVIRTUALPTRNAME(inv, NAME_Inventory, Travelled)
 			{
