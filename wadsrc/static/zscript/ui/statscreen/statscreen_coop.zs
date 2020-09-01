@@ -336,13 +336,20 @@ class CoopStatusScreen : StatusScreen
 		}
 
 		// Draw "OTHER" line
-		y += 3 * CleanYfac;
-		drawTextScaled(displayFont, name_x, y, Stringtable.Localize("$SCORE_OTHER"), FontScale, Font.CR_DARKGRAY);
-		drawPercentScaled(displayFont, kills_x, y, cnt_otherkills, wbs.maxkills, FontScale, Font.CR_DARKGRAY);
-		missed_kills -= cnt_otherkills;
+		if (screen.GetHeight()>200)
+		{
+			y += 3 * CleanYfac;
+			drawTextScaled(displayFont, name_x, y, Stringtable.Localize("$SCORE_OTHER"), FontScale, Font.CR_DARKGRAY);
+			drawPercentScaled(displayFont, kills_x, y, cnt_otherkills, wbs.maxkills, FontScale, Font.CR_DARKGRAY);
+			missed_kills -= cnt_otherkills;
 
 		// Draw "MISSED" line
-		y += height + 3 * CleanYfac;
+			y += height + 3 * CleanYfac;
+		}
+		else
+		{
+			y += 3 * CleanYfac;
+		}
 		drawTextScaled(displayFont, name_x, y, Stringtable.Localize("$SCORE_MISSED"), FontScale, Font.CR_DARKGRAY);
 		drawPercentScaled(displayFont, kills_x, y, missed_kills, wbs.maxkills, FontScale, Font.CR_DARKGRAY);
 		if (ng_state >= 4)
@@ -368,13 +375,16 @@ class CoopStatusScreen : StatusScreen
 		}
 
 		// Draw "TIME" line
-		y += height + 3 * CleanYfac;
-		drawTextScaled(displayFont, name_x, y, Stringtable.Localize("$TXT_IMTIME"), FontScale, textcolor);
-
-		if (ng_state >= 8)
+		if (screen.GetHeight()>200)
 		{
-			drawTimeScaled(displayFont, kills_x, y, cnt_time, FontScale, textcolor);
-			drawTimeScaled(displayFont, secret_x, y, cnt_total_time, FontScale, textcolor);
+			y += height + 3 * CleanYfac;
+			drawTextScaled(displayFont, name_x, y, Stringtable.Localize("$TXT_IMTIME"), FontScale, textcolor);
+
+			if (ng_state >= 8)
+			{
+				drawTimeScaled(displayFont, kills_x, y, cnt_time, FontScale, textcolor);
+				drawTimeScaled(displayFont, secret_x, y, cnt_total_time, FontScale, textcolor);
+			}
 		}
 	}
 }
