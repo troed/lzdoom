@@ -928,6 +928,7 @@ bool FLevelLocals::DoCompleted (FString nextlevel, wbstartstruct_t &wminfo)
 	nextlevel = wminfo.next;
 
 	wminfo.next_ep = FindLevelInfo (wminfo.next)->cluster - 1;
+	wminfo.totalkills = killed_monsters;
 	wminfo.maxkills = total_monsters;
 	wminfo.maxitems = total_items;
 	wminfo.maxsecret = total_secrets;
@@ -1441,6 +1442,7 @@ void FLevelLocals::StartTravel ()
 			if (Players[i]->health > 0)
 			{
 				pawn->UnlinkFromWorld (nullptr);
+				pawn->BlockingLine = nullptr;
 				int tid = pawn->tid;	// Save TID
 				pawn->SetTID(0);
 				pawn->tid = tid;		// Restore TID (but no longer linked into the hash chain)
