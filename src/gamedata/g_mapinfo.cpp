@@ -2466,12 +2466,13 @@ void G_ParseMapInfo (FString basemapinfo)
 		I_FatalError ("You cannot use clearskills in a MAPINFO if you do not define any new skills after it.");
 	}
 
-	for(unsigned int i = 0; i < AllSkills.Size(); i++)
+	if (Args->CheckParm("-nod2monsters"))
+		sv_nodoom2monsters = true;
+
+	if (sv_nodoom2monsters && !netcompat && gameinfo.gametype == GAME_Doom) // Play with only original Doom monsters
 	{
-		if ((Args->CheckParm("-nod2monsters") || sv_nodoom2monsters) && !netcompat && gameinfo.gametype == GAME_Doom) // Play with only original Doom monsters
-		{
+		for (unsigned int i = 0; i < AllSkills.Size(); i++)
 			AllSkills[i].SetClassicModeReplacements();
-		}
 	}
 }
 
