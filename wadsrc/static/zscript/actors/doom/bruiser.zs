@@ -141,6 +141,14 @@ class BaronBall : Actor
 	}
 }
 
+class ArachnotronReplacer_LZ : BaronOfHell
+{
+}
+
+class FatsoReplacer_LZ : BaronOfHell
+{
+}
+
 //===========================================================================
 //
 // Code (must be attached to Actor)

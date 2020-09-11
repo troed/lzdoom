@@ -606,14 +606,14 @@ void FSkillInfo::SetReplacement(FName a, FName b)
 
 void FSkillInfo::SetClassicModeReplacements()
 {
-	Replace[FName("Arachnotron")] = FName("BaronOfHell");
-	Replaced[FName("BaronOfHell")] = FName("Arachnotron");
+	Replace[FName("Arachnotron")] = FName("ArachnotronReplacer_LZ");
+	Replaced[FName("ArachnotronReplacer_LZ")] = FName("Arachnotron");
 	Replace[FName("Archvile")] = FName("BaronOfHell");
 	Replaced[FName("BaronOfHell")] = FName("Archvile");
 	Replace[FName("HellKnight")] = FName("BaronOfHell");
 	Replaced[FName("BaronOfHell")] = FName("HellKnight");
-	Replace[FName("Fatso")] = FName("BaronOfHell");
-	Replaced[FName("BaronOfHell")] = FName("Fatso");
+	Replace[FName("Fatso")] = FName("FatsoReplacer_LZ");
+	Replaced[FName("FatsoReplacer_LZ")] = FName("Fatso");
 	Replace[FName("PainElemental")] = FName("Cacodemon");
 	Replaced[FName("Cacodemon")] = FName("PainElemental");
 	Replace[FName("ChaingunGuy")] = FName("ZombieMan");
