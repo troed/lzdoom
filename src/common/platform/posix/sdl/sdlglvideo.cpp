@@ -75,7 +75,6 @@
 // PRIVATE FUNCTION PROTOTYPES ---------------------------------------------
 
 // EXTERNAL DATA DECLARATIONS ----------------------------------------------
-extern double refreshfreq;
 extern IVideo *Video;
 
 EXTERN_CVAR (Int, vid_adapter)
@@ -450,19 +449,6 @@ SDLVideo::SDLVideo ()
 	if (Priv::softpolyEnabled || Priv::softpolyForced)
 	{
 		Priv::CreateWindow(SDL_WINDOW_HIDDEN);
-	}
-
-	// Get refresh rate for current display.
-	SDL_DisplayMode display;
-
-	if(SDL_GetCurrentDisplayMode(vid_adapter, &display) == 0)
-	{
-		refreshfreq = display.refresh_rate;
-	}
-	else
-	{
-		fprintf(stderr, "Failed to get refresh rate: %s\n", SDL_GetError());
-		return;
 	}
 }
 

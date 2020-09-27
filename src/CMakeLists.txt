@@ -890,7 +890,6 @@ set (PCH_SOURCES
 	gameconfigfile.cpp
 	gitinfo.cpp
 	hu_scores.cpp
-	i_net.cpp
 	m_cheat.cpp
 	m_misc.cpp
 	playsim/p_acs.cpp
@@ -1087,6 +1086,7 @@ set (PCH_SOURCES
 	common/textures/skyboxtexture.cpp
 	common/textures/animtexture.cpp
 	common/textures/v_collection.cpp
+	common/textures/animlib.cpp
 	common/textures/formats/automaptexture.cpp
 	common/textures/formats/brightmaptexture.cpp
 	common/textures/formats/buildtexture.cpp
@@ -1105,6 +1105,7 @@ set (PCH_SOURCES
 	common/textures/formats/shadertexture.cpp
 	common/textures/formats/tgatexture.cpp
 	common/textures/formats/stbtexture.cpp
+	common/textures/formats/anmtexture.cpp
 	common/textures/hires/hqresize.cpp
 	common/models/models_md3.cpp
 	common/models/models_md2.cpp
@@ -1137,6 +1138,7 @@ set (PCH_SOURCES
 	common/utility/zstrformat.cpp
 	common/utility/name.cpp
 	common/utility/r_memory.cpp
+	common/thirdparty/base64.cpp
 	common/thirdparty/md5.cpp
  	common/thirdparty/superfasthash.cpp
 	common/filesystem/filesystem.cpp
@@ -1149,6 +1151,7 @@ set (PCH_SOURCES
 	common/filesystem/file_zip.cpp
 	common/filesystem/file_pak.cpp
 	common/filesystem/file_whres.cpp
+	common/filesystem/file_ssi.cpp
 	common/filesystem/file_directory.cpp
 	common/filesystem/resourcefile.cpp
 	common/engine/cycler.cpp
@@ -1157,6 +1160,7 @@ set (PCH_SOURCES
 	common/engine/sc_man.cpp
 	common/engine/palettecontainer.cpp
 	common/engine/stringtable.cpp
+	common/engine/i_net.cpp
 	common/engine/i_interface.cpp
 	common/engine/renderstyle.cpp
 	common/engine/v_colortables.cpp
