@@ -847,13 +847,14 @@ void G_DoCompleted (void)
 	// Close the conversation menu if open.
 	P_FreeStrifeConversations ();
 
+	bool playinter = primaryLevel->DoCompleted(nextlevel, staticWmInfo);
 	S_StopAllChannels();
 	for (auto Level : AllLevels())
 	{
 		SN_StopAllSequences(Level);
 	}
 
-	if (primaryLevel->DoCompleted(nextlevel, staticWmInfo))
+	if (playinter)
 	{
 		gamestate = GS_INTERMISSION;
 		viewactive = false;
@@ -1744,8 +1745,7 @@ FString CalcMapName (int episode, int level)
 	}
 	else
 	{
-		lumpname = "";
-		lumpname << 'E' << ('0' + episode) << 'M' << ('0' + level);
+		lumpname.Format("E%01dM%01d", episode, level);
 	}
 	return lumpname;
 }

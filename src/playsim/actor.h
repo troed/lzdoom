@@ -414,9 +414,8 @@ enum ActorFlag8
 	MF8_STOPRAILS		= 0x00000200,	// [MC] Prevent rails from going further if an actor has this flag.
 	MF8_ABSVIEWANGLES	= 0x00000400,	// [MC] By default view angle/pitch/roll is an offset. This will make it absolute instead.
 	MF8_FALLDAMAGE		= 0x00000800,	// Monster will take fall damage regardless of map settings.
-	MF8_LINKEDTOWORLD	= 0x00001000,	// actor is currently linked to the blockmap and sector chain.
-	MF8_CASTSPRITESHADOW	= 0x00002000, // Sprite shadow overrides
-	MF8_NOSPRITESHADOW		= 0x00004000, // Ditto
+	MF8_CASTSPRITESHADOW	= 0x00001000, // Sprite shadow overrides
+	MF8_NOSPRITESHADOW		= 0x00002000, // Ditto
 };
 
 // --- mobj.renderflags ---
