@@ -91,6 +91,8 @@
 #include "i_time.h"
 #include "p_maputl.h"
 #include "s_music.h"
+#include "fragglescript/t_script.h"
+
 #include "texturemanager.h"
 
 void STAT_StartNewGame(const char *lev);
@@ -168,7 +170,7 @@ extern FString BackupSaveName;
 bool savegamerestore;
 int finishstate = FINISH_NoHub;
 
-extern int mousex, mousey;
+extern float mousex, mousey;
 extern bool sendpause, sendsave, sendturn180, SendLand;
 
 void *statcopy;					// for statistics driver
@@ -374,6 +376,8 @@ void G_NewInit ()
 		pawn->flags |= MF_NOSECTOR | MF_NOBLOCKMAP;
 		pawn->Destroy();
 	}
+	if (primaryLevel->FraggleScriptThinker) primaryLevel->FraggleScriptThinker->Destroy();
+	primaryLevel->FraggleScriptThinker = nullptr;
 
 	G_ClearSnapshots ();
 	netgame = false;
