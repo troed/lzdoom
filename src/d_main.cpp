@@ -392,6 +392,8 @@ void D_GrabCVarDefaults()
 				// out.
 				if (strcmp(CurrentFindCVar, "mouse_sensitivity") == 0)
 					break;
+				if (strcmp(CurrentFindCVar, "m_noprescale") == 0)
+					break;
 			}
 
 			var = FindCVar(CurrentFindCVar, NULL);
@@ -3051,8 +3053,7 @@ static int D_DoomMain_Internal (void)
 	};
 	GStrings.SetCallbacks(&stblcb);
 
-	static SystemCallbacks syscb =
-	{
+	sysCallbacks = {
 		System_WantGuiCapture,
 		System_WantLeftButton,
 		System_NetGame,
@@ -3069,7 +3070,7 @@ static int D_DoomMain_Internal (void)
 		System_GetPlayerName,
 		System_DispatchEvent,
 	};
-	sysCallbacks = &syscb;
+
 	
 	std::set_new_handler(NewFailure);
 	const char *batchout = Args->CheckValue("-errorlog");
