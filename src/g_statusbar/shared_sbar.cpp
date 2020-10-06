@@ -154,7 +154,7 @@ CVAR (Bool, idmypos, false, 0);
 //
 //==========================================================================
 
-void V_DrawFrame(F2DDrawer* drawer, int left, int top, int width, int height)
+void V_DrawFrame(F2DDrawer* drawer, int left, int top, int width, int height, bool scalemode)
 {
 	FGameTexture* p;
 	const gameborder_t* border = &gameinfo.Border;
@@ -168,7 +168,7 @@ void V_DrawFrame(F2DDrawer* drawer, int left, int top, int width, int height)
 	float sw = drawer->GetClassicFlatScalarWidth();
 	float sh = drawer->GetClassicFlatScalarHeight();
 
-	if (!ui_screenborder_classic_scaling)
+	if (!scalemode)
 	{
 		// Draw top and bottom sides.
 		p = TexMan.GetGameTextureByName(border->t);
@@ -222,7 +222,7 @@ DEFINE_ACTION_FUNCTION(_Screen, DrawFrame)
 	PARAM_INT(w);
 	PARAM_INT(h);
 	if (!twod->HasBegun2D()) ThrowAbortException(X_OTHER, "Attempt to draw to screen outside a draw function");
-	V_DrawFrame(twod, x, y, w, h);
+	V_DrawFrame(twod, x, y, w, h, false);
 	return 0;
 }
 
@@ -1049,7 +1049,7 @@ void DBaseStatusBar::RefreshViewBorder ()
 		DrawBorder(twod, tex, viewwindowx + viewwidth, viewwindowy, Width, viewheight + viewwindowy);
 		DrawBorder(twod, tex, 0, viewwindowy + viewheight, Width, StatusBar->GetTopOfStatusbar());
 		
-		V_DrawFrame(twod, viewwindowx, viewwindowy, viewwidth, viewheight);
+		V_DrawFrame(twod, viewwindowx, viewwindowy, viewwidth, viewheight, ui_screenborder_classic_scaling);
 	}
 }
 
