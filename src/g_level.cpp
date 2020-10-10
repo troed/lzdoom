@@ -767,7 +767,7 @@ const char *FLevelLocals::GetSecretExitMap()
 
 	if (NextSecretMap.Len() > 0)
 	{
-		if (P_CheckMapData(NextSecretMap))
+		if (NextSecretMap.Compare("enDSeQ", 6) == 0 || P_CheckMapData(NextSecretMap))
 		{
 			nextmap = NextSecretMap;
 		}
