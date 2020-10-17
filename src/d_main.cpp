@@ -3050,13 +3050,6 @@ static int D_DoomMain_Internal (void)
 	buttonMap.GetButton(Button_Mlook)->bReleaseLock = true;
 	buttonMap.GetButton(Button_Klook)->bReleaseLock = true;
 
-	static StringtableCallbacks stblcb =
-	{
-		StrTable_ValidFilter,
-		StrTable_GetGender
-	};
-	GStrings.SetCallbacks(&stblcb);
-
 	sysCallbacks = {
 		System_WantGuiCapture,
 		System_WantLeftButton,
@@ -3073,6 +3066,9 @@ static int D_DoomMain_Internal (void)
 		System_M_Dim,
 		System_GetPlayerName,
 		System_DispatchEvent,
+		StrTable_ValidFilter,
+		StrTable_GetGender
+
 	};
 
 	
@@ -3146,16 +3142,6 @@ static int D_DoomMain_Internal (void)
 	GameConfig->DoAutoloadSetup(iwad_man);
 
 	// reinit from here
-
-	ConsoleCallbacks cb = {
-		D_UserInfoChanged,
-		D_SendServerInfoChange,
-		D_SendServerFlagChange,
-		G_GetUserCVar,
-		[]() { return gamestate != GS_FULLCONSOLE && gamestate != GS_STARTUP; }
-	};
-
-	C_InstallHandlers(&cb);
 
 	do
 	{
@@ -3452,6 +3438,7 @@ static int D_DoomMain_Internal (void)
 		FinishDehPatch();
 
 		if (!batchrun) Printf("M_Init: Init menus.\n");
+		SetDefaultMenuColors();
 		M_Init();
 		M_CreateGameMenus();
 
@@ -3643,6 +3630,17 @@ int GameMain()
 {
 	int ret = 0;
 	GameTicRate = TICRATE;
+
+	ConsoleCallbacks cb = {
+		D_UserInfoChanged,
+		D_SendServerInfoChange,
+		D_SendServerFlagChange,
+		G_GetUserCVar,
+		[]() { return gamestate != GS_FULLCONSOLE && gamestate != GS_STARTUP; }
+	};
+
+	C_InstallHandlers(&cb);
+
 	try
 	{
 		ret = D_DoomMain_Internal();

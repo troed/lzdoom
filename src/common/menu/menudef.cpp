@@ -49,11 +49,10 @@
 #include <zmusic.h>
 #include "texturemanager.h"
 #include "printf.h"
+#include "i_interface.h"
 
 
-bool CheckGame(const char* string, bool chexisdoom);
 bool CheckSkipGameOptionBlock(FScanner& sc);
-void SetDefaultMenuColors();
 
 MenuDescriptorList MenuDescriptors;
 static DListMenuDescriptor *DefaultListMenuSettings;	// contains common settings for all list menus
@@ -152,6 +151,11 @@ void DeinitMenus()
 	}
 	MenuDescriptors.Clear();
 	OptionValues.Clear();
+	if (menuCustomizer)
+	{
+		menuCustomizer->Destroy();
+		menuCustomizer = nullptr;
+	}
 }
 
 FTextureID GetMenuTexture(const char* const name)
@@ -175,13 +179,7 @@ FTextureID GetMenuTexture(const char* const name)
 static void SkipSubBlock(FScanner &sc)
 {
 	sc.MustGetStringName("{");
-	int depth = 1;
-	while (depth > 0)
-	{
-		sc.MustGetString();
-		if (sc.Compare("{")) depth++;
-		if (sc.Compare("}")) depth--;
-	}
+	sc.SkipToEndOfBlock();
 }
 
 //=============================================================================
@@ -190,18 +188,18 @@ static void SkipSubBlock(FScanner &sc)
 //
 //=============================================================================
 
-static bool CheckSkipGameBlock(FScanner &sc)
+static bool CheckSkipGameBlock(FScanner &sc, bool yes = true)
 {
 	bool filter = false;
 	sc.MustGetStringName("(");
 	do
 	{
 		sc.MustGetString();
-		filter |= CheckGame(sc.String, false);
+		if (sysCallbacks.CheckGame) filter |= sysCallbacks.CheckGame(sc.String);
 	}
 	while (sc.CheckString(","));
 	sc.MustGetStringName(")");
-	if (!filter)
+	if (filter != yes)
 	{
 		SkipSubBlock(sc);
 		return !sc.CheckString("else");
@@ -283,6 +281,14 @@ static void ParseListMenuBody(FScanner &sc, DListMenuDescriptor *desc)
 		else if (sc.Compare("ifgame"))
 		{
 			if (!CheckSkipGameBlock(sc))
+			{
+				// recursively parse sub-block
+				ParseListMenuBody(sc, desc);
+			}
+		}
+		else if (sc.Compare("ifnotgame"))
+		{
+			if (!CheckSkipGameBlock(sc, false))
 			{
 				// recursively parse sub-block
 				ParseListMenuBody(sc, desc);
@@ -779,6 +785,14 @@ static void ParseOptionSettings(FScanner &sc)
 				ParseOptionSettings(sc);
 			}
 		}
+		else if (sc.Compare("ifnotgame"))
+		{
+			if (!CheckSkipGameBlock(sc, false))
+			{
+				// recursively parse sub-block
+				ParseOptionSettings(sc);
+			}
+		}
 		else if (sc.Compare("Linespacing"))
 		{
 			sc.MustGetNumber();
@@ -825,6 +839,14 @@ static void ParseOptionMenuBody(FScanner &sc, DOptionMenuDescriptor *desc)
 				ParseOptionMenuBody(sc, desc);
 			}
 		}
+		else if (sc.Compare("ifnotgame"))
+		{
+			if (!CheckSkipGameBlock(sc, false))
+			{
+				// recursively parse sub-block
+				ParseOptionMenuBody(sc, desc);
+			}
+		}
 		else if (sc.Compare("ifoption"))
 		{
 			if (!CheckSkipOptionBlock(sc))
@@ -843,7 +865,7 @@ static void ParseOptionMenuBody(FScanner &sc, DOptionMenuDescriptor *desc)
 			}
 			desc->mClass = cls;
 		}
-		else if (sc.Compare("Title"))
+		else if (sc.Compare({ "Title", "Caption" }))
 		{
 			sc.MustGetString();
 			desc->mTitle = sc.String;
@@ -1041,7 +1063,6 @@ void M_ParseMenuDefs()
 {
 	int lump, lastlump = 0;
 
-	SetDefaultMenuColors();
 	// these are supposed to get GC'd after parsing is complete.
 	DefaultListMenuSettings = Create<DListMenuDescriptor>();
 	DefaultOptionMenuSettings = Create<DOptionMenuDescriptor>();
@@ -1204,31 +1225,3 @@ void M_CreateMenus()
 }
 
 
-
-
-#if defined (_WIN32) && defined (HAVE_OPENGL)
-EXTERN_CVAR(Bool, vr_enable_quadbuffered)
-#endif
-
-void UpdateVRModes(bool considerQuadBuffered)
-{
-	FOptionValues ** pVRModes = OptionValues.CheckKey("VRMode");
-	if (pVRModes == nullptr) return;
-
-	TArray<FOptionValues::Pair> & vals = (*pVRModes)->mValues;
-	TArray<FOptionValues::Pair> filteredValues;
-	int cnt = vals.Size();
-	for (int i = 0; i < cnt; ++i) {
-		auto const & mode = vals[i];
-		if (mode.Value == 7) {  // Quad-buffered stereo
-#if defined (_WIN32) && defined (HAVE_OPENGL)
-			if (!vr_enable_quadbuffered) continue;
-#else
-			continue;  // Remove quad-buffered option on Mac and Linux
-#endif
-			if (!considerQuadBuffered) continue;  // Probably no compatible screen mode was found
-		}
-		filteredValues.Push(mode);
-	}
-	vals = filteredValues;
-}

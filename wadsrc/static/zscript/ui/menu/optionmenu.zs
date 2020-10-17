@@ -239,19 +239,11 @@ class OptionMenu : Menu
 				if (mDesc.mSelectedItem < 0) 
 				{
 					// Figure out how many lines of text fit on the menu
-					int y = mDesc.mPosition;
+					int y = mDesc.mPosition; 
 
 					if (y <= 0)
 					{
-						let font = generic_ui || !mDesc.mFont? NewSmallFont : mDesc.mFont;
-						if (font && mDesc.mTitle.Length() > 0)
-						{
-							y = -y + font.GetHeight();
-						}
-						else
-						{
-							y = -y;
-						}
+						y = DrawCaption(mDesc.mTitle, y, false);
 					}
 					y *= CleanYfac_1;
 					int	rowheight = linespacing * CleanYfac_1;
@@ -445,25 +437,39 @@ class OptionMenu : Menu
 		return indent;
 	}
 
+	//=============================================================================
+	//
+	// draws and/or measures the caption. 
+	//
+	//=============================================================================
+
+	virtual int DrawCaption(String title, int y, bool drawit)
+	{
+		let font = generic_ui || !mDesc.mFont ? NewSmallFont : mDesc.mFont;
+		if (font && mDesc.mTitle.Length() > 0)
+		{
+			return menuCustomizer.DrawCaption(title, font, y, drawit);
+		}
+		else
+		{
+			return y;
+		}
+
+	}
+
+	//=============================================================================
+	//
+	//
+	//
+	//=============================================================================
+
 	override void Drawer ()
 	{
 		int y = mDesc.mPosition;
 
 		if (y <= 0)
 		{
-			let font = generic_ui || !mDesc.mFont? NewSmallFont : mDesc.mFont;
-			if (font && mDesc.mTitle.Length() > 0)
-			{
-				let tt = Stringtable.Localize(mDesc.mTitle);
-				screen.DrawText (font, OptionMenuSettings.mTitleColor,
-					(screen.GetWidth() - font.StringWidth(tt) * CleanXfac_1) / 2, 10*CleanYfac_1,
-					tt, DTA_CleanNoMove_1, true);
-				y = -y + font.GetHeight();
-			}
-			else
-			{
-				y = -y;
-			}
+			y = DrawCaption(mDesc.mTitle, -y, true);
 		}
 		mDesc.mDrawTop = y;
 		int fontheight = linespacing * CleanYfac_1;
@@ -541,32 +547,6 @@ class OptionMenu : Menu
 	}
 }
 
-
-class GameplayMenu : OptionMenu
-{
-	override void Drawer ()
-	{
-		Super.Drawer();
-
-		String s = String.Format("dmflags = %d   dmflags2 = %d", dmflags, dmflags2);
-		screen.DrawText (OptionFont(), OptionMenuSettings.mFontColorValue,
-			(screen.GetWidth() - OptionWidth (s) * CleanXfac_1) / 2, 35 * CleanXfac_1, s,
-			DTA_CleanNoMove_1, true);
-	}
-}
-
-class CompatibilityMenu : OptionMenu
-{
-	override void Drawer ()
-	{
-		Super.Drawer();
-
-		String s = String.Format("compatflags = %d  compatflags2 = %d", compatflags, compatflags2);
-		screen.DrawText (OptionFont(), OptionMenuSettings.mFontColorValue,
-			(screen.GetWidth() - OptionWidth (s) * CleanXfac_1) / 2, 35 * CleanXfac_1, s,
-			DTA_CleanNoMove_1, true);
-	}
-}
 
 class GLTextureGLOptions : OptionMenu
 {
