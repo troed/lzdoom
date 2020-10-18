@@ -158,6 +158,7 @@ struct _ native	// These are the global variables, the struct is only here to av
 	native readonly Font CurrentConsoleFont;
 	native readonly Font NewSmallFont;
 	native readonly Font AlternativeSmallFont;
+	native readonly Font AlternativeBigFont;
 	native readonly Font OriginalSmallFont;
 	native readonly Font OriginalBigFont;
 	native readonly Font intermissionfont;
@@ -177,8 +178,9 @@ struct _ native	// These are the global variables, the struct is only here to av
 	native readonly @MusPlayingInfo musplaying;
 	native readonly bool generic_ui;
 	native readonly int GameTicRate;
-	native MenuCustomize menuCustomizer;
+	native MenuDelegateBase menuDelegate;
 	native readonly int consoleplayer;
+	native readonly double NotifyFontScale;
 }
 
 struct MusPlayingInfo native
@@ -231,7 +233,7 @@ struct TexMan
 		NOT_FLAT			= 24
 	};
 
-	native static TextureID CheckForTexture(String name, int usetype, int flags = TryAny);
+	native static TextureID CheckForTexture(String name, int usetype = Type_Any, int flags = TryAny);
 	native static String GetName(TextureID tex);
 	native static int, int GetSize(TextureID tex);
 	native static Vector2 GetScaledSize(TextureID tex);
@@ -349,6 +351,7 @@ enum DrawTextureTags
 	DTA_FlipOffsets,		// Flips offsets when using DTA_FlipX and DTA_FlipY, this cannot be automatic due to unexpected behavior with unoffsetted graphics.
 	DTA_Indexed,			// Use an indexed texture combined with the given translation.
 	DTA_CleanTop,			// Like DTA_Clean but aligns to the top of the screen instead of the center.
+	DTA_NoOffset,			// Ignore 2D drawer's offset.
 
 };
 
@@ -390,6 +393,7 @@ struct Screen native
 	native static vararg void DrawChar(Font font, int normalcolor, double x, double y, int character, ...);
 	native static vararg void DrawText(Font font, int normalcolor, double x, double y, String text, ...);
 	native static void DrawLine(int x0, int y0, int x1, int y1, Color color, int alpha = 255);
+	native static void DrawLineFrame(Color color, int x0, int y0, int w, int h, int thickness = 1);
 	native static void DrawThickLine(int x0, int y0, int x1, int y1, double thickness, Color color, int alpha = 255);
 	native static Vector2, Vector2 VirtualToRealCoords(Vector2 pos, Vector2 size, Vector2 vsize, bool vbottom=false, bool handleaspect=true);
 	native static double GetAspectRatio();
@@ -398,6 +402,7 @@ struct Screen native
 	native static int, int, int, int GetClipRect();
 	native static int, int, int, int GetViewWindow();
 	native static double, double, double, double GetFullscreenRect(double vwidth, double vheight, int fsmode);
+	native static Vector2 SetOffset(double x, double y);
 }
 
 struct Font native
@@ -483,6 +488,7 @@ struct Font native
 	native static Font FindFont(Name fontname);
 	native static Font GetFont(Name fontname);
 	native BrokenLines BreakLines(String text, int maxlen);
+	native int GetGlyphHeight(int code);
 }
 
 struct Console native
@@ -653,3 +659,12 @@ struct StringStruct native
 	native int CodePointCount() const;
 	native int, int GetNextCodePoint(int position) const;
 }
+
+struct Translation version("2.4")
+{
+	static int MakeID(int group, int num)
+	{
+		return (group << 16) + num;
+	}
+}
+

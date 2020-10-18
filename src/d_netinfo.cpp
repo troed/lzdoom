@@ -629,7 +629,7 @@ CVAR (Bool, netcompat, false, CVAR_ARCHIVE | CVAR_GLOBALCONFIG) // GZDoom compat
 
 bool D_SendServerInfoChange (FBaseCVar *cvar, UCVarValue value, ECVarType type)
 {
-	if (gamestate != GS_STARTUP && !demoplayback)
+	if (gamestate != GS_STARTUP && !demoplayback && !savegamerestore)
 	{
 		if (netgame && !players[consoleplayer].settings_controller)
 		{
@@ -663,7 +663,7 @@ bool D_SendServerInfoChange (FBaseCVar *cvar, UCVarValue value, ECVarType type)
 
 bool D_SendServerFlagChange (FBaseCVar *cvar, int bitnum, bool set, bool silent)
 {
-	if (gamestate != GS_STARTUP && !demoplayback)
+	if (gamestate != GS_STARTUP && !demoplayback && !savegamerestore)
 	{
 		if (netgame && !players[consoleplayer].settings_controller)
 		{

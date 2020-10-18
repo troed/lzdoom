@@ -89,7 +89,8 @@ extern int PrintColors[];
 EXTERN_CVAR(Bool, ui_classic);
 
 // PUBLIC DATA DEFINITIONS -------------------------------------------------
-FFont* SmallFont, * SmallFont2, * BigFont, * BigUpper, * ConFont, * IntermissionFont, * NewConsoleFont, * NewSmallFont, * CurrentConsoleFont, * OriginalSmallFont, * AlternativeSmallFont, * OriginalBigFont;
+FFont* SmallFont, * SmallFont2, * BigFont, * BigUpper, * ConFont, * IntermissionFont, * NewConsoleFont, * NewSmallFont, 
+	* CurrentConsoleFont, * OriginalSmallFont, * AlternativeSmallFont, * OriginalBigFont, *AlternativeBigFont;
 
 FFont *FFont::FirstFont = nullptr;
 int NumTextColors;
