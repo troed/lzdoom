@@ -275,8 +275,8 @@ void V_UpdateModeSize (int width, int height)
 
 	if (ui_classic)
 	{
-		if (w < 1024) factor = 1;
-		else if (w >= 1024 && w < 1600) factor = 2;
+		if (w < 960) factor = 1;
+		else if (w >= 960 && w < 1600) factor = 2;
 		else if (w >= 1600 && w < 1920) factor = 3; 
 		else factor = w / 640;
 	}
