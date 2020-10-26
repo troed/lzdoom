@@ -56,6 +56,7 @@
 #include "texturemanager.h"
 #include "v_draw.h"
 #include "i_interface.h"
+#include "gi.h"
 #include "v_video.h"
 #include "i_system.h"
 #include "menu.h"
@@ -121,6 +122,8 @@ static GameAtExit *ExitCmdList;
 #define SCROLLUP 1
 #define SCROLLDN 2
 #define SCROLLNO 0
+
+EXTERN_CVAR (Bool, ui_classic)
 
 // Buffer for AddToConsole()
 static char *work = NULL;
@@ -218,7 +221,10 @@ void C_InitConback(FTextureID fallback, bool tile, double brightness)
 	conflat = fallback;
 	if (!conback.isValid())
 	{
-		conback.SetInvalid();
+		if (ui_classic)
+			conback = TexMan.GetTextureID (gameinfo.TitlePage, ETextureType::MiscPatch);
+		else
+			conback.SetInvalid();
 		conshade = MAKEARGB(uint8_t(255 - 255*brightness),0,0,0);
 		conline = true;
 		if (!tile) conback = fallback;
@@ -602,7 +608,7 @@ void C_DrawConsole ()
 
 		visheight = ConBottom;
 
-		if (conback.isValid() && gamestate != GS_FULLCONSOLE)
+		if (conback.isValid())
 		{
 			DrawTexture (twod, TexMan.GetGameTexture(conback), 0, visheight - screen->GetHeight(),
 				DTA_DestWidth, twod->GetWidth(),
@@ -614,7 +620,7 @@ void C_DrawConsole ()
 		}
 		else
 		{
-			if (conflat.isValid() && gamestate != GS_FULLCONSOLE)
+			if (!ui_classic && conflat.isValid() && gamestate != GS_FULLCONSOLE)
 			{
 				int conbright = 255 - APART(conshade);
 				PalEntry pe((uint8_t(255 * con_alpha)), conbright, conbright, conbright);
