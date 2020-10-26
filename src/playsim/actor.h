@@ -416,6 +416,7 @@ enum ActorFlag8
 	MF8_FALLDAMAGE		= 0x00000800,	// Monster will take fall damage regardless of map settings.
 	MF8_CASTSPRITESHADOW	= 0x00001000, // Sprite shadow overrides
 	MF8_NOSPRITESHADOW		= 0x00002000, // Ditto
+	MF8_ALLOWTHRUBITS		= 0x00008000,	// [MC] Enable ThruBits property
 };
 
 // --- mobj.renderflags ---

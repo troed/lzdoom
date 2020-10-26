@@ -151,6 +151,7 @@ void P_Shutdown();
 void M_SaveDefaultsFinal();
 void R_Shutdown();
 void I_ShutdownInput();
+void SetConsoleNotifyBuffer();
 
 const FIWADInfo *D_FindIWAD(TArray<FString> &wadfiles, const char *iwad, const char *basewad);
 
@@ -1084,6 +1085,7 @@ void D_Display ()
 		switch (gamestate)
 		{
 			case GS_FULLCONSOLE:
+				D_PageDrawer();
 				C_DrawConsole ();
 				M_Drawer ();
 				End2DAndUpdate ();
@@ -2831,6 +2833,13 @@ FString System_GetPlayerName(int node)
 {
 	return players[node].userinfo.GetName();
 }
+
+void System_ConsoleToggled(int state)
+{
+	if (state == c_falling && hud_toggled)
+		D_ToggleHud();
+}
+
 //==========================================================================
 //
 // DoomSpecificInfo
@@ -3057,6 +3066,7 @@ static int D_DoomMain_Internal (void)
 		StrTable_GetGender,
 		nullptr,
 		CheckSkipGameOptionBlock,
+		System_ConsoleToggled,
 	};
 
 	
@@ -3357,7 +3367,7 @@ static int D_DoomMain_Internal (void)
 		TexMan.Init([]() { StartScreen->Progress(); }, CheckForHacks);
 		PatchTextures();
 		TexAnim.Init();
-		C_InitConback();
+		C_InitConback(TexMan.CheckForTexture(gameinfo.BorderFlat, ETextureType::Flat), true, 0.25);
 
 		FixWideStatusBar();
 
@@ -3628,6 +3638,7 @@ int GameMain()
 	};
 
 	C_InstallHandlers(&cb);
+	SetConsoleNotifyBuffer();
 
 	try
 	{

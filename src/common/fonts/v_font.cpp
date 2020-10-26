@@ -823,6 +823,7 @@ void V_InitFonts()
 		BigFont = OriginalBigFont;
 	}
 	AlternativeSmallFont = OriginalSmallFont;
+	AlternativeBigFont = OriginalBigFont;
 	if (ui_classic)
 		DisableGenericUI(true);
 }

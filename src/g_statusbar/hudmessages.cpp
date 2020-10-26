@@ -42,9 +42,10 @@
 #include "serialize_obj.h"
 #include "doomstat.h"
 #include "vm.h"
+#include "c_console.h"
 #include "v_draw.h"
 
-EXTERN_CVAR(Int, con_scaletext)
+EXTERN_CVAR (Bool, ui_classic)
 
 IMPLEMENT_CLASS(DHUDMessageBase, false, true)
 IMPLEMENT_POINTERS_START(DHUDMessageBase)
@@ -890,3 +891,55 @@ void DHUDMessageTypeOnFadeOut::DoDraw (int linenum, int x, int y, bool clean, in
 		DHUDMessageFadeOut::DoDraw (linenum, x, y, clean, hudheight);
 	}
 }
+
+/* Printing in the middle of the screen */
+
+CVAR(Float, con_midtime, 3.f, CVAR_ARCHIVE)
+
+static const char bar1[] = TEXTCOLOR_RED "\n\35\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36"
+						  "\36\36\36\36\36\36\36\36\36\36\36\36\37" TEXTCOLOR_TAN "\n";
+static const char bar2[] = TEXTCOLOR_RED "\n\35\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36"
+						  "\36\36\36\36\36\36\36\36\36\36\36\36\37" TEXTCOLOR_GREEN "\n";
+static const char bar3[] = TEXTCOLOR_RED "\n\35\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36"
+						  "\36\36\36\36\36\36\36\36\36\36\36\36\37" TEXTCOLOR_NORMAL "\n";
+
+const char *console_bar = "----------------------------------------";
+
+void C_MidPrint (FFont *font, const char *msg, bool bold)
+{
+	if (StatusBar == nullptr || screen == nullptr)
+		return;
+
+	// [MK] allow the status bar to take over MidPrint
+	IFVIRTUALPTR(StatusBar, DBaseStatusBar, ProcessMidPrint)
+	{
+		FString msgstr = msg;
+		VMValue params[] = { (DObject*)StatusBar, font, &msgstr, bold };
+		int rv;
+		VMReturn ret(&rv);
+		VMCall(func, params, countof(params), &ret, 1);
+		if (!!rv) return;
+	}
+
+	if (msg != nullptr)
+	{
+		auto color = (EColorRange)PrintColors[bold? PRINTLEVELS+1 : PRINTLEVELS];
+		if (ui_classic)
+		{
+			AddToConsole (-1, bar1);
+			AddToConsole (-1, msg);
+			AddToConsole (-1, bar3);
+		}
+		else
+		{
+			Printf(PRINT_HIGH|PRINT_NONOTIFY, TEXTCOLOR_ESCAPESTR "%c%s\n%s\n%s\n", color, console_bar, msg, console_bar);
+		}
+
+		StatusBar->AttachMessage (Create<DHUDMessage>(font, msg, 1.5f, 0.375f, 0, 0, color, con_midtime), MAKE_ID('C','N','T','R'));
+	}
+	else
+	{
+		StatusBar->DetachMessage (MAKE_ID('C','N','T','R'));
+	}
+}
+
