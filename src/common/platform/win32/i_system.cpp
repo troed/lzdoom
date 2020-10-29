@@ -924,6 +924,31 @@ bool I_WriteIniFailed()
 	return MessageBoxA(Window, errortext.GetChars(), GAMENAME " configuration not saved", MB_ICONEXCLAMATION | MB_RETRYCANCEL) == IDRETRY;
 }
 
+void CheckFreeRAM(bool abort)
+{
+	MEMORYSTATUSEX statex;
+	statex.dwLength = sizeof(statex);
+	uint32_t FreeKBytes;
+
+	if (GC::AllocBytes/(1024*1024) < 1024)
+		return;
+
+	GlobalMemoryStatusEx (&statex);
+	FreeKBytes = statex.ullAvailPhys/1024;
+	if (FreeKBytes/1024 < 256 && FreeKBytes/1024 > 128)
+	{
+		Printf (TEXTCOLOR_RED "Warning: system free ram (%lu MB) is very low. You should quit now.\n", (unsigned long)FreeKBytes/1024);
+	}
+	else if (FreeKBytes/1024 < 128)
+	{
+		if (abort)
+			I_FatalError ("System free ram critical. Aborting.\nTo disable this check set cl_checkram to false.\n");	
+		else
+			Printf (TEXTCOLOR_RED "Warning: system free ram (%lu MB) critical. You should save or quit right now.\n", (unsigned long)FreeKBytes/1024);
+	}
+
+	return;
+}
 
 //==========================================================================
 //

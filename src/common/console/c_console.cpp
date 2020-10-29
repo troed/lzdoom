@@ -124,6 +124,7 @@ static GameAtExit *ExitCmdList;
 #define SCROLLNO 0
 
 EXTERN_CVAR (Bool, ui_classic)
+EXTERN_CVAR (Bool, cl_checkram)
 
 // Buffer for AddToConsole()
 static char *work = NULL;
@@ -753,6 +754,10 @@ void C_ToggleConsole ()
 		togglestate = c_rising;
 	}
 	else return;
+
+	if (cl_checkram && (togglestate == c_down || togglestate == c_falling))
+		CheckFreeRAM(false);
+
 	// This must be done as an event callback because the client code does not control the console toggling.
 	if (sysCallbacks.ConsoleToggled) sysCallbacks.ConsoleToggled(togglestate);
 }
