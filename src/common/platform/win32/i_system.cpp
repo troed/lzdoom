@@ -127,6 +127,13 @@ extern bool ConWindowHidden;
 
 CVAR (String, queryiwad_key, "shift", CVAR_GLOBALCONFIG|CVAR_ARCHIVE);
 CVAR (Bool, con_debugoutput, false, 0);
+#ifdef _WIN32
+bool checkram;
+CUSTOM_CVAR (Bool, cl_checkram, true, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
+{
+	checkram = self;
+}
+#endif
 
 double PerfToSec, PerfToMillisec;
 
@@ -924,7 +931,8 @@ bool I_WriteIniFailed()
 	return MessageBoxA(Window, errortext.GetChars(), GAMENAME " configuration not saved", MB_ICONEXCLAMATION | MB_RETRYCANCEL) == IDRETRY;
 }
 
-void CheckFreeRAM(bool abort)
+#ifdef _WIN32
+void CheckFreeRAM()
 {
 	MEMORYSTATUSEX statex;
 	statex.dwLength = sizeof(statex);
@@ -935,20 +943,12 @@ void CheckFreeRAM(bool abort)
 
 	GlobalMemoryStatusEx (&statex);
 	FreeKBytes = statex.ullAvailPhys/1024;
-	if (FreeKBytes/1024 < 256 && FreeKBytes/1024 > 128)
-	{
-		Printf (TEXTCOLOR_RED "Warning: system free ram (%lu MB) is very low. You should quit now.\n", (unsigned long)FreeKBytes/1024);
-	}
-	else if (FreeKBytes/1024 < 128)
-	{
-		if (abort)
-			I_FatalError ("System free ram critical. Aborting.\nTo disable this check set cl_checkram to false.\n");	
-		else
-			Printf (TEXTCOLOR_RED "Warning: system free ram (%lu MB) critical. You should save or quit right now.\n", (unsigned long)FreeKBytes/1024);
-	}
+	if (FreeKBytes/1024 < 128)
+		I_FatalError ("System free ram is very low. Aborting.\nTo disable this check set cl_checkram to false.\n");
 
 	return;
 }
+#endif
 
 //==========================================================================
 //

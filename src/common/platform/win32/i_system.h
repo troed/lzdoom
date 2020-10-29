@@ -17,8 +17,6 @@ void I_DetectOS (void);
 // Called by DoomMain.
 void CalculateCPUSpeed (void);
 
-void CheckFreeRAM(bool abort);
-
 // Return a seed value for the RNG.
 unsigned int I_MakeRNGSeed();
 

@@ -118,7 +118,6 @@ CVAR (Bool, longsavemessages, true, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 CVAR (String, save_dir, "", CVAR_ARCHIVE|CVAR_GLOBALCONFIG);
 CVAR (Bool, cl_waitforsave, true, CVAR_ARCHIVE | CVAR_GLOBALCONFIG);
 CVAR (Bool, enablescriptscreenshot, false, CVAR_ARCHIVE | CVAR_GLOBALCONFIG);
-CVAR (Bool, cl_checkram, true, CVAR_ARCHIVE | CVAR_GLOBALCONFIG);
 
 EXTERN_CVAR (Float, con_midtime);
 
@@ -2124,9 +2123,6 @@ void G_DoLoadGame ()
 	// amount of memory in use, so bring it down now by starting a
 	// collection.
 	GC::StartCollection();
-
-	if (cl_checkram)
-		CheckFreeRAM(true);
 }
 
 
@@ -2474,9 +2470,6 @@ void G_DoSaveGame (bool okForQuicksave, bool forceQuicksave, FString filename, c
 
 	if (cl_waitforsave)
 		I_FreezeTime(false);
-
-	if (cl_checkram)
-		CheckFreeRAM(true);
 }
 
 
