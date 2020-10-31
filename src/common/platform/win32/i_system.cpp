@@ -938,9 +938,6 @@ void CheckFreeRAM()
 	statex.dwLength = sizeof(statex);
 	uint32_t FreeKBytes;
 
-	if (GC::AllocBytes/(1024*1024) < 1024)
-		return;
-
 	GlobalMemoryStatusEx (&statex);
 	FreeKBytes = statex.ullAvailPhys/1024;
 	if (FreeKBytes/1024 < 128)

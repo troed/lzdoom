@@ -58,6 +58,7 @@
 #ifdef _WIN32
 extern bool checkram;
 void CheckFreeRAM();
+#define MEGA 1048576
 #endif
 
 void *M_Malloc(size_t size)
@@ -69,7 +70,7 @@ void *M_Malloc(size_t size)
 
 	GC::AllocBytes += _msize(block);
 #ifdef _WIN32
-	if (checkram)
+	if (checkram && GC::AllocBytes/MEGA > 1024)
 		CheckFreeRAM();
 #endif
 	return block;
@@ -88,7 +89,7 @@ void *M_Realloc(void *memblock, size_t size)
 	}
 	GC::AllocBytes += _msize(block);
 #ifdef _WIN32
-	if (checkram)
+	if (checkram && GC::AllocBytes/MEGA > 1024)
 		CheckFreeRAM();
 #endif
 	return block;
