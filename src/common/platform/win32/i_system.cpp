@@ -932,15 +932,14 @@ bool I_WriteIniFailed()
 }
 
 #ifdef _WIN32
+#define MEGA 1048576
 void CheckFreeRAM()
 {
 	MEMORYSTATUSEX statex;
 	statex.dwLength = sizeof(statex);
-	uint32_t FreeKBytes;
 
 	GlobalMemoryStatusEx (&statex);
-	FreeKBytes = statex.ullAvailPhys/1024;
-	if (FreeKBytes/1024 < 128)
+	if (statex.ullAvailPhys/MEGA < 128)
 		I_FatalError ("System free ram is very low. Aborting.\nTo disable this check set cl_checkram to false.\n");
 
 	return;
