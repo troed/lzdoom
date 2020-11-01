@@ -597,6 +597,7 @@ file( GLOB HEADER_FILES
 	common/utility/*.h
 	common/engine/*.h
 	common/menu/*.h
+	common/statusbar/*.h
 	common/fonts/*.h
 	common/objects/*.h
 	common/filesystem/*.h
@@ -1152,6 +1153,7 @@ set (PCH_SOURCES
 	common/menu/resolutionmenu.cpp
 	common/menu/menudef.cpp
 	common/menu/savegamemanager.cpp
+	common/statusbar/base_sbar.cpp
 	
 	common/rendering/v_framebuffer.cpp
 	common/rendering/v_video.cpp
@@ -1280,6 +1282,7 @@ include_directories( .
 	common/console
 	common/engine
 	common/menu
+	common/statusbar
 	common/fonts
 	common/objects
 	common/rendering
