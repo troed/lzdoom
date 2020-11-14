@@ -3755,12 +3755,10 @@ void D_Cleanup()
 	GC::FullGC();					// clean up before taking down the object list.
 	
 	// Delete the reference to the VM functions here which were deleted and will be recreated after the restart.
-	FAutoSegIterator probe(ARegHead, ARegTail);
-	while (*++probe != NULL)
+	AutoSegs::ActionFunctons.ForEach([](AFuncDesc *afunc)
 	{
-		AFuncDesc *afunc = (AFuncDesc *)*probe;
 		*(afunc->VMPointer) = NULL;
-	}
+	});
 	
 	GC::DelSoftRootHead();
 	
