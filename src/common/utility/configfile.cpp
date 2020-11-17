@@ -39,7 +39,7 @@
 #include "configfile.h"
 #include "files.h"
 
-#include "filesystem.h"
+#include "cmdlib.h"
 #include "engineerrors.h"
 
 #define READBUFFERSIZE	256
@@ -604,13 +604,14 @@ void FConfigFile::LoadConfigFile ()
 	FileReader file;
 	bool succ;
 
-	if (!FileExists(PathName))
-		FileExisted = false;
+	FileExisted = FileExists(PathName.GetChars());
 
 	if (!file.OpenFile (PathName))
 	{
-		if (!FileExisted) return;
-		else I_Error ("Could not Open Config file.\n");
+		if (!FileExisted)
+			return;
+		else
+			I_Error ("Could not open config file.\n");
 	}
 
 	succ = ReadConfig (&file);
