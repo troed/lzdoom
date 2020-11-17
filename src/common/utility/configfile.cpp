@@ -39,11 +39,8 @@
 #include "configfile.h"
 #include "files.h"
 
-#ifdef _WIN32
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <filesystem>
 #include "engineerrors.h"
-#endif
 
 #define READBUFFERSIZE	256
 
@@ -606,10 +603,8 @@ void FConfigFile::LoadConfigFile ()
 {
 	FileReader file;
 	bool succ;
-#ifdef _WIN32
-	struct _stat buf;
 
-	if (_stat(PathName.GetChars(), &buf) != 0)
+	if (!std::filesystem::exists(PathName.GetChars()))
 		FileExisted = false;
 
 	if (!file.OpenFile (PathName))
@@ -617,13 +612,7 @@ void FConfigFile::LoadConfigFile ()
 		if (!FileExisted) return;
 		else I_Error ("Could not Open Config file.\n");
 	}
-#else
-	if (!file.OpenFile (PathName))
-	{
-		FileExisted = false;
-		return;
-	}
-#endif
+
 	succ = ReadConfig (&file);
 	FileExisted = succ;
 }
