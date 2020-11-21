@@ -43,6 +43,10 @@
 #include <sys/stat.h>
 #include <time.h>
 
+#if defined (_WIN32) && !defined (_USING_V110_SDK71_)
+#include <filesystem>
+#endif
+
 #ifndef _WIN32
 #include <pwd.h>
 #include <unistd.h>
@@ -197,13 +201,19 @@ bool DirEntryExists(const char *pathname, bool *isdir)
 #ifndef _WIN32
 	struct stat info;
 	bool res = stat(pathname, &info) == 0;
+	if (isdir) *isdir = !!(info.st_mode & S_IFDIR);
 #else
+#ifdef _USING_V110_SDK71_
 	// Windows must use the wide version of stat to preserve non-standard paths.
 	auto wstr = WideString(pathname);
 	struct _stat64i32 info;
 	bool res = _wstat64i32(wstr.c_str(), &info) == 0;
-#endif
 	if (isdir) *isdir = !!(info.st_mode & S_IFDIR);
+#else
+	bool res = std::filesystem::exists(pathname);
+	if (isdir) *isdir = !!(std::filesystem::is_directory(pathname));
+#endif
+#endif
 	return res;
 }
 
