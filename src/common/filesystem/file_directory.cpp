@@ -161,7 +161,7 @@ int FDirectory::AddDirectory(const char *dirpath)
 				}
 				size_t size = 0;
 				FString fn = FString(dirpath) + fi;
-				if (GetFileInfo(fn, &size))
+				if (GetFileInfo(fn, &size, nullptr))
 				{
 					AddEntry(fn, (int)size);
 					count++;

@@ -43,10 +43,6 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#ifdef _WIN32
-#include <filesystem>
-#endif
-
 #ifndef _WIN32
 #include <pwd.h>
 #include <unistd.h>
@@ -201,11 +197,13 @@ bool DirEntryExists(const char *pathname, bool *isdir)
 #ifndef _WIN32
 	struct stat info;
 	bool res = stat(pathname, &info) == 0;
-	if (isdir) *isdir = !!(info.st_mode & S_IFDIR);
 #else
-	bool res = std::filesystem::exists(pathname);
-	if (isdir) *isdir = !!(std::filesystem::is_directory(pathname));
+	// Windows must use the wide version of stat to preserve non-standard paths.
+	auto wstr = WideString(pathname);
+	struct _stat64i32 info;
+	bool res = _wstat64i32(wstr.c_str(), &info) == 0;
 #endif
+	if (isdir) *isdir = !!(info.st_mode & S_IFDIR);
 	return res;
 }
 
@@ -217,7 +215,7 @@ bool DirEntryExists(const char *pathname, bool *isdir)
 //
 //==========================================================================
 
-bool GetFileInfo(const char* pathname, size_t *size)
+bool GetFileInfo(const char* pathname, size_t *size, time_t *time)
 {
 	if (pathname == NULL || *pathname == 0)
 		return false;
@@ -225,13 +223,15 @@ bool GetFileInfo(const char* pathname, size_t *size)
 #ifndef _WIN32
 	struct stat info;
 	bool res = stat(pathname, &info) == 0;
+#else
+	// Windows must use the wide version of stat to preserve non-standard paths.
+	auto wstr = WideString(pathname);
+	struct _stat64i32 info;
+	bool res = _wstat64i32(wstr.c_str(), &info) == 0;
+#endif
 	if (!res || (info.st_mode & S_IFDIR)) return false;
 	if (size) *size = info.st_size;
-#else
-	bool res = std::filesystem::exists(pathname);
-	if (!res || (std::filesystem::is_directory(pathname))) return false;
-	if (size) *size = std::filesystem::file_size(pathname);
-#endif
+	if (time) *time = info.st_mtime;
 	return res;
 }
 
