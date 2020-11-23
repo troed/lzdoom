@@ -213,9 +213,9 @@ bool DirEntryExists(const char *pathname, bool *isdir)
 
 //==========================================================================
 //
-// DirEntryExists
+// GetFileInfo
 //
-// Returns true if the given path exists, be it a directory or a file.
+// Returns true if the file info can be retrieved.
 //
 //==========================================================================
 
