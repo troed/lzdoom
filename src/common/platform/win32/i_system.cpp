@@ -1026,7 +1026,7 @@ FString I_GetLongPathName(const FString &shortpath)
 //
 //==========================================================================
 
-int _wstat64(const wchar_t *path, struct _stat64 *buffer)
+int my_wstat64(const wchar_t *path, struct _stat64 *buffer)
 {
 	WIN32_FILE_ATTRIBUTE_DATA data;
 	if(!GetFileAttributesExW(path, GetFileExInfoStandard, &data))
