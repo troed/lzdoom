@@ -20,6 +20,8 @@ else()
 	find_package( ZMusic REQUIRED )
 endif()
 
+message("Building for target architecture: ${ZDOOM_TARGET_ARCH}")
+
 if( MSVC AND NOT ZMUSIC_FOUND )
 	# Use prebuilt library
 	set( ZMUSIC_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../bin/windows/zmusic" )
@@ -27,6 +29,8 @@ if( MSVC AND NOT ZMUSIC_FOUND )
 	set( ZMUSIC_LIBRARIES zmusic )
 	if( ${ZDOOM_TARGET_ARCH} MATCHES "x86_64" )
 		link_directories( ${ZMUSIC_ROOT_PATH}/64bit )
+	elseif( ${ZDOOM_TARGET_ARCH} MATCHES "arm" )
+		link_directories( ${ZMUSIC_ROOT_PATH}/arm64 )
 	else()
 		link_directories( ${ZMUSIC_ROOT_PATH}/32bit )
 	endif()
@@ -113,10 +117,6 @@ if( WIN32 )
 		setupapi
 		oleaut32
 		dbghelp )
-
-	if( HAVE_OPENGL )
-		set( ZDOOM_LIBS ${ZDOOM_LIBS} opengl32 )
-	endif()
 
 	if( NOT ZD_CMAKE_COMPILER_IS_GNUCXX_COMPATIBLE )
 		set( ZDOOM_LIBS ${ZDOOM_LIBS} DelayImp )
@@ -432,7 +432,6 @@ endif()
 set( PLAT_WIN32_SOURCES
 	win32/i_steam.cpp
 	common/platform/win32/hardware.cpp
-	common/platform/win32/i_crash.cpp
 	common/platform/win32/i_input.cpp
 	common/platform/win32/i_keyboard.cpp
 	common/platform/win32/i_mouse.cpp
@@ -454,6 +453,16 @@ endif()
 
 if (HAVE_OPENGL)
 	set (PLAT_WIN32_SOURCES ${PLAT_WIN32_SOURCES} common/platform/win32/gl_sysfb.cpp common/platform/win32/win32glvideo.cpp )
+endif()
+
+
+# todo: implement an actual crash catcher for ARM
+# for now this is purely experimental
+if (NOT ${ZDOOM_TARGET_ARCH} MATCHES "arm" )
+	set (PLAT_WIN32_SOURCES ${PLAT_WIN32_SOURCES} common/platform/win32/i_crash.cpp )
+endif()
+if (MSVC AND ${ZDOOM_TARGET_ARCH} MATCHES "arm")
+	add_definitions( -DNO_SSE -D__ARM__ -DRAPIDJSON_ENDIAN=RAPIDJSON_LITTLEENDIAN)
 endif()
 
 set( PLAT_POSIX_SOURCES
