@@ -898,7 +898,7 @@ OptionValue GPUSwitch
 OptionValue PreferBackend
 {
 	0, "$OPTVAL_OPENGL"
-//	1, "$OPTVAL_VULKAN"
+	1, "$OPTVAL_VULKAN"
 	2, "$OPTVAL_SOFTPOLY"
 }
 
@@ -930,7 +930,7 @@ OptionMenu "VideoOptions" protected
 
 	Submenu "$DSPLYMNU_GLOPT", 			"OpenGLOptions"
 	Submenu "$DSPLYMNU_SWOPT", 			"SWROptions"
-//	Submenu "$DSPLYMNU_VKOPT",			"VKOptions"
+	Submenu "$DSPLYMNU_VKOPT",			"VKOptions"
 	Submenu "$GLMNU_TEXOPT", 			"GLTextureGLOptions"
 	Submenu "$GLMNU_DYNLIGHT",			"GLLightOptions"
 	StaticText " "
@@ -2818,7 +2818,7 @@ OptionValue "os_isanyof_values"
  * Vulkan Menu
  *
  *=======================================*/
-/*
+
 OptionMenu "vkoptions"
 {
 	Title "$VK_TITLE"
@@ -2828,4 +2828,3 @@ OptionMenu "vkoptions"
 	TextField "$VKMNU_DEVICE",			vk_device
 	Option "$VKMNU_HDR",				"vk_hdr", "OnOff"
 }
-*/
