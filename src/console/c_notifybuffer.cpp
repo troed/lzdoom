@@ -85,7 +85,7 @@ void FNotifyBuffer::Clear()
 
 void FNotifyBuffer::AddString(int printlevel, FString source)
 {
-	if ((printlevel != 128 && !show_messages) ||
+	if (!show_messages ||
 		source.IsEmpty() ||
 		gamestate == GS_FULLCONSOLE ||
 		gamestate == GS_DEMOSCREEN ||
