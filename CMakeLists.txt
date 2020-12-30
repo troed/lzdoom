@@ -197,8 +197,9 @@ target_architecture(ZDOOM_TARGET_ARCH)
 
 if( ${ZDOOM_TARGET_ARCH} MATCHES "x86_64" )
 	set( HAVE_VM_JIT ON )
-	option (HAVE_VULKAN "Enable Vulkan support" ON)
 endif()
+
+option (HAVE_VULKAN "Enable Vulkan support" ON)
 
 if( NOT APPLE )
 	option (HAVE_OPENGL "Enable OpenGL support" ON)
