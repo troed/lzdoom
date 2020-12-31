@@ -222,6 +222,8 @@ CUSTOM_CVAR(Float, i_timescale, 1.0f, CVAR_NOINITCALL)
 
 // PUBLIC DATA DEFINITIONS -------------------------------------------------
 
+CVAR (Bool, tickdynlights, true, 0)
+
 CUSTOM_CVAR(Int, vid_rendermode, 4, CVAR_ARCHIVE | CVAR_GLOBALCONFIG | CVAR_NOINITCALL)
 {
 	if (self < 0 || self > 4)
@@ -477,8 +479,13 @@ void D_Render(std::function<void()> action, bool interpolate)
 		if ((gl_lights && vid_rendermode == 4) || (r_dynlights && vid_rendermode != 4))
 		{
 			Level->HasDynamicLights = !!Level->lights;
+			tickdynlights = true;
 		}
-		else Level->HasDynamicLights = false;	// lights are off so effectively we have none.
+		else
+		{
+			Level->HasDynamicLights = false;	// lights are off so effectively we have none.
+			tickdynlights = false;
+		}
 		if (interpolate) Level->interpolator.DoInterpolations(I_GetTimeFrac());
 		P_FindParticleSubsectors(Level);
 		PO_LinkToSubsectors(Level);
