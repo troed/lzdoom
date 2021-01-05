@@ -1355,11 +1355,7 @@ static int DamageMobj (AActor *target, AActor *inflictor, AActor *source, int da
 		player->LastDamageType = mod;
 		player->attacker = source;
 		player->damagecount += damage;	// add damage after armor / invuln
-		if (player->damagecount > 100)
-		{
-			player->damagecount = 100;	// teleport stomp does 10k points...
-		}
-		if (player->damagecount < 0)
+		if (player->damagecount > 100 || player->damagecount < 0)
 		{
 			player->damagecount = 100;	// teleport stomp does 10k points...
 		}
