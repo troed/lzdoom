@@ -50,8 +50,6 @@ extern cycle_t BotSupportCycles;
 extern cycle_t ActionCycles;
 extern int BotWTG;
 
-EXTERN_CVAR (Bool, tickdynlights)
-
 IMPLEMENT_CLASS(DThinker, false, false)
 
 struct ProfileInfo
@@ -126,7 +124,7 @@ void FThinkerCollection::RunThinkers(FLevelLocals *Level)
 			}
 		} while (count != 0);
 
-		if (Level->lights && tickdynlights)
+		if (Level->lights && Level->HasDynamicLights)
 		{
 			for (auto light = Level->lights; light;)
 			{
@@ -155,7 +153,7 @@ void FThinkerCollection::RunThinkers(FLevelLocals *Level)
 			}
 		} while (count != 0);
 
-		if (Level->lights && tickdynlights)
+		if (Level->lights && Level->HasDynamicLights)
 		{
 			// Also profile the internal dynamic lights, even though they are not implemented as thinkers.
 			auto &prof = Profiles[NAME_InternalDynamicLight];
