@@ -476,6 +476,7 @@ enum ESkillProperty
 	SKILLP_Infight,
 	SKILLP_PlayerRespawn,
 	SKILLP_SpawnMulti,
+	SKILLP_InstantReaction,
 	SKILLP_DoubleSpawn,
 	SKILLP_NoDoom2Monsters,
 };
@@ -522,6 +523,7 @@ struct FSkillInfo
 	double Aggressiveness;
 	int SpawnFilter;
 	bool SpawnMulti;
+	bool InstantReaction;
 	int ACSReturn;
 	FString MenuName;
 	FString PicName;

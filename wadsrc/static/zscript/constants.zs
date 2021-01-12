@@ -963,6 +963,7 @@ enum ESkillProperty
 	SKILLP_Infight,
 	SKILLP_PlayerRespawn,
 	SKILLP_SpawnMulti,
+	SKILLP_InstantReaction,
 	SKILLP_DoubleSpawn,
 	SKILLP_NoDoom2Monsters,
 };

@@ -77,6 +77,7 @@ void FMapInfoParser::ParseSkill ()
 	skill.Aggressiveness = 1.;
 	skill.SpawnFilter = 0;
 	skill.SpawnMulti = false;
+	skill.InstantReaction = false;
 	skill.ACSReturn = 0;
 	skill.MustConfirm = false;
 	skill.Shortcut = 0;
@@ -205,6 +206,10 @@ void FMapInfoParser::ParseSkill ()
 		else if (sc.Compare ("spawnmulti"))
 		{
 			skill.SpawnMulti = true;
+		}
+		else if (sc.Compare ("InstantReaction"))
+		{
+			skill.InstantReaction = true;
 		}
 		else if (sc.Compare("ACSReturn"))
 		{
@@ -413,6 +418,9 @@ int G_SkillProperty(ESkillProperty prop)
 		case SKILLP_SpawnMulti:
 			return AllSkills[gameskill].SpawnMulti;
 
+		case SKILLP_InstantReaction:
+			return AllSkills[gameskill].InstantReaction;
+
 		case SKILLP_DoubleSpawn:
 			return AllSkills[gameskill].DoubleSpawn;
 		}
@@ -553,6 +561,7 @@ FSkillInfo &FSkillInfo::operator=(const FSkillInfo &other)
 	Aggressiveness= other.Aggressiveness;
 	SpawnFilter = other.SpawnFilter;
 	SpawnMulti = other.SpawnMulti;
+	InstantReaction = other.InstantReaction;
 	ACSReturn = other.ACSReturn;
 	MenuName = other.MenuName;
 	PicName = other.PicName;
