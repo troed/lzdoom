@@ -550,9 +550,9 @@ void FSoftwareTexture::GenerateBgraMipmaps()
 //
 //==========================================================================
 
-void FSoftwareTexture::GenerateBgraMipmapsFast(uint32_t *src)
+void FSoftwareTexture::GenerateBgraMipmapsFast()
 {
-	if (!src) src = PixelsBgra.Data();
+	uint32_t *src = PixelsBgra.Data();
 	uint32_t *dest = src + GetPhysicalWidth() * GetPhysicalHeight();
 	int levels = MipmapLevels();
 	for (int i = 1; i < levels; i++)
