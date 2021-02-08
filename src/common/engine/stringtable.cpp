@@ -45,14 +45,6 @@
 EXTERN_CVAR(String, language)
 EXTERN_CVAR(Bool, ui_classic)
 
-void RemoveUnsupportedLanguages()
-{
-	if (language[0] == 'j' && language[1] == 'p')
-		language = "nl";
-	else if (language[0] == 'k' && language[1] == 'o')
-		language = "it";
-}
-
 //==========================================================================
 //
 //
@@ -481,12 +473,9 @@ void FStringTable::UpdateLanguage(const char *language)
 	if (language) activeLanguage = language;
 	else language = activeLanguage.GetChars();
 
-	if (ui_classic)
-		RemoveUnsupportedLanguages();
-
 	size_t langlen = strlen(language);
 
-	int LanguageID = (langlen < 2 || langlen > 3) ?
+	int LanguageID = (langlen < 2 || langlen > 3 || ui_classic) ?
 		MAKE_ID('e', 'n', 'u', '\0') :
 		MAKE_ID(language[0], language[1], language[2], '\0');
 

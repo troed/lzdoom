@@ -153,6 +153,7 @@ CUSTOM_CVAR(Float, teamdamage, 0.f, CVAR_SERVERINFO | CVAR_NOINITCALL)
 
 EXTERN_CVAR(Bool, ui_generic)
 EXTERN_CVAR(Bool, ui_classic)
+EXTERN_CVAR(String, language)
 
 void DisableGenericUI(bool cvar)
 {
@@ -172,6 +173,7 @@ CUSTOM_CVAR(Bool, ui_classic, true, CVAR_ARCHIVE | CVAR_NOINITCALL)
 	if (ui_generic && self)
 		ui_generic = false;
 	DisableGenericUI(self);
+	language = "auto";
 	vid_scalemode.Callback();
 	vid_scalefactor.Callback();
 }
