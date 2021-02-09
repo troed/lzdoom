@@ -171,7 +171,10 @@ int ViewportScaledWidth(int width, int height)
 		width = ((float)width/height > ActiveRatio(width, height)) ? (int)(height * ActiveRatio(width, height)) : width;
 		height = ((float)width/height < ActiveRatio(width, height)) ? (int)(width / ActiveRatio(width, height)) : height;
 	}
-	return (int)std::max((int32_t)VID_MIN_WIDTH, (int32_t)(vid_scalefactor * vScaleTable[vid_scalemode].GetScaledWidth(width, height)));
+	uint32_t tablewidth = vScaleTable[vid_scalemode].GetScaledWidth(width, height);
+	if (!ui_classic && tablewidth < 640)
+		tablewidth = 640;
+	return (int)std::max((int32_t)VID_MIN_WIDTH, (int32_t)(vid_scalefactor * tablewidth));
 }
 
 int ViewportScaledHeight(int width, int height)
@@ -183,7 +186,10 @@ int ViewportScaledHeight(int width, int height)
 		height = ((float)width/height < ActiveRatio(width, height)) ? (int)(width / ActiveRatio(width, height)) : height;
 		width = ((float)width/height > ActiveRatio(width, height)) ? (int)(height * ActiveRatio(width, height)) : width;
 	}
-	return (int)std::max((int32_t)VID_MIN_HEIGHT, (int32_t)(vid_scalefactor * vScaleTable[vid_scalemode].GetScaledHeight(width, height)));
+	uint32_t tableheight = vScaleTable[vid_scalemode].GetScaledHeight(width, height);
+	if (!ui_classic && tableheight < 400)
+		tableheight = 400;
+	return (int)std::max((int32_t)VID_MIN_HEIGHT, (int32_t)(vid_scalefactor * tableheight));
 }
 
 float ViewportPixelAspect()
