@@ -54,16 +54,16 @@ EXTERN_CVAR(Int, menu_resolution_custom_height)
 
 CUSTOM_CVAR(Int, vid_scale_customwidth, VID_MIN_UI_WIDTH, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
 {
-	if (!ui_classic && self < 640)
-		self = 640;
+	if (!ui_classic && self < VID_MIN_UI_WIDTH)
+		self = VID_MIN_UI_WIDTH;
 	else if (self < VID_MIN_WIDTH)
 		self = VID_MIN_WIDTH;
 	setsizeneeded = true;
 }
 CUSTOM_CVAR(Int, vid_scale_customheight, VID_MIN_UI_HEIGHT, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
 {
-	if (!ui_classic && self < 400)
-		self = 400;
+	if (!ui_classic && self < VID_MIN_UI_HEIGHT)
+		self = VID_MIN_UI_HEIGHT;
 	else if (self < VID_MIN_HEIGHT)
 		self = VID_MIN_HEIGHT;
 	setsizeneeded = true;
@@ -127,7 +127,7 @@ CUSTOM_CVAR(Float, vid_scalefactor, 1.0, CVAR_ARCHIVE | CVAR_GLOBALCONFIG | CVAR
 	setsizeneeded = true;
 	if (self < 0.05 || self > 2.0)
 		self = 1.0;
-	if (!ui_classic && (menu_resolution_custom_width < 640 || menu_resolution_custom_height < 400))
+	if (!ui_classic && (menu_resolution_custom_width < VID_MIN_UI_WIDTH || menu_resolution_custom_height < VID_MIN_UI_HEIGHT))
 	{
 		C_DoCommand("menu_resolution_commit_changes");
 	}
@@ -172,8 +172,8 @@ int ViewportScaledWidth(int width, int height)
 		height = ((float)width/height < ActiveRatio(width, height)) ? (int)(width / ActiveRatio(width, height)) : height;
 	}
 	uint32_t tablewidth = vScaleTable[vid_scalemode].GetScaledWidth(width, height);
-	if (!ui_classic && tablewidth < 640)
-		tablewidth = 640;
+	if (!ui_classic && tablewidth < VID_MIN_UI_WIDTH)
+		tablewidth = VID_MIN_UI_WIDTH;
 	return (int)std::max((int32_t)VID_MIN_WIDTH, (int32_t)(vid_scalefactor * tablewidth));
 }
 
@@ -187,8 +187,8 @@ int ViewportScaledHeight(int width, int height)
 		width = ((float)width/height > ActiveRatio(width, height)) ? (int)(height * ActiveRatio(width, height)) : width;
 	}
 	uint32_t tableheight = vScaleTable[vid_scalemode].GetScaledHeight(width, height);
-	if (!ui_classic && tableheight < 400)
-		tableheight = 400;
+	if (!ui_classic && tableheight < VID_MIN_UI_HEIGHT)
+		tableheight = VID_MIN_UI_HEIGHT;
 	return (int)std::max((int32_t)VID_MIN_HEIGHT, (int32_t)(vid_scalefactor * tableheight));
 }
 
@@ -205,7 +205,7 @@ float ViewportPixelAspect()
 void R_ShowCurrentScaling()
 {
 	int x1 = screen->GetClientWidth(), y1 = screen->GetClientHeight(), x2 = ViewportScaledWidth(x1, y1), y2 = ViewportScaledHeight(x1, y1);
-	if ((!ui_classic && (x2 < 640 || y2 < 400)) && vid_scalefactor != 1)
+	if ((!ui_classic && (x2 < VID_MIN_UI_WIDTH || y2 < VID_MIN_UI_HEIGHT)) && vid_scalefactor != 1)
 	{
 		vid_scalefactor = 1.;
 	}
