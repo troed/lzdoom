@@ -168,7 +168,8 @@ namespace swrenderer
 		FSWColormap *usecolormap = spr->Light.BaseColormap;
 		// Decals that are added to the scene must fade to black.
 		ColormapLight cmlight;
-		if (spr->RenderStyle == LegacyRenderStyles[STYLE_Add] && usecolormap->Fade != 0)
+		if (usecolormap &&
+			spr->RenderStyle == LegacyRenderStyles[STYLE_Add] && usecolormap->Fade != 0)
 		{
 			cmlight.BaseColormap = GetSpecialLights(usecolormap->Color, 0, usecolormap->Desaturate);
 		}
