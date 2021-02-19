@@ -110,7 +110,7 @@ void PolyVertexInputAssembly::Load(PolyTriangleThreadData *thread, const void *v
 	uint8_t* buff = (uint8_t*)vertices;
 
 	// [GEC] finds the right frame.
-	uint32_t offsets[2] = { frame0 * Stride, frame1 * Stride };
+	uint32_t offsets[2] = { static_cast<uint32_t>(frame0 * Stride), static_cast<uint32_t>(frame1 * Stride) };
 	uint8_t* vertexBuffers[2] = { buff + offsets[0], buff + offsets[1] };
 
 	const uint8_t* vertex = static_cast<const uint8_t*>(vertexBuffers[0]) + mStride * index;
