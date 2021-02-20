@@ -54,10 +54,9 @@ static void EffectFogBoundary(int x0, int x1, PolyTriangleThreadData* thread)
 	uint32_t* fragcolor = thread->scanline.FragColor;
 	for (int x = x0; x < x1; x++)
 	{
-		float fogdist = thread->scanline.W[x];
+		/*float fogdist = thread->scanline.W[x];
 		float fogfactor = std::exp2(uFogDensity * fogdist);
-
-		// FragColor = vec4(uFogColor.rgb, 1.0 - fogfactor):
+		FragColor = vec4(uFogColor.rgb, 1.0 - fogfactor);*/
 		uint32_t alpha = static_cast<int>(clamp(1.0f - (1.0f / 255.0f), 0.0f, 1.0f) * 255.0f);
 		fragcolor[x] = fogcolor | alpha;
 	}
