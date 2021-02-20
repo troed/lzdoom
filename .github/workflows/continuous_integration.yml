@@ -24,7 +24,7 @@ jobs:
           }
         - {
             name: "Visual Studio 32-bit",
-            os: windows-latest,
+            os: windows-2019,
             extra_options: "-A Win32 -DFORCE_INTERNAL_ZLIB=ON",
             build_type: "Release"
           }
