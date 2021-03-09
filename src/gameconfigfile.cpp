@@ -583,6 +583,7 @@ void FGameConfigFile::DoGlobalSetup ()
 			}
 		}
 	}
+	else I_Error ("Corrupt config file.\n");
 }
 
 void FGameConfigFile::DoGameSetup (const char *gamename)
