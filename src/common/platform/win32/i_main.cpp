@@ -79,8 +79,6 @@
 #include "startupinfo.h"
 #include "printf.h"
 
-#include "optwin32.h"
-
 // MACROS ------------------------------------------------------------------
 
 // The main window's title.
@@ -138,14 +136,6 @@ LONG			ErrorIconChar;
 FModule Kernel32Module{"Kernel32"};
 FModule Shell32Module{"Shell32"};
 FModule User32Module{"User32"};
-
-namespace OptWin32 {
-#define DYN_WIN32_SYM(x) decltype(x) x{#x}
-
-DYN_WIN32_SYM(SHGetKnownFolderPath);
-
-#undef DYN_WIN32_SYM
-} // namespace OptWin32
 
 // PRIVATE DATA DEFINITIONS ------------------------------------------------
 

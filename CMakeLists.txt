@@ -221,11 +221,10 @@ if( MSVC )
 
 	# String pooling
 	# Function-level linking
-	# Disable run-time type information
 	if ( HAVE_VULKAN )
-		set( ALL_C_FLAGS "/GF /Gy /DHAVE_VULKAN" )
+		set( ALL_C_FLAGS "/GF /Gy /permissive- /DHAVE_VULKAN" )
 	else()
-		set( ALL_C_FLAGS "/GF /Gy" )
+		set( ALL_C_FLAGS "/GF /Gy /permissive-" )
 	endif()
 
 	if ( HAVE_OPENGL )

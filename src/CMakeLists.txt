@@ -74,7 +74,7 @@ if( WIN32 )
 	add_definitions( -D_WIN32 )
 
 
-	if( MSVC AND MSVC_VERSION GREATER 1899 )	# For VS 2015 and later.
+	if( MSVC )	# For VS 2017 and later.
 		# for modern Windows SDKs the DirectX headers should be available by default.
 		set( DX_dinput8_LIBRARY dinput8 )
 	else()
@@ -82,11 +82,9 @@ if( WIN32 )
 		find_library( DX_dinput8_LIBRARY dinput8
 			PATHS ENV DXSDK_DIR
 			PATH_SUFFIXES Lib Lib/${XBITS} )
-		if( ZD_CMAKE_COMPILER_IS_GNUCXX_COMPATIBLE )
-			find_library( DX_dxguid_LIBRARY dxguid
-				PATHS ENV DXSDK_DIR
-				PATH_SUFFIXES Lib Lib/${XBITS} )
-		endif()
+		find_library( DX_dxguid_LIBRARY dxguid
+			PATHS ENV DXSDK_DIR
+			PATH_SUFFIXES Lib Lib/${XBITS} )
 
 		# Modern versions of the Windows SDK include dinput8.lib. Unfortunately,
 		# CMake cannot find these libraries via find_library.
@@ -95,12 +93,10 @@ if( WIN32 )
 			set( DX_dinput8_LIBRARY dinput8 )
 		endif()
 
-		if( ZD_CMAKE_COMPILER_IS_GNUCXX_COMPATIBLE )
-			# Modern versions of the Windows SDK do NOT include dxguid.lib. Its contents
-			# were moved to dinput8.lib.
-			if( NOT DX_dxguid_LIBRARY )
-				message( STATUS "Could not find dxguid.lib. Build may fail on old Windows SDKs.")
-			endif()
+		# Modern versions of the Windows SDK do NOT include dxguid.lib. Its contents
+		# were moved to dinput8.lib.
+		if( NOT DX_dxguid_LIBRARY )
+			message( STATUS "Could not find dxguid.lib. Build may fail on old Windows SDKs.")
 		endif()
 	endif()
 
@@ -166,7 +162,7 @@ else()
 		endif()
 	endif()
 
-	option( NO_SDL_JOYSTICK "Disable SDL joystick support" OFF )
+	option( NO_SDL_JOYSTICK "Disable SDL joystick support (Not applicable to Windows)" OFF )
 	if ( NO_SDL_JOYSTICK )
 		add_definitions( -DNO_SDL_JOYSTICK=1 )
 	endif ( NO_SDL_JOYSTICK )

@@ -44,8 +44,6 @@
 #include "findfile.h"
 #include "version.h"	// for GAMENAME
 
-#include "optwin32.h"
-
 // Vanilla MinGW does not have folder ids
 #if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
 static const GUID FOLDERID_LocalAppData = { 0xf1b32785, 0x6fba, 0x4fcf, 0x9d, 0x55, 0x7b, 0x8e, 0x7f, 0x15, 0x70, 0x91 };
@@ -103,40 +101,14 @@ bool UseKnownFolders()
 
 bool GetKnownFolder(int shell_folder, REFKNOWNFOLDERID known_folder, bool create, FString &path)
 {
-	using OptWin32::SHGetKnownFolderPath;
-
-	WCHAR pathstr[MAX_PATH];
-
-	// SHGetKnownFolderPath knows about more folders than SHGetFolderPath, but is
-	// new to Vista, hence the reason we support both.
-	if (!SHGetKnownFolderPath)
+	PWSTR wpath;
+	if (FAILED(SHGetKnownFolderPath(known_folder, create ? KF_FLAG_CREATE : 0, NULL, &wpath)))
 	{
-		if (shell_folder < 0)
-		{ // Not supported by SHGetFolderPath
-			return false;
-		}
-		if (create)
-		{
-			shell_folder |= CSIDL_FLAG_CREATE;
-		}
-		if (FAILED(SHGetFolderPathW(NULL, shell_folder, NULL, 0, pathstr)))
-		{
-			return false;
-		}
-		path = pathstr;
-		return true;
+		return false;
 	}
-	else
-	{
-		PWSTR wpath;
-		if (FAILED(SHGetKnownFolderPath(known_folder, create ? KF_FLAG_CREATE : 0, NULL, &wpath)))
-		{
-			return false;
-		}
-		path = wpath;
-		CoTaskMemFree(wpath);
-		return true;
-	}
+	path = wpath;
+	CoTaskMemFree(wpath);
+	return true;
 }
 
 //===========================================================================
