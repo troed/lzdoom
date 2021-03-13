@@ -93,11 +93,9 @@ CUSTOM_CVAR(Int, vid_preferbackend, 2, CVAR_ARCHIVE | CVAR_GLOBALCONFIG | CVAR_N
 
 	switch(self)
 	{
-#if defined (HAVE_OPENGL) || defined (__APPLE__)
 	case 0:
 		Printf("Selecting OpenGL backend...\n");
 		break;
-#endif
 #ifdef HAVE_VULKAN
 	case 1:
 		Printf("Selecting Vulkan backend...\n");

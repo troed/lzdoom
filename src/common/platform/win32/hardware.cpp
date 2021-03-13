@@ -43,9 +43,7 @@
 #include "m_argv.h"
 #include "version.h"
 #include "printf.h"
-#ifdef HAVE_OPENGL
 #include "win32glvideo.h"
-#endif
 #include "win32polyvideo.h"
 #ifdef HAVE_VULKAN
 #include "win32vulkanvideo.h"
@@ -146,20 +144,15 @@ void I_InitGraphics ()
 		catch (CVulkanError &error)
 		{
 			Printf(TEXTCOLOR_RED "Initialization of Vulkan failed: %s\n", error.what());
-#ifdef HAVE_OPENGL
 			Video = new Win32GLVideo();
-#else
-			Video = new Win32PolyVideo();
-#endif
 		}
 	}
 #endif
-#ifdef HAVE_OPENGL
 	else
 	{
 		Video = new Win32GLVideo();
 	}
-#endif
+
 	if (Video == NULL)
 		Video = new Win32PolyVideo();
 

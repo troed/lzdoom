@@ -201,12 +201,6 @@ endif()
 
 option (HAVE_VULKAN "Enable Vulkan support" ON)
 
-if( NOT APPLE )
-	option (HAVE_OPENGL "Enable OpenGL support" ON)
-else()
-	set( HAVE_OPENGL ON )
-endif()
-
 # no, we're not using external asmjit for now, we made too many modifications to our's.
 # if the asmjit author uses our changes then we'll update this.
 
@@ -225,10 +219,6 @@ if( MSVC )
 		set( ALL_C_FLAGS "/GF /Gy /permissive- /DHAVE_VULKAN" )
 	else()
 		set( ALL_C_FLAGS "/GF /Gy /permissive-" )
-	endif()
-
-	if ( HAVE_OPENGL )
-		set( ALL_C_FLAGS "${ALL_C_FLAGS} /DHAVE_OPENGL" )
 	endif()
 
 	# Use SSE 2 as minimum always as the true color drawers needs it for __vectorcall
@@ -267,10 +257,6 @@ else()
 		set( ALL_C_FLAGS "-ffp-contract=off -DHAVE_VULKAN" )
 	else()
 		set( ALL_C_FLAGS "-ffp-contract=off" )
-	endif()
-
-	if ( NOT APPLE AND HAVE_OPENGL )
-		set( ALL_C_FLAGS "${ALL_C_FLAGS} -DHAVE_OPENGL" )
 	endif()
 
 	if ( UNIX )

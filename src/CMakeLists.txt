@@ -429,18 +429,15 @@ set( PLAT_WIN32_SOURCES
 	common/platform/win32/i_specialpaths.cpp
 	common/platform/win32/st_start.cpp
 	common/platform/win32/st_start_util.cpp
+	common/platform/win32/gl_sysfb.cpp
 	common/platform/win32/base_sysfb.cpp
 	common/platform/win32/win32basevideo.cpp
+	common/platform/win32/win32glvideo.cpp
 	common/platform/win32/win32polyvideo.cpp)
 
 if (HAVE_VULKAN)
 	set (PLAT_WIN32_SOURCES ${PLAT_WIN32_SOURCES} common/platform/win32/win32vulkanvideo.cpp )
 endif()
-
-if (HAVE_OPENGL)
-	set (PLAT_WIN32_SOURCES ${PLAT_WIN32_SOURCES} common/platform/win32/gl_sysfb.cpp common/platform/win32/win32glvideo.cpp )
-endif()
-
 
 # todo: implement an actual crash catcher for ARM
 # for now this is purely experimental
@@ -451,7 +448,7 @@ if (MSVC AND ${ZDOOM_TARGET_ARCH} MATCHES "arm")
 	set (PLAT_WIN32_SOURCES ${PLAT_WIN32_SOURCES} common/platform/win32/i_crash_arm.cpp )
 	add_definitions( -DNO_SSE -D__ARM__ -DRAPIDJSON_ENDIAN=RAPIDJSON_LITTLEENDIAN)
 endif()
-
+	
 set( PLAT_POSIX_SOURCES
 	posix/i_steam.cpp
 	common/platform/posix/i_system_posix.cpp )
@@ -609,6 +606,7 @@ file( GLOB HEADER_FILES
 	common/thirdparty/rapidjson/*.h
 	common/thirdparty/math/*h
 	common/rendering/*.h
+	common/rendering/gl_load/*.h
 	common/rendering/hwrenderer/data/*.h
 	common/rendering/polyrenderer/*.h
 	common/rendering/polyrenderer/math/*.h
@@ -643,7 +641,6 @@ file( GLOB HEADER_FILES
 )
 
 set( VK_HEADER_FILES "" )
-set( GL_HEADER_FILES "" )
 
 if ( HAVE_VULKAN )
 file( GLOB VK_HEADER_FILES
@@ -655,14 +652,7 @@ file( GLOB VK_HEADER_FILES
 )
 endif()
 
-if ( HAVE_OPENGL )
-file( GLOB GL_HEADER_FILES
-	common/rendering/gl/*.h
-	common/rendering/gl_load/*.h
-)
-endif()
-
-list ( APPEND HEADER_FILES ${VK_HEADER_FILES} ${GL_HEADER_FILES} )
+list ( APPEND HEADER_FILES ${VK_HEADER_FILES} )
 
 set ( SWRENDER_SOURCES
 	rendering/swrenderer/r_swcolormaps.cpp
@@ -762,6 +752,7 @@ set( FASTMATH_SOURCES
 	common/textures/hires/hqnx/hq4x.cpp
 	common/textures/hires/xbr/xbrz.cpp
 	common/textures/hires/xbr/xbrz_old.cpp
+	common/rendering/gl_load/gl_load.c
 	rendering/hwrenderer/hw_dynlightdata.cpp
 	rendering/hwrenderer/scene/hw_bsp.cpp
 	rendering/hwrenderer/scene/hw_fakeflat.cpp
@@ -804,28 +795,6 @@ set (VULKAN_SOURCES
 
 if (HAVE_VULKAN)
 	set (FASTMATH_SOURCES ${FASTMATH_SOURCES} ${VULKAN_SOURCES})
-endif()
-
-#OpenGL stuff must go into a separate list later because it can be disabled for some platforms
-set (OPENGL_SOURCES
-	common/rendering/gl_load/gl_interface.cpp
-	common/rendering/gl/gl_renderer.cpp
-	common/rendering/gl/gl_stereo3d.cpp
-	common/rendering/gl/gl_framebuffer.cpp
-	common/rendering/gl/gl_renderstate.cpp
-	common/rendering/gl/gl_renderbuffers.cpp
-	common/rendering/gl/gl_postprocess.cpp
-	common/rendering/gl/gl_postprocessstate.cpp
-	common/rendering/gl/gl_debug.cpp
-	common/rendering/gl/gl_buffers.cpp
-	common/rendering/gl/gl_hwtexture.cpp
-	common/rendering/gl/gl_samplers.cpp
-	common/rendering/gl/gl_shader.cpp
-	common/rendering/gl/gl_shaderprogram.cpp
-)
-
-if (HAVE_OPENGL)
-	set (FASTMATH_SOURCES ${FASTMATH_SOURCES} common/rendering/gl_load/gl_load.c)
 endif()
 
 set (POLYBACKEND_SOURCES
@@ -1170,6 +1139,20 @@ set (PCH_SOURCES
 	common/rendering/hwrenderer/data/hw_shaderpatcher.cpp
 	common/rendering/hwrenderer/postprocessing/hw_postprocess.cpp
 	common/rendering/hwrenderer/postprocessing/hw_postprocess_cvars.cpp
+	common/rendering/gl_load/gl_interface.cpp
+	common/rendering/gl/gl_renderer.cpp
+	common/rendering/gl/gl_stereo3d.cpp
+	common/rendering/gl/gl_framebuffer.cpp
+	common/rendering/gl/gl_renderstate.cpp
+	common/rendering/gl/gl_renderbuffers.cpp
+	common/rendering/gl/gl_postprocess.cpp
+	common/rendering/gl/gl_postprocessstate.cpp
+	common/rendering/gl/gl_debug.cpp
+	common/rendering/gl/gl_buffers.cpp
+	common/rendering/gl/gl_hwtexture.cpp
+	common/rendering/gl/gl_samplers.cpp
+	common/rendering/gl/gl_shader.cpp
+	common/rendering/gl/gl_shaderprogram.cpp
 	common/scripting/core/dictionary.cpp
 	common/scripting/core/dynarrays.cpp
 	common/scripting/core/symbols.cpp
@@ -1194,10 +1177,6 @@ set (PCH_SOURCES
 	utility/nodebuilder/nodebuild_gl.cpp
 	utility/nodebuilder/nodebuild_utility.cpp
 )
-
-if( HAVE_OPENGL )
-	set( PCH_SOURCES ${PCH_SOURCES} ${OPENGL_SOURCES} )
-endif()
 
 if( ${HAVE_VM_JIT} )
 	set( PCH_SOURCES ${PCH_SOURCES} ${VM_JIT_SOURCES} )
@@ -1282,6 +1261,8 @@ include_directories( .
 	common/objects
 	common/rendering
 	common/rendering/hwrenderer/data
+	common/rendering/gl_load
+	common/rendering/gl
 	common/rendering/vulkan/thirdparty
 	common/rendering/polyrenderer/backend
 	common/rendering/polyrenderer/drawers
@@ -1318,13 +1299,6 @@ include_directories( .
 	${CMAKE_BINARY_DIR}/libraries/gdtoa
 	${SYSTEM_SOURCES_DIR}
 )
-
-if( HAVE_OPENGL )
-	include_directories(
-		common/rendering/gl_load
-		common/rendering/gl
-	)
-endif()
 
 add_dependencies( zdoom revision_check )
 
@@ -1490,10 +1464,8 @@ source_group("Common\\Rendering" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR
 source_group("Common\\Rendering\\Hardware Renderer" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/rendering/hwrenderer/.+")
 source_group("Common\\Rendering\\Hardware Renderer\\Data" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/rendering/hwrenderer/data/.+")
 source_group("Common\\Rendering\\Hardware Renderer\\Postprocessing" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/rendering/hwrenderer/postprocessing/.+")
-if ( HAVE_OPENGL )
 source_group("Common\\Rendering\\OpenGL Loader" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/rendering/gl_load/.+")
 source_group("Common\\Rendering\\OpenGL Backend" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/rendering/gl/.+")
-endif()
 if ( HAVE_VULKAN )
 source_group("Common\\Rendering\\Vulkan Renderer\\System" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/rendering/vulkan/system/.+")
 source_group("Common\\Rendering\\Vulkan Renderer\\Renderer" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/rendering/vulkan/renderer/.+")
