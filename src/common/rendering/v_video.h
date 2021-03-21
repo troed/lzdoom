@@ -265,6 +265,12 @@ public:
 	// The original size of the framebuffer as selected in the video menu.
 	uint64_t FrameTime = 0;
 
+	// [GEC]
+	float poly_gamma = 1.0f;
+	float poly_contrast = 1.0f;
+	float poly_brightness = 0.0f;
+	float poly_saturation = 1.0f;
+
 private:
 	uint64_t fpsLimitTime = 0;
 

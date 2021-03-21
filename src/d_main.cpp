@@ -903,9 +903,40 @@ static void DrawRateStuff()
 	}
 }
 
+EXTERN_CVAR(Float, vid_brightness)
+EXTERN_CVAR(Float, vid_contrast)
+EXTERN_CVAR(Float, vid_saturation)
+static void ApplyPolyGamma(bool apply) // [GEC] Gamma Layer SoftPoly Only
+{
+	if (screen->IsPoly())
+	{
+		if (apply)
+		{
+			screen->poly_gamma = vid_gamma;
+			screen->poly_contrast = vid_contrast;
+			screen->poly_brightness = vid_brightness;
+			screen->poly_saturation = vid_saturation;
+		}
+		else
+		{
+			screen->poly_gamma = 1.0f;
+			screen->poly_contrast = 1.0f;
+			screen->poly_brightness = 0.0f;
+			screen->poly_saturation = 1.0f;
+		}
+	}
+}
+
+static void DrawGammaLayer() // [GEC] Gamma Layer SoftPoly Only
+{
+	if (screen->IsPoly())
+		twod->AddColorOnlyQuad(0, 0, twod->GetWidth(), twod->GetHeight(), 0, &LegacyRenderStyles[STYLE_Gamma]);
+}
+
 static void End2DAndUpdate()
 {
 	DrawRateStuff();
+	DrawGammaLayer(); // [GEC] SoftPoly Only
 	twod->End();
 	CheckBench();
 	screen->Update();
@@ -982,6 +1013,7 @@ void D_Display ()
 			R_ExecuteSetViewSize (vp, r_viewwindow);
 	}
 	}
+	ApplyPolyGamma(false); // [GEC]
 
 	// [RH] Allow temporarily disabling wipes
 	if (NoWipe)
@@ -1024,6 +1056,8 @@ void D_Display ()
 	{
 		wipe = nullptr;
 	}
+
+	ApplyPolyGamma(true); // [GEC]
 	
 	screen->FrameTime = I_msTimeFS();
 	TexAnim.UpdateAnimations(screen->FrameTime);
@@ -1035,7 +1069,7 @@ void D_Display ()
 		// [ZZ] execute event hook that we just started the frame
 		//E_RenderFrame();
 		//
-		
+
 		D_Render([&]()
 		{
 			viewsec = RenderView(&players[consoleplayer]);
@@ -1164,10 +1198,11 @@ void D_Display ()
 		NetUpdate ();			// send out any new accumulation
 		// normal update
 		// draw ZScript UI stuff
-		C_DrawConsole ();	// draw console
+		C_DrawConsole ();		// draw console
 		M_Drawer ();			// menu is drawn even on top of everything
 		if (!hud_toggled)
 			FStat::PrintStat (twod);
+
 		End2DAndUpdate ();
 	}
 	else
@@ -1178,10 +1213,13 @@ void D_Display ()
 
 		GSnd->SetSfxPaused(true, 1);
 		I_FreezeTime(true);
+		ApplyPolyGamma(true); // [GEC]
+		DrawGammaLayer(); // [GEC]
 		twod->End();
 		auto wipend = MakeGameTexture(screen->WipeEndScreen(), nullptr, ETextureType::SWCanvas);
 		auto wiper = Wiper::Create(wipe_type);
 		wiper->SetTextures(wipe, wipend);
+		ApplyPolyGamma(false); // [GEC]
 
 		wipestart = I_msTime();
 		NetUpdate();		// send out any new accumulation
@@ -1197,8 +1235,9 @@ void D_Display ()
 			wipestart = nowtime;
 			twod->Begin(screen->GetWidth(), screen->GetHeight());
 			done = wiper->Run(1);
-			C_DrawConsole ();	// console and
+			C_DrawConsole ();		// console and
 			M_Drawer ();			// menu are drawn even on top of wipes
+			ApplyPolyGamma(false); // [GEC]
 			End2DAndUpdate ();
 			NetUpdate ();			// [RH] not sure this is needed anymore
 		} while (!done);
