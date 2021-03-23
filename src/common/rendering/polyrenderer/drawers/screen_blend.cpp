@@ -567,92 +567,12 @@ void BlendColorColormap(int y, int x0, int x1, PolyTriangleThreadData* thread)
 	}
 }
 
-void BlendColorGamma(int y, int x0, int x1, PolyTriangleThreadData* thread) // [GEC] SoftPoly: gamma, brightness, contrast and saturation effects.
-{
-	uint32_t* line = (uint32_t*)thread->dest + y * (ptrdiff_t)thread->dest_pitch;
-	uint32_t* fragcolor = thread->scanline.FragColor;
-
-	int sseend = x0;
-
-	float InvGamma = 1.0f / clamp<float>(screen->poly_gamma, 0.1f, 4.f);
-	float Brightness = clamp<float>(screen->poly_brightness, -0.8f, 0.8f);
-	float Contrast = clamp<float>(screen->poly_contrast, 0.1f, 3.f);
-	float Saturation = clamp<float>(screen->poly_saturation, -15.0f, 15.f);
-
-	uint8_t lookupCBG[256];
-	for (int i = 0; i < 256; i++)
-	{
-		float ramp = (float)(i / 255.f);
-
-		// Apply Contrast
-		// vec4 finalColor = vec4((((originalColor.rgb - vec3(0.5)) * Contrast) + vec3(0.5)), 1.0);
-		ramp = (((ramp - 0.5f) * Contrast) + 0.5f);
-
-		// Apply Brightness
-		// vec4 finalColor = vec4(originalColor.rgb + Brightness, 1.0);
-		ramp += (Brightness / 2.0f);
-
-		// Apply Gamma
-		// FragColor.rgb = pow(fragColor.rgb, vec3(1.0/gamma));
-		ramp = std::pow(ramp, InvGamma);
-
-		// Clamp ramp
-		ramp = clamp<float>(ramp, 0.0f, 1.f);
-
-		lookupCBG[i] = (uint8_t)(ramp * 255);
-	}
-
-	for (int x = sseend; x < x1; x++)
-	{
-		uint32_t dst = line[x];
-
-		uint32_t a = APART(dst);
-		uint32_t r = RPART(dst);
-		uint32_t g = GPART(dst);
-		uint32_t b = BPART(dst);
-
-		// Apply Contrast / Brightness / Gamma
-		r = lookupCBG[r];
-		g = lookupCBG[g];
-		b = lookupCBG[b];
-
-		float NewA = (float)(a / 255.f);
-		float NewR = (float)(r / 255.f);
-		float NewG = (float)(g / 255.f);
-		float NewB = (float)(b / 255.f);
-
-		// Apply Saturation
-		// float luma = dot(In, float3(0.2126729, 0.7151522, 0.0721750));
-		// Out =  luma.xxx + Saturation.xxx * (In - luma.xxx);
-		float luma = (NewR * 0.2126729f) + (NewG * 0.7151522f) + (NewB * 0.0721750f);
-		NewR = luma + (Saturation * (NewR - luma));
-		NewG = luma + (Saturation * (NewG - luma));
-		NewB = luma + (Saturation * (NewB - luma));
-
-		// Clamp All
-		NewR = clamp<float>(NewR, 0.0f, 1.f);
-		NewG = clamp<float>(NewG, 0.0f, 1.f);
-		NewB = clamp<float>(NewB, 0.0f, 1.f);
-
-		//a = (uint32_t)(GammaA * 255.f);
-		r = (uint32_t)(NewR * 255.f);
-		g = (uint32_t)(NewG * 255.f);
-		b = (uint32_t)(NewB * 255.f);
-
-		line[x] = MAKEARGB(a, (uint8_t)r, (uint8_t)g, (uint8_t)b);
-	}
-}
-
 void SelectWriteColorFunc(PolyTriangleThreadData* thread)
 {
 	FRenderStyle style = thread->RenderStyle;
 	if (thread->ColormapShader)
 	{
 		thread->WriteColorFunc = &BlendColorColormap;
-	}
-	else if (style.BlendOp == STYLEOP_Gamma) // [GEC]
-	{
-		thread->WriteColorFunc = &BlendColorGamma;
 	}
 	else if (style.BlendOp == STYLEOP_Add)
 	{

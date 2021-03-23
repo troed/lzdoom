@@ -65,7 +65,6 @@ FRenderStyle LegacyRenderStyles[STYLE_Count] =
 	{ { STYLEOP_Add, STYLEALPHA_SrcCol, STYLEALPHA_InvSrcCol, 0 } },									/* STYLE_ColorBlend */
 	{ { STYLEOP_Add, STYLEALPHA_One, STYLEALPHA_Zero, 0 } },											/* STYLE_Source */
 	{ { STYLEOP_Add, STYLEALPHA_SrcCol, STYLEALPHA_One, 0 } },											/* STYLE_ColorAdd */
-	{ { STYLEOP_Gamma, 0, 0, 0 } },																		/* STYLE_Gamma [GEC] SoftPoly Only*/
 };
 
 double GetAlpha(int type, double alpha)

@@ -79,7 +79,6 @@ enum ERenderStyle
 	STYLE_ColorBlend,		// Use color intensity as transparency factor
 	STYLE_Source,			// No blending (only used internally)
 	STYLE_ColorAdd,			// Use color intensity as transparency factor and blend additively.
-	STYLE_Gamma,			// [GEC] SoftPoly: special layer for gamma, brightness, contrast and saturation effects.
 	STYLE_Count
 };
 
@@ -97,7 +96,6 @@ enum ERenderOp
 
 	// special styles
 	STYLEOP_Shadow,			
-	STYLEOP_Gamma,			// [GEC] SoftPoly Only
 };
 
 enum ERenderAlpha
