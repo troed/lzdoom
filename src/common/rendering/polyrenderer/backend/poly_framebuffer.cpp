@@ -45,6 +45,7 @@
 #include "poly_renderstate.h"
 #include "poly_hwtexture.h"
 #include "engineerrors.h"
+#include "gamestate.h"
 
 #ifdef _WIN32
 extern bool d3davailable;
@@ -58,6 +59,8 @@ extern int current_rendered_commandbuffers;
 extern bool gpuStatActive;
 extern bool keepGpuStatActive;
 extern FString gpuStatOutput;
+
+extern gamestate_t wipegamestate;
 
 PolyFrameBuffer::PolyFrameBuffer(void *hMonitor, bool fullscreen) : Super(hMonitor, fullscreen) 
 {
@@ -266,12 +269,6 @@ static uint8_t ToIntColorComponent(float v)
 {
 	return clamp((int)(v * 255.0f + 0.5f), 0, 255);
 }
-
-#include "gamestate.h"
-extern gamestate_t wipegamestate;
-EXTERN_CVAR(Float, vid_brightness)
-EXTERN_CVAR(Float, vid_contrast)
-EXTERN_CVAR(Float, vid_saturation)
 
 void PolyFrameBuffer::PostProcessScene(bool swscene, int fixedcm, float flash, const std::function<void()> &afterBloomDrawEndScene2D)
 {

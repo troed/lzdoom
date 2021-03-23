@@ -1168,7 +1168,6 @@ void D_Display ()
 		M_Drawer ();			// menu is drawn even on top of everything
 		if (!hud_toggled)
 			FStat::PrintStat (twod);
-
 		End2DAndUpdate ();
 	}
 	else
