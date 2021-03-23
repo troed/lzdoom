@@ -28,7 +28,6 @@
 #include "texturemanager.h"
 #include "templates.h"
 #include "stats.h"
-#include "colormaps.h"
 
 CVAR(Int, gl_multisample, 1, CVAR_ARCHIVE|CVAR_GLOBALCONFIG);
 
