@@ -434,7 +434,7 @@ TArray<uint8_t> PolyFrameBuffer::GetScreenshotBuffer(int &pitch, ESSType &color_
 		// Apply Gamma
 		// FragColor.rgb = pow(fragColor.rgb, vec3(1.0/gamma));
 		if (vid_gamma != 1.0f)
-			ramp = std::pow(ramp, InvGamma);
+			ramp = pow(ramp, InvGamma);
 
 		// Clamp ramp
 		ramp = clamp<float>(ramp, 0.0f, 1.f);

@@ -192,7 +192,7 @@ private:
 			// Apply Gamma
 			// FragColor.rgb = pow(fragColor.rgb, vec3(1.0/gamma));
 			if (gamma != 1.0f)
-				ramp = std::pow(ramp, InvGamma);
+				ramp = pow(ramp, InvGamma);
 
 			// Clamp ramp
 			ramp = clamp<float>(ramp, 0.0f, 1.f);
