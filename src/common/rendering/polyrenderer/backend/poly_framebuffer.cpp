@@ -44,7 +44,6 @@
 #include "poly_renderstate.h"
 #include "poly_hwtexture.h"
 #include "engineerrors.h"
-#include "gamestate.h"
 
 #ifdef _WIN32
 extern bool d3davailable;
@@ -58,8 +57,6 @@ extern int current_rendered_commandbuffers;
 extern bool gpuStatActive;
 extern bool keepGpuStatActive;
 extern FString gpuStatOutput;
-
-extern gamestate_t wipegamestate;
 
 PolyFrameBuffer::PolyFrameBuffer(void *hMonitor, bool fullscreen) : Super(hMonitor, fullscreen) 
 {
@@ -199,10 +196,6 @@ void PolyFrameBuffer::Update()
 		if (dst)
 		{
 #if 1
-			//auto copyqueue = std::make_shared<DrawerCommandQueue>(&mFrameMemory);
-			//copyqueue->Push<MemcpyCommand>(dst, pitch / pixelsize, src, w, h, w, pixelsize);
-			//DrawerThreads::Execute(copyqueue);
-
 			// [GEC] with the help of dpJudas a new system of copying and applying gamma in the video buffer
 			auto copyqueue = std::make_shared<DrawerCommandQueue>(&mFrameMemory);
 			copyqueue->Push<CopyAndApplyGammaCommand>(dst, pitch / pixelsize, src, w, h, w, vid_gamma, vid_contrast, vid_brightness, vid_saturation);
