@@ -575,7 +575,7 @@ void FGameConfigFile::DoGlobalSetup ()
 	}
 	else badconfig = true;
 
-	if (badconfig)
+	if (FileExisted && badconfig)
 		I_Error ("Corrupt config file.\n");
 }
 
