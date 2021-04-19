@@ -514,6 +514,11 @@ int FKeyBindings::GetKeysForCommand (const char *cmd, int *first, int *second)
 
 	*first = *second = c = i = 0;
 
+	if (cmd[0] == '\0')
+	{
+		return 0;
+	}
+
 	while (i < NUM_KEYS && c < 2)
 	{
 		if (stricmp (cmd, Binds[i]) == 0)
@@ -749,6 +754,12 @@ void ReadBindings(int lump, bool override)
 		{
 			dest = &AutomapBindings;
 			sc.MustGetString();
+		}
+		else if (sc.Compare("unbind"))
+		{
+			sc.MustGetString();
+			dest->UnbindKey(sc.String);
+			continue;
 		}
 		key = GetConfigKeyFromName(sc.String);
 		sc.MustGetString();
