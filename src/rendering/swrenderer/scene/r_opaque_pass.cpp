@@ -977,7 +977,7 @@ namespace swrenderer
 						if (drawSpriteShadows)
 						{
 							DVector2 shadowScale = sprite.spriteScale;
-							shadowScale.Y *= 0.1;
+							shadowScale.Y *= (thing->Scale.Y * 0.1);
 							DVector3 shadowPos = sprite.pos;
 							shadowPos.Z = thing->floorz;
 							RenderSprite::Project(Thread, thing, shadowPos, sprite.tex, shadowScale, sprite.renderflags, fakeside, fakefloor, fakeceiling, sec, thinglightlevel, foggy, thingColormap, true);
