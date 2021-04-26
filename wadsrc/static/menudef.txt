@@ -949,6 +949,7 @@ OptionMenu "VideoOptions" protected
 	Option "$VIDMNU_MAXFPS",					"vid_maxfps", "MaxFps"
 	Option "$DSPLYMNU_CAPFPS",					"cl_capfps", "OffOn"
 	StaticText " "
+	Option "$DSPLYMNU_SPRITESHADOW",			"r_actorspriteshadow", "SpriteShadowModes"
 	Option "$DSPLYMNU_CUSTOMINVERTMAP",			"cl_customizeinvulmap", "OnOff"
 	ColorPicker "$DSPLYMNU_CUSTOMINVERTC1",		"cl_custominvulmapcolor1"
 	ColorPicker "$DSPLYMNU_CUSTOMINVERTC2",		"cl_custominvulmapcolor2"
@@ -2835,4 +2836,11 @@ OptionMenu "vkoptions"
 	StaticText ""
 	TextField "$VKMNU_DEVICE",			vk_device
 	Option "$VKMNU_HDR",				"vk_hdr", "OnOff"
+}
+
+OptionValue "SpriteShadowModes"
+{
+	0, "$OPTVAL_OFF"
+	1, "$OPTVAL_DEFAULT"
+	2, "$OPTVAL_SPRSHADALWAYS"
 }
