@@ -967,13 +967,7 @@ namespace swrenderer
 					{
 						RenderSprite::Project(Thread, thing, sprite.pos, sprite.tex, sprite.spriteScale, sprite.renderflags, fakeside, fakefloor, fakeceiling, sec, thinglightlevel, foggy, thingColormap, false);
 
-						bool drawSpriteShadows =
-						(
-							r_actorshadows &&
-							((thing->flags3 & MF3_ISMONSTER) || thing->IsKindOf(NAME_PlayerPawn))
-						);
-
-						if (drawSpriteShadows)
+						if (r_actorshadows)
 						{
 							DVector2 shadowScale = sprite.spriteScale;
 							shadowScale.Y *= (thing->Scale.Y * 0.1);
