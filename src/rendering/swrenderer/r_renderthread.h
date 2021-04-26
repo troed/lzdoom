@@ -85,10 +85,6 @@ namespace swrenderer
 		short clipbot[MAXWIDTH];
 		short cliptop[MAXWIDTH];
 
-		// Copy of the VisibleSprite buffers for the flat sprite pass
-		short clipbotcopy[MAXWIDTH];
-		short cliptopcopy[MAXWIDTH];
-
 		SWPixelFormatDrawers *Drawers(RenderViewport *viewport);
 
 		// Setup poly object in a threadsafe manner

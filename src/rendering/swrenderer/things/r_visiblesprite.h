@@ -46,7 +46,6 @@ namespace swrenderer
 		float SortDist() const { return idepth; }
 
 		int SubsectorDepth;
-		bool FlatPass = false;
 
 	protected:
 		virtual bool IsParticle() const { return false; }
