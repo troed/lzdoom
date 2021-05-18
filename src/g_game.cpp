@@ -139,6 +139,7 @@ CUSTOM_CVAR (Int, displaynametags, 0, CVAR_ARCHIVE)
 
 CVAR(Int, nametagcolor, CR_GOLD, CVAR_ARCHIVE)
 
+extern bool playedtitlemusic;
 
 gameaction_t	gameaction;
 gamestate_t 	gamestate = GS_STARTUP;
@@ -1170,7 +1171,7 @@ void G_Ticker ()
 		case ga_loadgameplaydemo:
 			G_DoLoadGame ();
 			// fallthrough
-		case ga_playdemo:
+		case  ga_playdemo:
 			G_DoPlayDemo ();
 			break;
 		case ga_completed:
@@ -2943,6 +2944,7 @@ void G_DoPlayDemo (void)
 
 		usergame = false;
 		demoplayback = true;
+		playedtitlemusic = false;
 	}
 }
 
