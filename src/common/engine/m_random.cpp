@@ -365,7 +365,6 @@ void FRandom::StaticReadRNGState(FSerializer &arc)
 
 	// Call StaticClearRandom in order to ensure that SFMT is initialized
 	FRandom::StaticClearRandom ();
-	M_ClearRandom();
 
 	if (arc.BeginArray("rngs"))
 	{
