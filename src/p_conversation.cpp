@@ -60,7 +60,7 @@
 #include "v_draw.h"
 #include "doommenu.h"
 
-static FRandom pr_randomspeech("RandomSpeech");
+static FRandom pr_randomspeech("RandomSpeech", false);
 
 static int ConversationMenuY;
 
