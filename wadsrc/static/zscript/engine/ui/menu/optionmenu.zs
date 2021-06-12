@@ -247,6 +247,8 @@ class OptionMenu : Menu
 					}
 					int	rowheight = linespacing * CleanYfac_1;
 					int maxitems = (screen.GetHeight() - rowheight - y) / rowheight + 1;
+					if (ui_classic)
+						maxitems--; // hack hack
 
 					mDesc.mScrollPos = MAX (0, mDesc.mItems.Size() - maxitems + mDesc.mScrollTop);
 					mDesc.mSelectedItem = mDesc.mItems.Size()-1;
@@ -265,7 +267,7 @@ class OptionMenu : Menu
 			{
 				++mDesc.mSelectedItem;
 				
-				if (CanScrollDown && mDesc.mSelectedItem == VisBottom)
+				if (CanScrollDown && mDesc.mSelectedItem >= VisBottom)
 				{
 					mDesc.mScrollPos++;
 					VisBottom++;
