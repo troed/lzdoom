@@ -5400,26 +5400,24 @@ bool CheckDoubleSpawn (FLevelLocals *Level, AActor *&mobj, const AActor *info, c
 	return spawned;
 }
 
-void SetMobj (FLevelLocals *Level, AActor *mobj, const FMapThing *mthing, const PClassActor *type)
+void SetMobj (FLevelLocals *Level, AActor *mobj, const FMapThing *mthing)
 {
+	if (mobj->flags2 & MF2_FLOORCLIP)
+	{
+		mobj->AdjustFloorClip();
+	}
+
 	mobj->SpawnPoint = mthing->pos;
 	mobj->SpawnAngle = mthing->angle;
 	mobj->SpawnFlags = mthing->flags;
 	if (mthing->friendlyseeblocks > 0)
 		mobj->friendlyseeblocks = mthing->friendlyseeblocks;
-	if (mthing->FloatbobPhase >= 0 && mthing->FloatbobPhase < 64) mobj->FloatBobPhase = mthing->FloatbobPhase;
 	if (mthing->Gravity < 0) mobj->Gravity = -mthing->Gravity;
 	else if (mthing->Gravity > 0) mobj->Gravity *= mthing->Gravity;
 	else 
 	{
 		mobj->flags |= MF_NOGRAVITY;
 		mobj->Gravity = 0;
-	}
-
-	// For Hexen floatbob 'compatibility' we do not really want to alter the floorz.
-	if (mobj->specialf1 == 0 || !(mobj->flags2 & MF2_FLOATBOB) || !(mobj->Level->ib_compatflags & BCOMPATF_FLOATBOB))
-	{
-		P_FindFloorCeiling(mobj, FFCF_SAMESECTOR | FFCF_ONLY3DFLOORS | FFCF_3DRESTRICT);
 	}
 
 	// if the actor got args defined either in DECORATE or MAPINFO we must ignore the map's properties.
@@ -5466,30 +5464,6 @@ void SetMobj (FLevelLocals *Level, AActor *mobj, const FMapThing *mthing, const 
 		mobj->fillcolor = (mthing->fillcolor & 0xffffff) | (ColorMatcher.Pick((mthing->fillcolor & 0xff0000) >> 16,
 			(mthing->fillcolor & 0xff00) >> 8, (mthing->fillcolor & 0xff)) << 24);
 
-	// allow color strings for lights and reshuffle the args for spot lights
-	if (type->IsDescendantOf(NAME_DynamicLight))
-	{
-		if (mthing->arg0str != NAME_None)
-		{
-			PalEntry color = V_GetColor(nullptr, mthing->arg0str.GetChars());
-			mobj->args[0] = color.r;
-			mobj->args[1] = color.g;
-			mobj->args[2] = color.b;
-		}
-		else if (mobj->IntVar(NAME_lightflags) & LF_SPOT)
-		{
-			mobj->args[0] = RPART(mthing->args[0]);
-			mobj->args[1] = GPART(mthing->args[0]);
-			mobj->args[2] = BPART(mthing->args[0]);
-		}
-
-		if (mobj->IntVar(NAME_lightflags) & LF_SPOT)
-		{
-			mobj->AngleVar(NAME_SpotInnerAngle) = double(mthing->args[1]);
-			mobj->AngleVar(NAME_SpotOuterAngle) = double(mthing->args[2]);
-		}
-	}
-
 	mobj->CallBeginPlay ();
 	if (!(mobj->ObjectFlags & OF_EuthanizeMe))
 	{
@@ -5517,7 +5491,7 @@ AActor *FLevelLocals::SpawnMapThing (FMapThing *mthing, int position)
 	PClassActor *i;
 	int mask;
 	AActor *mobj, *mobj2;
-	bool spawned = true;
+	bool spawned;
 
 	bool spawnmulti = G_SkillProperty(SKILLP_SpawnMulti) || !!(dmflags2 & DF2_ALWAYS_SPAWN_MULTI);
 
@@ -5795,31 +5769,57 @@ AActor *FLevelLocals::SpawnMapThing (FMapThing *mthing, int position)
 	else if (sz == ONCEILINGZ)
 		mobj->AddZ(-mthing->pos.Z);
 
-	if (mobj->flags2 & MF2_FLOORCLIP)
+	if (mthing->FloatbobPhase >= 0 && mthing->FloatbobPhase < 64)
+		mobj->FloatBobPhase = mthing->FloatbobPhase;
+
+	// For Hexen floatbob 'compatibility' we do not really want to alter the floorz.
+	if (mobj->specialf1 == 0 || !(mobj->flags2 & MF2_FLOATBOB) || !(mobj->Level->ib_compatflags & BCOMPATF_FLOATBOB))
 	{
-		mobj->AdjustFloorClip();
+		P_FindFloorCeiling(mobj, FFCF_SAMESECTOR | FFCF_ONLY3DFLOORS | FFCF_3DRESTRICT);
+	}
+
+	// allow color strings for lights and reshuffle the args for spot lights
+	if (i->IsDescendantOf(NAME_DynamicLight))
+	{
+		if (mthing->arg0str != NAME_None)
+		{
+			PalEntry color = V_GetColor(nullptr, mthing->arg0str.GetChars());
+			mobj->args[0] = color.r;
+			mobj->args[1] = color.g;
+			mobj->args[2] = color.b;
+		}
+		else if (mobj->IntVar(NAME_lightflags) & LF_SPOT)
+		{
+			mobj->args[0] = RPART(mthing->args[0]);
+			mobj->args[1] = GPART(mthing->args[0]);
+			mobj->args[2] = BPART(mthing->args[0]);
+		}
+
+		if (mobj->IntVar(NAME_lightflags) & LF_SPOT)
+		{
+			mobj->AngleVar(NAME_SpotInnerAngle) = double(mthing->args[1]);
+			mobj->AngleVar(NAME_SpotOuterAngle) = double(mthing->args[2]);
+		}
 	}
 
 	if ((G_SkillProperty(SKILLP_DoubleSpawn) || (dmflags2 & DF2_DOUBLESPAWN)) && info->flags3 & MF3_ISMONSTER
-		&& i->TypeName != NAME_SpiderMastermind && (gameinfo.gametype == GAME_Doom || gameinfo.gametype == GAME_Heretic))
+		&& i->TypeName != NAME_SpiderMastermind)
 	{
 		spawned = CheckDoubleSpawn (this, mobj, info, mthing, sz, i, true); // previously double spawned monster might block
-	}
-
-	if (spawned)
-	{
-		SetMobj(this, mobj, mthing, i);
-	}
-
-	if ((G_SkillProperty(SKILLP_DoubleSpawn) || (dmflags2 & DF2_DOUBLESPAWN)) && info->flags3 & MF3_ISMONSTER
-		&& i->TypeName != NAME_SpiderMastermind && (gameinfo.gametype == GAME_Doom || gameinfo.gametype == GAME_Heretic))
-	{
+		if (spawned)
+		{
+			SetMobj(this, mobj, mthing);
+		}
 		mobj2 = AActor::StaticSpawn (this, i, DVector3(mthing->pos.X + 2 * info->radius, mthing->pos.Y, sz), NO_REPLACE, true);
 		spawned = CheckDoubleSpawn (this, mobj2, info, mthing, sz, i, false);
 		if (spawned)
 		{
-			SetMobj(this, mobj2, mthing, i);
+			SetMobj(this, mobj2, mthing);
 		}
+	}
+	else
+	{
+		SetMobj(this, mobj, mthing);
 	}
 
 	return mobj;

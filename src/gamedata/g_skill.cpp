@@ -160,10 +160,6 @@ void FMapInfoParser::ParseSkill ()
 		{
 			skill.PlayerRespawn = true;
 		}
-		else if (sc.Compare ("doublespawn"))
-		{
-			skill.DoubleSpawn = true;
-		}
 		else if (sc.Compare("respawntime"))
 		{
 			ParseAssign();
@@ -181,6 +177,10 @@ void FMapInfoParser::ParseSkill ()
 			ParseAssign();
 			sc.MustGetFloat ();
 			skill.Aggressiveness = 1. - clamp(sc.Float, 0.,1.);
+		}
+		else if (sc.Compare ("doublespawn"))
+		{
+			skill.DoubleSpawn = true;
 		}
 		else if (sc.Compare("SpawnFilter"))
 		{
