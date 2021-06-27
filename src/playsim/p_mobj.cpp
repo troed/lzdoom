@@ -5689,7 +5689,7 @@ AActor *FLevelLocals::SpawnMapThing (FMapThing *mthing, int position)
 		// to check for missing frames in the replacement object.
 	i = mentry->Type->GetReplacement(this);
 	if (sv_nodoom2monsters && !netcompat && gameinfo.gametype == GAME_Doom)
-		i = mentry->Type->GetClassicModeReplacements();
+		i = mentry->Type->GetClassicModeReplacements(i);
 
 		const AActor *defaults = GetDefaultByType (i);
 		if (defaults->SpawnState == NULL ||

@@ -346,7 +346,7 @@ public:
 
 	PClassActor *GetReplacement(FLevelLocals *Level, bool lookskill=true);
 	PClassActor *GetReplacee(FLevelLocals *Level, bool lookskill=true);
-	PClassActor *GetClassicModeReplacements();
+	PClassActor *GetClassicModeReplacements(PClassActor *type);
 
 	// For those times when being able to scan every kind of actor is convenient
 	static TArray<PClassActor *> AllActorClasses;
