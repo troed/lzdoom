@@ -631,6 +631,17 @@ class StatusScreen abstract play version("2.5")
 	//
 	//====================================================================
 
+	bool autoSkip()
+	{
+		return wi_autoadvance > 0 && bcnt > (wi_autoadvance * GameTicRate);
+	}
+
+	//====================================================================
+	//
+	//
+	//
+	//====================================================================
+
 	protected virtual void initNoState ()
 	{
 		CurState = NoState;
