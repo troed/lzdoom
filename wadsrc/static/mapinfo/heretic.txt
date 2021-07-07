@@ -314,7 +314,7 @@ skill extreme_lzd
 {
 	DoubleSpawn
 	DamageFactor = 1.5
-	MonsterHealth = 0.5
+	MonsterHealth = 0.6
 	HealthFactor = 0.6
 	DisableCheats
 	SpawnFilter = Hard

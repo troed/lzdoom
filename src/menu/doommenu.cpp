@@ -71,6 +71,7 @@ EXTERN_CVAR(Bool, saveloadconfirmation) // [mxd]
 EXTERN_CVAR(Bool, quicksaverotation)
 EXTERN_CVAR(Bool, show_messages)
 
+CVAR(Bool, menu_hideextreme, false, CVAR_ARCHIVE)
 CVAR(Bool, m_simpleoptions, false, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 
 typedef void(*hfunc)();
@@ -1141,6 +1142,10 @@ void M_StartupSkillMenu(FNewGameStartup *gs)
 			{
 				FSkillInfo &skill = *MenuSkills[i];
 				DMenuItemBase *li = nullptr;
+
+				if (menu_hideextreme && skill.Name == FName("extreme_lzd"))
+					continue;
+
 				// Using a different name for skills that must be confirmed makes handling this easier.
 				FName action = (skill.MustConfirm && !AllEpisodes[gs->Episode].mNoSkill) ?
 					NAME_StartgameConfirm : NAME_Startgame;
@@ -1174,6 +1179,10 @@ void M_StartupSkillMenu(FNewGameStartup *gs)
 			else
 			{
 				ld->mAutoselect = -1;
+			}
+			if (static_cast<unsigned int>(ld->mSelectedItem) >= ld->mItems.Size())
+			{
+				ld->mSelectedItem = ld->mItems.Size() - 1;
 			}
 			success = true;
 		}
