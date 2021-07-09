@@ -109,6 +109,7 @@ OPTVAL_NATIVE					= "Native";
 OPTVAL_HALF						= "Half Native";
 SKILL_EXTREME					= "Unholy massacre.";
 MNU_EXTREME						= "1000 DEATHS AWAIT THEE";
+MISCMNU_HIDEEXTREME				= "Hide extreme skill level";
 GMPLYMNU_DOUBLESPAWN			= "Spawn double the monsters";
 GMPLYMNU_MULTIPLAYERTHINGS		= "Spawn multi. things";
 GGLOADED						= "game loaded.";
