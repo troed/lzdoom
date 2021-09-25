@@ -1717,14 +1717,18 @@ void FLevelLocals::QueueBody (AActor *body)
 //
 // G_DoReborn
 //
+CVAR (Bool, pistolstart, false, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 EXTERN_CVAR(Bool, sv_singleplayerrespawn)
 void FLevelLocals::DoReborn (int playernum, bool freshbot)
 {
+	cluster_info_t *cluster = FindClusterInfo (this->cluster);
+	bool ishub = (cluster != nullptr && (cluster->flags & CLUSTER_HUB));
+
 	if (!multiplayer && !(flags2 & LEVEL2_ALLOWRESPAWN) && !sv_singleplayerrespawn &&
 		!G_SkillProperty(SKILLP_PlayerRespawn))
 	{
 		if (BackupSaveName.Len() > 0 && FileExists (BackupSaveName.GetChars())
-			&& !(compatmode == 2 && sv_stricterdoommode && gameinfo.gametype == GAME_Doom))
+			&& (ishub || !pistolstart || !gameinfo.gametype == GAME_Doom))
 		{ // Load game from the last point it was saved
 			savename = BackupSaveName;
 			gameaction = ga_autoloadgame;
