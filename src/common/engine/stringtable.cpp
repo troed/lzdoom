@@ -43,7 +43,6 @@
 #include "i_interface.h"
 
 EXTERN_CVAR(String, language)
-EXTERN_CVAR(Bool, ui_classic)
 
 //==========================================================================
 //
@@ -475,7 +474,7 @@ void FStringTable::UpdateLanguage(const char *language)
 
 	size_t langlen = strlen(language);
 
-	int LanguageID = (langlen < 2 || langlen > 3 || ui_classic) ?
+	int LanguageID = (langlen < 2 || langlen > 3) ?
 		MAKE_ID('e', 'n', 'u', '\0') :
 		MAKE_ID(language[0], language[1], language[2], '\0');
 
