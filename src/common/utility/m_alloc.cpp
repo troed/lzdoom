@@ -70,7 +70,7 @@ void *M_Malloc(size_t size)
 
 	GC::AllocBytes += _msize(block);
 #ifdef _WIN32
-	if (checkram && GC::AllocBytes/MEGA > 1024)
+	if (checkram && GC::AllocBytes/MEGA > 1536)
 		CheckFreeRAM();
 #endif
 	return block;
@@ -89,7 +89,7 @@ void *M_Realloc(void *memblock, size_t size)
 	}
 	GC::AllocBytes += _msize(block);
 #ifdef _WIN32
-	if (checkram && GC::AllocBytes/MEGA > 1024)
+	if (checkram && GC::AllocBytes/MEGA > 1536)
 		CheckFreeRAM();
 #endif
 	return block;
