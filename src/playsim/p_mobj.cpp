@@ -5801,7 +5801,7 @@ AActor *FLevelLocals::SpawnMapThing (FMapThing *mthing, int position)
 	}
 
 	if ((G_SkillProperty(SKILLP_DoubleSpawn) || (dmflags2 & DF2_DOUBLESPAWN)) && info->flags3 & MF3_ISMONSTER
-		&& i->TypeName != NAME_SpiderMastermind)
+		&& info->radius < 65)
 	{
 		spawned = CheckDoubleSpawn (this, mobj, info, mthing, sz, i, true); // previously double spawned monster might block
 		if (spawned)
