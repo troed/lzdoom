@@ -151,7 +151,6 @@ CUSTOM_CVAR (Float, sv_gravity, 800.f, CVAR_SERVERINFO|CVAR_NOSAVE|CVAR_NOINITCA
 	}
 }
 
-CVAR (Bool, sv_nodoom2monsters, false, CVAR_SERVERINFO | CVAR_ARCHIVE | CVAR_DOWNSTREAM)
 CVAR (Bool, cl_missiledecals, true, CVAR_ARCHIVE)
 CVAR (Bool, addrocketexplosion, false, CVAR_ARCHIVE)
 CVAR (Int, cl_pufftype, 0, CVAR_ARCHIVE);
@@ -5714,8 +5713,6 @@ AActor *FLevelLocals::SpawnMapThing (FMapThing *mthing, int position)
 		// Handle decorate replacements explicitly here
 		// to check for missing frames in the replacement object.
 	i = mentry->Type->GetReplacement(this);
-	if (sv_nodoom2monsters && !netcompat && gameinfo.gametype == GAME_Doom)
-		i = mentry->Type->GetClassicModeReplacements(i);
 
 		const AActor *defaults = GetDefaultByType (i);
 		if (defaults->SpawnState == NULL ||

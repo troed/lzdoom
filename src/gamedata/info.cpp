@@ -694,38 +694,6 @@ PClassActor *PClassActor::GetReplacee(FLevelLocals *Level, bool lookskill)
 
 //==========================================================================
 //
-// PClassActor :: GetClassicModeReplacements
-//
-//==========================================================================
-
-PClassActor *PClassActor::GetClassicModeReplacements(PClassActor *type)
-{
-	FName repname = NAME_None;
-
-	if (type->TypeName == FName("Arachnotron"))
-		repname = FName("ArachnotronReplacer_LZ");
-	else if (type->TypeName == FName("Archvile"))
-		repname = FName("BaronOfHell");
-	else if (type->TypeName == FName("HellKnight"))
-		repname = FName("BaronOfHell");
-	else if (type->TypeName == FName("Fatso"))
-		repname = FName("FatsoReplacer_LZ");
-	else if (type->TypeName == FName("PainElemental"))
-		repname = FName("Cacodemon");
-	else if (type->TypeName == FName("ChaingunGuy"))
-		repname = FName("ZombieMan");
-	else if (type->TypeName == FName("Revenant"))
-		repname = FName("DoomImp");
-	else
-		repname = type->TypeName;
-
-	PClassActor *rep = PClass::FindActor(repname);
-
-	return rep;
-}
-
-//==========================================================================
-//
 // PClassActor :: SetDamageFactor
 //
 //==========================================================================
