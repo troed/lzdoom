@@ -127,13 +127,6 @@ extern bool ConWindowHidden;
 
 CVAR (String, queryiwad_key, "shift", CVAR_GLOBALCONFIG|CVAR_ARCHIVE);
 CVAR (Bool, con_debugoutput, false, 0);
-#ifdef _WIN32
-bool checkram;
-CUSTOM_CVAR (Bool, cl_checkram, true, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
-{
-	checkram = self;
-}
-#endif
 
 double PerfToSec, PerfToMillisec;
 
@@ -929,20 +922,6 @@ bool I_WriteIniFailed()
 	return MessageBoxA(Window, errortext.GetChars(), GAMENAME " configuration not saved", MB_ICONEXCLAMATION | MB_RETRYCANCEL) == IDRETRY;
 }
 
-#ifdef _WIN32
-#define MEGA 1048576
-void CheckFreeRAM()
-{
-	MEMORYSTATUSEX statex;
-	statex.dwLength = sizeof(statex);
-
-	GlobalMemoryStatusEx (&statex);
-	if (statex.ullAvailPhys/MEGA < 128)
-		I_FatalError ("System free ram is very low. Aborting.\nTo disable this check set cl_checkram to false.\n");
-
-	return;
-}
-#endif
 
 //==========================================================================
 //

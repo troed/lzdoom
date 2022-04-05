@@ -55,12 +55,6 @@
 
 #ifndef _DEBUG
 #if !defined(__solaris__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
-#ifdef _WIN32
-extern bool checkram;
-void CheckFreeRAM();
-#define MEGA 1048576
-#endif
-
 void *M_Malloc(size_t size)
 {
 	void *block = malloc(size);
@@ -69,10 +63,6 @@ void *M_Malloc(size_t size)
 		I_FatalError("Could not malloc %zu bytes", size);
 
 	GC::AllocBytes += _msize(block);
-#ifdef _WIN32
-	if (checkram && GC::AllocBytes/MEGA > 1536)
-		CheckFreeRAM();
-#endif
 	return block;
 }
 
@@ -88,10 +78,6 @@ void *M_Realloc(void *memblock, size_t size)
 		I_FatalError("Could not realloc %zu bytes", size);
 	}
 	GC::AllocBytes += _msize(block);
-#ifdef _WIN32
-	if (checkram && GC::AllocBytes/MEGA > 1536)
-		CheckFreeRAM();
-#endif
 	return block;
 }
 #else
