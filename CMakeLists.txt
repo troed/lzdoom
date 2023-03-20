@@ -220,11 +220,11 @@ if( MSVC )
 	set( ALL_C_FLAGS "/GF /Gy /permissive- /DHAVE_SOFTPOLY" )
 
 	if ( HAVE_VULKAN )
-	   set( ALL_C_FLAGS "${ALL_C_FLAGS} /DHAVE_VULKAN" )
+		set( ALL_C_FLAGS "${ALL_C_FLAGS} /DHAVE_VULKAN" )
 	endif()
 
 	if ( HAVE_GLES2 )
-	   set( ALL_C_FLAGS "${ALL_C_FLAGS} /DHAVE_GLES2" )
+		set( ALL_C_FLAGS "${ALL_C_FLAGS} /DHAVE_GLES2" )
 	endif()
 	
 	# Use SSE 2 as minimum always as the true color drawers needs it for __vectorcall
@@ -262,9 +262,11 @@ else()
 	set( ALL_C_FLAGS "-ffp-contract=off -DHAVE_SOFTPOLY" )
 
 	if ( HAVE_VULKAN )
-		set( ALL_C_FLAGS "-ffp-contract=off -DHAVE_VULKAN" )
-	else()
-		set( ALL_C_FLAGS "-ffp-contract=off" )
+		set( ALL_C_FLAGS "${ALL_C_FLAGS} -DHAVE_VULKAN" )
+	endif()
+
+	if ( HAVE_GLES2 )
+		set( ALL_C_FLAGS "${ALL_C_FLAGS} -DHAVE_GLES2" )
 	endif()
 
 	if ( UNIX )
