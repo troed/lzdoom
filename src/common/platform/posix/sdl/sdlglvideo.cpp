@@ -475,15 +475,16 @@ DFrameBuffer *SDLVideo::CreateFrameBuffer ()
 	{
 #ifdef HAVE_GLES2
 		if( (Args->CheckParm ("-gles2_renderer")) || (vid_preferbackend == 3) )
+		{
 			fb = new OpenGLESRenderer::OpenGLFrameBuffer(0, vid_fullscreen);
 			Printf("Using OpenGLES\n");
-
+		}
 		else
 #endif
-			{
-		    	fb = new OpenGLRenderer::OpenGLFrameBuffer(0, vid_fullscreen);
-				Printf("Using OpenGLES\n");
-			}
+		{
+	    	fb = new OpenGLRenderer::OpenGLFrameBuffer(0, vid_fullscreen);
+			Printf("Using OpenGLES\n");
+		}
 	}
 
 	return fb;
