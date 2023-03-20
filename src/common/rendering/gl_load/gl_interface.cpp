@@ -139,8 +139,8 @@ void gl_LoadExtensions()
 	// Don't even start if it's lower than 2.0 or no framebuffers are available (The framebuffer extension is needed for glGenerateMipmapsEXT!)
 	if (gl_version < 3.3f)
 	{
-		vid_preferbackend = 2;
-		I_FatalError("Unsupported OpenGL version.\nAt least OpenGL 3.3 is required to run " GAMENAME ".\nFalling back to SoftPoly for next run.\n");
+		vid_preferbackend = 3;
+		I_FatalError("Unsupported OpenGL version.\nAt least OpenGL 3.3 is required to run " GAMENAME ".\nFalling back to OpenGLES 2.0 for next run.\n");
 	}
 
 
