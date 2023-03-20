@@ -58,7 +58,9 @@
 #include "vulkan/system/vk_framebuffer.h"
 #endif
 
+#ifdef HAVE_SOFTPOLY
 #include "poly_framebuffer.h"
+#endif
 
 // MACROS ------------------------------------------------------------------
 
@@ -233,6 +235,7 @@ bool I_CreateVulkanSurface(VkInstance instance, VkSurfaceKHR *surface)
 }
 #endif
 
+#ifdef HAVE_SOFTPOLY
 namespace
 {
 	SDL_Renderer* polyrendertarget = nullptr;
@@ -242,6 +245,7 @@ namespace
 	bool polyvsync = false;
 	bool polyfirstinit = true;
 }
+#endif
 
 void I_PolyPresentInit()
 {
@@ -398,8 +402,9 @@ SDLVideo::SDLVideo ()
 	{
 		I_FatalError("Only SDL 2.0.6 or later is supported.");
 	}
-
+#ifdef HAVE_SOFTPOLY
 	Priv::softpolyEnabled = vid_preferbackend == 2;
+#endif
 #ifdef HAVE_VULKAN
 	Priv::vulkanEnabled = vid_preferbackend == 1;
 
@@ -413,6 +418,7 @@ SDLVideo::SDLVideo ()
 		}
 	}
 #endif
+#ifdef HAVE_SOFTPOLY
 	if (Priv::softpolyEnabled)
 	{
 		Priv::CreateWindow(SDL_WINDOW_HIDDEN);
@@ -421,6 +427,7 @@ SDLVideo::SDLVideo ()
 			I_FatalError("Could not create SoftPoly window:\n%s\n",SDL_GetError());
 		}
 	}
+#endif
 }
 
 SDLVideo::~SDLVideo ()
@@ -457,18 +464,20 @@ DFrameBuffer *SDLVideo::CreateFrameBuffer ()
 	}
 #endif
 
+#ifdef HAVE_SOFTPOLY
 	if (Priv::softpolyEnabled)
 	{
 		fb = new PolyFrameBuffer(nullptr, vid_fullscreen);
 	}
-
+#endif
 	if (fb == nullptr)
 	{
-		fb = new OpenGLRenderer::OpenGLFrameBuffer(0, vid_fullscreen);
-		if (fb == nullptr)
-		{
-			I_FatalError ("Failed to initialize OpenGL framebuffer");
-		}
+#ifdef HAVE_GLES2
+		if( (Args->CheckParm ("-gles2_renderer")) || (vid_preferbackend == 3) )
+			fb = new OpenGLESRenderer::OpenGLFrameBuffer(0, vid_fullscreen);
+		else
+#endif
+	    	fb = new OpenGLRenderer::OpenGLFrameBuffer(0, vid_fullscreen);
 	}
 
 	return fb;
@@ -497,6 +506,7 @@ int SystemBaseFrameBuffer::GetClientWidth()
 {
 	int width = 0;
 
+#ifdef HAVE_SOFTPOLY
 	if (Priv::softpolyEnabled)
 	{
 		if (polyrendertarget)
@@ -505,7 +515,8 @@ int SystemBaseFrameBuffer::GetClientWidth()
 			SDL_GetWindowSize(Priv::window, &width, nullptr);
 		return width;
 	}
-	
+#endif
+
 #ifdef HAVE_VULKAN
 	assert(Priv::vulkanEnabled);
 	SDL_Vulkan_GetDrawableSize(Priv::window, &width, nullptr);
@@ -517,6 +528,8 @@ int SystemBaseFrameBuffer::GetClientWidth()
 int SystemBaseFrameBuffer::GetClientHeight()
 {
 	int height = 0;
+
+#ifdef HAVE_SOFTPOLY
 	if (Priv::softpolyEnabled)
 	{
 		if (polyrendertarget)
@@ -525,7 +538,8 @@ int SystemBaseFrameBuffer::GetClientHeight()
 			SDL_GetWindowSize(Priv::window, nullptr, &height);
 		return height;
 	}
-
+#endif
+	
 #ifdef HAVE_VULKAN
 	assert(Priv::vulkanEnabled);
 	SDL_Vulkan_GetDrawableSize(Priv::window, nullptr, &height);

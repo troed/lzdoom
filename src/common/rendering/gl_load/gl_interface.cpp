@@ -127,7 +127,7 @@ void gl_LoadExtensions()
 		double v1 = strtod(version, NULL);
 		if (v1 >= 3.0 && v1 < 3.3)
 		{
-			v1 = 3.3;	// promote '3' to 3.3.
+			v1 = 3.3;       // promote '3' to 3.3 to avoid falling back to the legacy path.
 			version = "3.3";
 		}
 		if (realglversion < v1) version = glversion;
@@ -136,7 +136,7 @@ void gl_LoadExtensions()
 
 	float gl_version = (float)strtod(version, NULL) + 0.01f;
 
-	// Don't even start if it's lower than 3.3 (uniform buffers are required now)
+	// Don't even start if it's lower than 2.0 or no framebuffers are available (The framebuffer extension is needed for glGenerateMipmapsEXT!)
 	if (gl_version < 3.3f)
 	{
 		vid_preferbackend = 2;
