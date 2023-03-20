@@ -224,6 +224,8 @@ enum : unsigned int
 	COMPATF2_RAILING		= 1 << 10,	// Bugged Strife railings.
 	COMPATF2_SCRIPTWAIT		= 1 << 11,	// Use old scriptwait implementation where it doesn't wait on a non-running script.
 	COMPATF2_OLD_RANDOM_GENERATOR	= 1 << 12,	// [BB] Use Doom's random table instead of ZDoom's random number generator.
+	COMPATF2_AVOID_HAZARDS	= 1 << 12,	// another MBF thing.
+	COMPATF2_STAYONLIFT		= 1 << 13,	// yet another MBF thing.
 };
 
 // Emulate old bugs for select maps. These are not exposed by a cvar

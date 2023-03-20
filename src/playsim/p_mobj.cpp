@@ -499,6 +499,8 @@ bool AActor::SetState (FState *newstate, bool nofunction)
 {
 	if (debugfile && player && (player->cheats & CF_PREDICTING))
 		fprintf (debugfile, "for pl %d: SetState while predicting!\n", Level->PlayerNum(player));
+	
+	auto oldstate = state;
 	do
 	{
 		if (newstate == NULL)
@@ -584,7 +586,11 @@ bool AActor::SetState (FState *newstate, bool nofunction)
 		newstate = newstate->GetNextState();
 	} while (tics == 0);
 
-	flags8 |= MF8_RECREATELIGHTS;
+	if (GetInfo()->LightAssociations.Size() || (state && state->Light > 0) || (oldstate && oldstate->Light > 0))
+	{
+		flags8 |= MF8_RECREATELIGHTS;
+		Level->flags3 |= LEVEL3_LIGHTCREATED;
+	}
 	return true;
 }
 
@@ -1608,7 +1614,7 @@ bool AActor::FloorBounceMissile (secplane_t &plane)
 			flags &= ~MF_INBOUNCE;
 			return false;
 		}
-		else Vel.Z *= bouncefactor;
+		else Vel.Z *= GetMBFBounceFactor(this);
 	}
 	else // Don't run through this for MBF-style bounces
 	{
@@ -2551,7 +2557,7 @@ void P_ZMovement (AActor *mo, double oldfloorz)
 				if (mo->BounceFlags & BOUNCE_Floors)
 				{
 					mo->FloorBounceMissile (mo->floorsector->floorplane);
-					/* if (!(mo->flags6 & MF6_CANJUMP)) */ return;
+					/* if (!CanJump(mo)) */ return;
 				}
 				else if (mo->flags3 & MF3_NOEXPLODEFLOOR)
 				{
@@ -2660,7 +2666,7 @@ void P_ZMovement (AActor *mo, double oldfloorz)
 			if (mo->BounceFlags & BOUNCE_Ceilings)
 			{	// ceiling bounce
 				mo->FloorBounceMissile (mo->ceilingsector->ceilingplane);
-				/*if (!(mo->flags6 & MF6_CANJUMP))*/ return;
+				/* if (!CanJump(mo)) */ return;
 			}
 			if (mo->flags & MF_SKULLFLY)
 			{	// the skull slammed into something
@@ -3306,7 +3312,7 @@ bool AActor::IsOkayToAttack (AActor *link)
 	// its target; and for a summoned minion, its tracer.
 	AActor * Friend;
 	if (flags5 & MF5_SUMMONEDMONSTER)					Friend = tracer;
-	else if (flags2 & MF2_SEEKERMISSILE)				Friend = target;
+	else if (flags & MF_MISSILE)						Friend = target;
 	else if ((flags & MF_FRIENDLY) && FriendPlayer)		Friend = Level->Players[FriendPlayer-1]->mo;
 	else												Friend = this;
 
@@ -4098,12 +4104,20 @@ void AActor::Tick ()
 	}
 	if (!CheckNoDelay())
 		return; // freed itself
-	// cycle through states, calling action functions at transitions
 
 	UpdateRenderSectorList();
 
+	if (Sector->Flags & SECF_KILLMONSTERS && Z() == floorz &&
+		player == nullptr && (flags & MF_SHOOTABLE) && !(flags & MF_FLOAT))
+	{
+		P_DamageMobj(this, nullptr, nullptr, TELEFRAG_DAMAGE, NAME_InstantDeath);
+		// must have been removed
+		if (ObjectFlags & OF_EuthanizeMe) return;
+	}
+
 	if (tics != -1)
 	{
+		// cycle through states, calling action functions at transitions
 		// [RH] Use tics <= 0 instead of == 0 so that spawnstates
 		// of 0 tics work as expected.
 		if (--tics <= 0)
@@ -4792,7 +4806,11 @@ void AActor::PostBeginPlay ()
 {
 	PrevAngles = Angles;
 	flags7 |= MF7_HANDLENODELAY;
-	flags8 |= MF8_RECREATELIGHTS;
+	if (GetInfo()->LightAssociations.Size() || (state && state->Light > 0))
+	{
+		flags8 |= MF8_RECREATELIGHTS;
+		Level->flags3 |= LEVEL3_LIGHTCREATED;
+	}
 }
 
 void AActor::CallPostBeginPlay()
@@ -5812,6 +5830,58 @@ AActor *FLevelLocals::SpawnMapThing (FMapThing *mthing, int position)
 			}
 		}
 	}
+
+	// Set various UDMF options
+	if (mthing->Alpha >= 0)
+		mobj->Alpha = mthing->Alpha;
+	if (mthing->RenderStyle != STYLE_Count)
+		mobj->RenderStyle = (ERenderStyle)mthing->RenderStyle;
+	if (mthing->Scale.X != 0)
+		mobj->Scale.X = mthing->Scale.X * mobj->Scale.X;
+	if (mthing->Scale.Y != 0)
+		mobj->Scale.Y = mthing->Scale.Y * mobj->Scale.Y;
+	if (mthing->pitch)
+		mobj->Angles.Pitch = (double)mthing->pitch;
+	if (mthing->roll)
+		mobj->Angles.Roll = (double)mthing->roll;
+	if (mthing->score)
+		mobj->Score = mthing->score;
+	if (mthing->fillcolor)
+		mobj->fillcolor = (mthing->fillcolor & 0xffffff) | (ColorMatcher.Pick((mthing->fillcolor & 0xff0000) >> 16,
+			(mthing->fillcolor & 0xff00) >> 8, (mthing->fillcolor & 0xff)) << 24);
+
+	// allow color strings for lights and reshuffle the args for spot lights
+	if (i->IsDescendantOf(NAME_DynamicLight))
+	{
+		if (mthing->arg0str != NAME_None)
+		{
+			PalEntry color = V_GetColor(mthing->arg0str.GetChars());
+			mobj->args[0] = color.r;
+			mobj->args[1] = color.g;
+			mobj->args[2] = color.b;
+		}
+		else if (mobj->IntVar(NAME_lightflags) & LF_SPOT)
+		{
+			mobj->args[0] = RPART(mthing->args[0]);
+			mobj->args[1] = GPART(mthing->args[0]);
+			mobj->args[2] = BPART(mthing->args[0]);
+		}
+
+		if (mobj->IntVar(NAME_lightflags) & LF_SPOT)
+		{
+			mobj->AngleVar(NAME_SpotInnerAngle) = double(mthing->args[1]);
+			mobj->AngleVar(NAME_SpotOuterAngle) = double(mthing->args[2]);
+		}
+	}
+
+	mobj->CallBeginPlay ();
+	if (!(mobj->ObjectFlags & OF_EuthanizeMe))
+	{
+		mobj->LevelSpawned ();
+	}
+
+	if (mthing->Health > 0)
+		mobj->health = int(mobj->health * mthing->Health);
 	else
 	{
 		SetMobj(this, mobj, mthing, i);

@@ -216,7 +216,7 @@ void I_DetectOS(void)
 		}
 		else if (info.dwMajorVersion == 10)
 		{
-			osname = (info.wProductType == VER_NT_WORKSTATION) ? "10 (or higher)" : "Server 2016 (or higher)";
+			osname = (info.wProductType == VER_NT_WORKSTATION) ? (info.dwBuildNumber >= 22000 ? "11 (or higher)" : "10") : "Server 2016 (or higher)";
 			sys_ostype = 3; // modern OS
 		}
 		break;
@@ -527,7 +527,6 @@ BOOL CALLBACK IWADBoxCallback(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
 		char	szString[256];
 
 		// Check the current video settings.
-		//SendDlgItemMessage( hDlg, vid_renderer ? IDC_WELCOME_OPENGL : IDC_WELCOME_SOFTWARE, BM_SETCHECK, BST_CHECKED, 0 );
 		SendDlgItemMessage( hDlg, IDC_WELCOME_FULLSCREEN, BM_SETCHECK, vid_fullscreen ? BST_CHECKED : BST_UNCHECKED, 0 );
 		switch (vid_preferbackend)
 		{
@@ -591,6 +590,11 @@ BOOL CALLBACK IWADBoxCallback(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
 			SetQueryIWad(hDlg);
 			// [SP] Upstreamed from Zandronum
 			vid_fullscreen = SendDlgItemMessage( hDlg, IDC_WELCOME_FULLSCREEN, BM_GETCHECK, 0, 0 ) == BST_CHECKED;
+#ifdef HAVE_GLES2
+			if (SendDlgItemMessage(hDlg, IDC_WELCOME_VULKAN4, BM_GETCHECK, 0, 0) == BST_CHECKED)
+				vid_preferbackend = 3;
+			else 
+#endif
 			if (SendDlgItemMessage(hDlg, IDC_WELCOME_VULKAN3, BM_GETCHECK, 0, 0) == BST_CHECKED)
 				vid_preferbackend = 2;
 			else if (SendDlgItemMessage(hDlg, IDC_WELCOME_VULKAN2, BM_GETCHECK, 0, 0) == BST_CHECKED)

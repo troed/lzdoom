@@ -27,6 +27,7 @@
 #undef min
 #endif
 
+#include <inttypes.h>
 #include <vector>
 #include <array>
 #include <set>
@@ -219,6 +220,7 @@ void VulkanDevice::CreateAllocator()
 		allocinfo.flags = VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
 	allocinfo.physicalDevice = PhysicalDevice.Device;
 	allocinfo.device = device;
+	allocinfo.instance = instance;
 	allocinfo.preferredLargeHeapBlockSize = 64 * 1024 * 1024;
 	if (vmaCreateAllocator(&allocinfo, &allocator) != VK_SUCCESS)
 		VulkanError("Unable to create allocator");
@@ -361,7 +363,7 @@ VkBool32 VulkanDevice::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT mess
 		if (callbackData->pObjects[i].pObjectName)
 		{
 			FString hexname;
-			hexname.Format("0x%llx", callbackData->pObjects[i].objectHandle);
+			hexname.Format("0x%" PRIx64, callbackData->pObjects[i].objectHandle);
 			msg.Substitute(hexname.GetChars(), callbackData->pObjects[i].pObjectName);
 		}
 	}

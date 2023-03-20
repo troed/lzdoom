@@ -140,7 +140,7 @@ class PlayerPawn : Actor
 			if (health > 0) Height = FullHeight;
 		}
 
-		if (bWeaponLevel2Ended)
+		if (player && bWeaponLevel2Ended)
 		{
 			bWeaponLevel2Ended = false;
 			if (player.ReadyWeapon != NULL && player.ReadyWeapon.bPowered_Up)
@@ -333,8 +333,8 @@ class PlayerPawn : Actor
 			(player.ReadyWeapon == NULL || player.ReadyWeapon.bWimpy_Weapon))
 		{
 			let best = BestWeapon (ammotype);
-			if (best != NULL && (player.ReadyWeapon == NULL ||
-				best.SelectionOrder < player.ReadyWeapon.SelectionOrder))
+			if (best != NULL && !best.bNoAutoSwitchTo && 
+				(player.ReadyWeapon == NULL || best.SelectionOrder < player.ReadyWeapon.SelectionOrder))
 			{
 				player.PendingWeapon = best;
 			}
@@ -456,6 +456,7 @@ class PlayerPawn : Actor
 	virtual void CheckWeaponChange ()
 	{
 		let player = self.player;
+		if (!player) return;	
 		if ((player.WeaponState & WF_DISABLESWITCH) || // Weapon changing has been disabled.
 			player.morphTics != 0)					// Morphed classes cannot change weapons.
 		{ // ...so throw away any pending weapon requests.
@@ -2082,8 +2083,17 @@ class PlayerPawn : Actor
 			me.ClearInventory();
 			me.GiveDefaultInventory();
 		}
+
+		// [MK] notify self and inventory that we're about to travel
+		// this must be called here so these functions can still have a
+		// chance to alter the world before a snapshot is done in hubs
+		me.PreTravelled();
+		for (item = me.Inv; item != NULL; item = item.Inv)
+		{
+			item.PreTravelled();
+		}
 	}
-	
+	 
 	//===========================================================================
 	//
 	// FWeaponSlot :: PickWeapon
@@ -2459,6 +2469,18 @@ class PlayerPawn : Actor
 		else player.air_finished = int.max;
 		return wasdrowning;
 	}
+
+	//===========================================================================
+	//
+	// PlayerPawn :: PreTravelled
+	//
+	// Called before the player moves to another map, in case it needs to do
+	// special clean-up. This is called right before all carried items
+	// execute their respective PreTravelled() virtuals.
+	//
+	//===========================================================================
+
+	virtual void PreTravelled() {}
 
 	//===========================================================================
 	//

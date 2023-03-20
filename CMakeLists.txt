@@ -200,6 +200,7 @@ if( ${ZDOOM_TARGET_ARCH} MATCHES "x86_64" )
 endif()
 
 option (HAVE_VULKAN "Enable Vulkan support" ON)
+option (HAVE_GLES2 "Enable GLES2 support" ON)
 
 # no, we're not using external asmjit for now, we made too many modifications to our's.
 # if the asmjit author uses our changes then we'll update this.
@@ -253,6 +254,8 @@ if( MSVC )
 	string(REPLACE "/MDd " " " CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} )
 else()
 	set( REL_LINKER_FLAGS "" )
+	set( ALL_C_FLAGS "-ffp-contract=off -DHAVE_SOFTPOLY" )
+
 	if ( HAVE_VULKAN )
 		set( ALL_C_FLAGS "-ffp-contract=off -DHAVE_VULKAN" )
 	else()
@@ -278,7 +281,7 @@ else()
 
 
 	if( APPLE )
-		set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9")
+		set(CMAKE_OSX_DEPLOYMENT_TARGET "10.12")
 		if( CMAKE_CXX_COMPILER_ID STREQUAL "GNU" )
 			# If we're compiling with a custom GCC on the Mac (which we know since g++-4.2 doesn't support C++11) statically link libgcc.
 			set( ALL_C_FLAGS "-static-libgcc" )

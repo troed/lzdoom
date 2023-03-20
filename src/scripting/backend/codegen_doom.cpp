@@ -521,7 +521,6 @@ ExpEmit FxActionSpecialCall::Emit(VMFunctionBuilder *build)
 	unsigned i = 0;
 
 	// Call the BuiltinCallLineSpecial function to perform the desired special.
-	static uint8_t reginfo[] = { REGT_INT, REGT_POINTER, REGT_INT, REGT_INT, REGT_INT, REGT_INT, REGT_INT };
 	auto sym = FindBuiltinFunction(NAME_BuiltinCallLineSpecial);
 
 	assert(sym);
@@ -808,12 +807,12 @@ FxMultiNameState::FxMultiNameState(const char *_statestring, const FScriptPositi
 {
 	FName scopename = NAME_None;
 	FString statestring = _statestring;
-	int scopeindex = statestring.IndexOf("::");
+	auto scopeindex = statestring.IndexOf("::");
 
 	if (scopeindex >= 0)
 	{
 		scopename = FName(statestring, scopeindex, false);
-		statestring = statestring.Right(statestring.Len() - scopeindex - 2);
+		statestring = statestring.Right((ptrdiff_t)statestring.Len() - scopeindex - 2);
 	}
 	names = MakeStateNameList(statestring);
 	names.Insert(0, scopename);

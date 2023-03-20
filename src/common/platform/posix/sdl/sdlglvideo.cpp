@@ -50,7 +50,10 @@
 #include "gl_system.h"
 #include "gl_renderer.h"
 #include "gl_framebuffer.h"
-
+#ifdef HAVE_GLES2
+#include "gles_framebuffer.h"
+#endif
+ 
 #ifdef HAVE_VULKAN
 #include "vulkan/system/vk_framebuffer.h"
 #endif
@@ -113,8 +116,6 @@ CCMD(vid_list_sdl_render_drivers)
 
 namespace Priv
 {
-	static const uint32_t VulkanWindowFlag = SDL_WINDOW_VULKAN;
-
 	SDL_Window *window;
 	bool vulkanEnabled;
 	bool softpolyEnabled;
@@ -147,6 +148,8 @@ namespace Priv
 		{
 			// Enforce minimum size limit
 			SDL_SetWindowMinimumSize(Priv::window, VID_MIN_WIDTH, VID_MIN_HEIGHT);
+			// Tell SDL to start sending text input on Wayland.
+			if (strncasecmp(SDL_GetCurrentVideoDriver(), "wayland", 7) == 0) SDL_StartTextInput();
 		}
 	}
 
@@ -402,7 +405,7 @@ SDLVideo::SDLVideo ()
 
 	if (Priv::vulkanEnabled)
 	{
-		Priv::CreateWindow(Priv::VulkanWindowFlag | SDL_WINDOW_HIDDEN);
+		Priv::CreateWindow(SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN | (vid_fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0));
 
 		if (Priv::window == nullptr)
 		{
