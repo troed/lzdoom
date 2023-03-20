@@ -245,7 +245,6 @@ namespace
 	bool polyvsync = false;
 	bool polyfirstinit = true;
 }
-#endif
 
 void I_PolyPresentInit()
 {
@@ -385,7 +384,7 @@ void I_PolyPresentDeinit()
 		polyrendertarget = nullptr;
 	}
 }
-
+#endif
 
 SDLVideo::SDLVideo ()
 {
