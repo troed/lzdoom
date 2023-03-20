@@ -5488,7 +5488,7 @@ void SetMobj (FLevelLocals *Level, AActor *mobj, const FMapThing *mthing, const 
 	{
 		if (mthing->arg0str != NAME_None)
 		{
-			PalEntry color = V_GetColor(nullptr, mthing->arg0str.GetChars());
+			PalEntry color = V_GetColor(mthing->arg0str.GetChars());
 			mobj->args[0] = color.r;
 			mobj->args[1] = color.g;
 			mobj->args[2] = color.b;
