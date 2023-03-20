@@ -260,7 +260,7 @@ if( MSVC )
 else()
 	set( REL_LINKER_FLAGS "" )
 #	set( ALL_C_FLAGS "-ffp-contract=off -DHAVE_SOFTPOLY" )
-	set( ALL_C_FLAGS "-ffp-contract=off )
+	set( ALL_C_FLAGS "-ffp-contract=off" )
 
 	if ( HAVE_VULKAN )
 		set( ALL_C_FLAGS "${ALL_C_FLAGS} -DHAVE_VULKAN" )
