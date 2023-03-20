@@ -1501,7 +1501,6 @@ source_group("Common\\Rendering\\Vulkan Renderer\\Textures" REGULAR_EXPRESSION "
 source_group("Common\\Rendering\\Vulkan Renderer\\Third Party" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/rendering/vulkan/thirdparty/.+")
 source_group("Common\\Rendering\\Vulkan Renderer\\Third Party\\Volk" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/rendering/vulkan/thirdparty/volk/.+")
 source_group("Common\\Rendering\\Vulkan Renderer\\Third Party\\Vk_Mem_Alloc" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/rendering/vulkan/thirdparty/vk_mem_alloc.+")
-endif()
 source_group("Common\\Rendering\\Poly Renderer" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/rendering/polyrenderer/.+")
 source_group("Common\\Rendering\\Poly Renderer\\Drawers" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/rendering/polyrenderer/drawers/.+")
 source_group("Common\\Rendering\\Poly Renderer\\Backend" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/common/rendering/polyrenderer/backend/.+")
