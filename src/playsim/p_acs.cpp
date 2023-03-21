@@ -10444,6 +10444,8 @@ static void addDefered (level_info_t *i, acsdefered_t::EType type, int script, c
 	}
 }
 
+EXTERN_CVAR (Bool, sv_cheats)
+
 int P_StartScript (FLevelLocals *Level, AActor *who, line_t *where, int script, const char *map, const int *args, int argcount, int flags)
 {
 	if (map == NULL || 0 == strnicmp (Level->MapName, map, 8))

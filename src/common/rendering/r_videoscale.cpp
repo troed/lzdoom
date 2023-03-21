@@ -83,14 +83,17 @@ namespace
 	{
 		// sx = screen x dimension, sy = same for y
 		float sx = (float)inwidth, sy = (float)inheight;
-		float result;
-
-		if (sx <= 0. || sy <= 0.)
-			return 1.; // prevent x/0 error
-		// set absolute minimum scale to fill the entire screen but get as close to 640x400 as possible
-		float ssx = (ui_classic? (float)(VID_MIN_WIDTH) : (float)(VID_MIN_UI_WIDTH)) / sx, ssy = (ui_classic? (float)(VID_MIN_HEIGHT) : (float)(VID_MIN_UI_HEIGHT)) / sy;
-		result = (ssx < ssy) ? ssy : ssx;
-
+		static float lastsx = 0., lastsy = 0., result = 0.;
+		if (lastsx != sx || lastsy != sy)
+		{
+			if (sx <= 0. || sy <= 0.)
+				return 1.; // prevent x/0 error
+			// set absolute minimum scale to fill the entire screen but get as close to 640x400 as possible
+			float ssx = (float)(VID_MIN_UI_WIDTH) / sx, ssy = (float)(VID_MIN_UI_HEIGHT) / sy;
+			result = (ssx < ssy) ? ssy : ssx;
+			lastsx = sx;
+			lastsy = sy;
+		}
 		return result;
 	}
 	inline uint32_t v_mfillX(uint32_t inwidth, uint32_t inheight)
@@ -101,6 +104,34 @@ namespace
 	{
 		return (uint32_t)((float)inheight * v_MinimumToFill(inwidth, inheight));
 	}
+	inline void refresh_minimums()
+	{
+		// specialUI is tracking a state where high-res console fonts are actually required, and
+		// aren't actually rendered correctly in 320x200. this forces the game to revert to the 640x400
+		// minimum set in GZDoom 4.0.0, but only while those fonts are required.
+
+		static bool lastspecialUI = false;
+		bool isInActualMenu = false;
+
+		bool specialUI = (!sysCallbacks.IsSpecialUI || sysCallbacks.IsSpecialUI());
+
+		if (specialUI == lastspecialUI)
+			return;
+
+		lastspecialUI = specialUI;
+		setsizeneeded = true;
+
+		if (!specialUI)
+		{
+			min_width = VID_MIN_WIDTH;
+			min_height = VID_MIN_HEIGHT;
+		}
+		else
+		{
+			min_width = VID_MIN_UI_WIDTH;
+			min_height = VID_MIN_UI_HEIGHT;
+		}
+	}
 
 	// the odd formatting of this struct definition is meant to resemble a table header. set your tab stops to 4 when editing this file.
 	struct v_ScaleTable
@@ -108,12 +139,13 @@ namespace
 	v_ScaleTable vScaleTable[] =
 	{
 		{ true,				[](uint32_t Width, uint32_t Height)->uint32_t { return Width; },		        		[](uint32_t Width, uint32_t Height)->uint32_t { return Height; },	        		1.0f,	  				false   },	// 0  - Native
-		{ true,				[](uint32_t Width, uint32_t Height)->uint32_t { return v_mfillX(Width, Height); },		[](uint32_t Width, uint32_t Height)->uint32_t { return v_mfillY(Width, Height); },	1.0f,					false   },	// 1  - Minimum Scale to Fill Entire Screen
-		{ true,				[](uint32_t Width, uint32_t Height)->uint32_t { return 320; },		            		[](uint32_t Width, uint32_t Height)->uint32_t { return 200; },			        	1.2f,   				false   },	// 2  - 320x200
-		{ true,				[](uint32_t Width, uint32_t Height)->uint32_t { return 640; },		            		[](uint32_t Width, uint32_t Height)->uint32_t { return 400; },				        1.2f,  				 	false   },	// 3  - 640x400
+		{ true,				[](uint32_t Width, uint32_t Height)->uint32_t { return v_mfillX(Width, Height); },		[](uint32_t Width, uint32_t Height)->uint32_t { return v_mfillY(Width, Height); },	1.0f,					false   },	// 6  - Minimum Scale to Fill Entire Screen
+		{ true,				[](uint32_t Width, uint32_t Height)->uint32_t { return 640; },		            		[](uint32_t Width, uint32_t Height)->uint32_t { return 400; },			        	1.2f,   				false   },	// 2  - 640x400 (formerly 320x200)
+		{ true,				[](uint32_t Width, uint32_t Height)->uint32_t { return 960; },		            		[](uint32_t Width, uint32_t Height)->uint32_t { return 600; },				        1.2f,  				 	false   },	// 3  - 960x600 (formerly 640x400)
 		{ true,				[](uint32_t Width, uint32_t Height)->uint32_t { return 1280; },		           			[](uint32_t Width, uint32_t Height)->uint32_t { return 800; },	        			1.2f,   				false   },	// 4  - 1280x800
 		{ true,				[](uint32_t Width, uint32_t Height)->uint32_t { return vid_scale_customwidth; },		[](uint32_t Width, uint32_t Height)->uint32_t { return vid_scale_customheight; },	1.0f,   				true    },	// 5  - Custom
 		{ true,				[](uint32_t Width, uint32_t Height)->uint32_t { return Width/2; },		        		[](uint32_t Width, uint32_t Height)->uint32_t { return Height/2; },	        		1.0f,	  				false   },	// 6  - Native / 2
+		{ true,				[](uint32_t Width, uint32_t Height)->uint32_t { return 320; },		            		[](uint32_t Width, uint32_t Height)->uint32_t { return 200; },			        	1.2f,   				false   },	// 7  - 320x200
 	};
 	bool isOutOfBounds(int x)
 	{
@@ -131,13 +163,14 @@ CUSTOM_CVAR(Float, vid_scalefactor, 1.0, CVAR_ARCHIVE | CVAR_GLOBALCONFIG | CVAR
 	{
 		C_DoCommand("menu_resolution_commit_changes");
 	}
-	R_ShowCurrentScaling();
+    if (self != 1.0)
+	    R_ShowCurrentScaling();
 }
 
-CUSTOM_CVAR(Int, vid_scalemode, 6, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
+CUSTOM_CVAR(Int, vid_scalemode, 0, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
 {
 	setsizeneeded = true;
-	if (!ui_classic && self == 2) self = 3;	// block 320x200 setting.
+	if (!ui_classic && self == 7) self = 2;	// block 320x200 setting.
 	else if (isOutOfBounds(self))
 		self = 0;
 }
@@ -166,6 +199,7 @@ int ViewportScaledWidth(int width, int height)
 {
 	if (isOutOfBounds(vid_scalemode))
 		vid_scalemode = 0;
+	refresh_minimums();
 	if (vid_cropaspect && height > 0)
 	{
 		width = ((float)width/height > ActiveRatio(width, height)) ? (int)(height * ActiveRatio(width, height)) : width;
@@ -174,7 +208,7 @@ int ViewportScaledWidth(int width, int height)
 	uint32_t tablewidth = vScaleTable[vid_scalemode].GetScaledWidth(width, height);
 	if (!ui_classic && tablewidth < VID_MIN_UI_WIDTH)
 		tablewidth = VID_MIN_UI_WIDTH;
-	return (int)std::max((int32_t)VID_MIN_WIDTH, (int32_t)(vid_scalefactor * tablewidth));
+	return (int)std::max((int32_t)min_width, (int32_t)(vid_scalefactor * vScaleTable[vid_scalemode].GetScaledWidth(width, height)));
 }
 
 int ViewportScaledHeight(int width, int height)
@@ -189,7 +223,7 @@ int ViewportScaledHeight(int width, int height)
 	uint32_t tableheight = vScaleTable[vid_scalemode].GetScaledHeight(width, height);
 	if (!ui_classic && tableheight < VID_MIN_UI_HEIGHT)
 		tableheight = VID_MIN_UI_HEIGHT;
-	return (int)std::max((int32_t)VID_MIN_HEIGHT, (int32_t)(vid_scalefactor * tableheight));
+	return (int)std::max((int32_t)min_height, (int32_t)(vid_scalefactor * vScaleTable[vid_scalemode].GetScaledHeight(width, height)));
 }
 
 float ViewportPixelAspect()

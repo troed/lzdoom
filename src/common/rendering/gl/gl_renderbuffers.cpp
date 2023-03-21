@@ -34,6 +34,7 @@
 #include <random>
 
 EXTERN_CVAR(Int, gl_debug_level)
+CVAR(Int, gl_multisample, 1, CVAR_ARCHIVE|CVAR_GLOBALCONFIG);
 
 namespace OpenGLRenderer
 {

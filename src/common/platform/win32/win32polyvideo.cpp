@@ -5,6 +5,8 @@
 #include "v_text.h"
 #include <Windows.h>
 
+#ifdef HAVE_SOFTPOLY
+
 EXTERN_CVAR(Bool, vid_vsync)
 
 bool ViewportLinearScale();
@@ -288,3 +290,4 @@ void I_PresentPolyImage(int w, int h, const void *pixels)
 		StretchDIBits(dc, 0, 0, box.right, box.bottom, 0, 0, w, h, pixels, (const BITMAPINFO *)&info, DIB_RGB_COLORS, SRCCOPY);
 	ReleaseDC(Window, dc);
 }
+#endif

@@ -137,6 +137,7 @@ void I_InitGraphics ()
 	{
 		Video = new Win32PolyVideo();
 	}
+	else
 #endif
 #ifdef HAVE_VULKAN
 	if (vid_preferbackend == 1)

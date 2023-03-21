@@ -478,6 +478,25 @@ void FGameConfigFile::DoGlobalSetup ()
 					}
 				}
 			}
+			if (last < 217)
+			{
+				auto var = FindCVar("vid_scalemode", NULL);
+				UCVarValue newvalue;
+				if (var != NULL)
+				{
+					UCVarValue v = var->GetGenericRep(CVAR_Int);
+					if (v.Int == 3) // 640x400
+					{
+						newvalue.Int = 2;
+						var->SetGenericRep(newvalue, CVAR_Int);
+					}
+					if (v.Int == 2) // 320x200
+					{
+						newvalue.Int = 6;
+						var->SetGenericRep(newvalue, CVAR_Int);
+					}
+				}
+			}
 			if (last < 219)
 			{
 				// 2019-12-06 - polybackend merge
@@ -538,9 +557,9 @@ void FGameConfigFile::DoGlobalSetup ()
 			{
 				// Transfer the messed up mouse scaling config to something sane and consistent.
 #ifndef _WIN32
-				double xfact = 1.5, yfact = 2;
+				double xfact = 3, yfact = 2;
 #else
-				double xfact = in_mouse == 1? 1 : 2, yfact = 1;
+				double xfact = in_mouse == 1? 1.5 : 4, yfact = 1;
 #endif
 				auto var = FindCVar("m_noprescale", NULL);
 				if (var != NULL)

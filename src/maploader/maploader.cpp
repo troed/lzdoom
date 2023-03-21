@@ -1902,6 +1902,7 @@ void MapLoader::LoadLineDefs2 (MapData * map)
 	{
 		Printf ("Map has %d unused sidedefs\n", numsides - count);
 	}
+	numsides = count;
 	sidecount = 0;
 }
 

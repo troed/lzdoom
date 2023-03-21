@@ -119,42 +119,23 @@ DEFINE_ACTION_FUNCTION(FSavegameManager, RemoveSaveSlot)
 
 int FSavegameManagerBase::InsertSaveNode(FSaveGameNode *node)
 {
-	if (SaveGames.Size() == 0 || node->bOldVersion)
-	{ // Add node at bottom of list
+	if (SaveGames.Size() == 0)
+	{
+		return SaveGames.Push(node);
+	}
+
+	if (node->bOldVersion)	{ // Add node at bottom of list
 		return SaveGames.Push(node);
 	}
 	else
 	{	// Add node at top of list
 		unsigned int i = 0;
-		if (!oldsaveorder)
-		{
-			if (!strstr(node->Filename.GetChars(),"auto") && !strstr(node->Filename.GetChars(),"quick"))
+        //if (SaveGames[0] == &NewSaveNode) i++; // To not insert above the "new savegame" dummy entry.
+        for (; i < SaveGames.Size(); i++)
+	    {
+            if (SaveGames[i]->bOldVersion || node->SaveTitle.CompareNoCase(SaveGames[i]->SaveTitle) <= 0)
 			{
-				for (i; i < SaveGames.Size(); i++)
-				{
-					if (!strstr(SaveGames[i]->Filename.GetChars(),"auto") && !strstr(SaveGames[i]->Filename.GetChars(),"quick") 
-						&& node->Filename.CompareNoCase(SaveGames[i]->Filename) >= 0)
-					{
-						break;
-					}
-				}
-			}
-			else
-			{
-				if (strstr(node->Filename.GetChars(),"quick"))
-				{
-					for (i; i < SaveGames.Size() && strstr(SaveGames[i]->Filename.GetChars(),"auto"); i++) {}
-				}
-			}
-		}
-		else
-		{
-			for (i; i < SaveGames.Size(); i++)
-			{
-				if (SaveGames[i]->bOldVersion || node->SaveTitle.CompareNoCase(SaveGames[i]->SaveTitle) <= 0)
-				{
-					break;
-				}
+				break;
 			}
 		}
 		SaveGames.Insert(i, node);

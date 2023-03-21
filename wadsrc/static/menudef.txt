@@ -2246,13 +2246,13 @@ OptionValue Ratios
 }
 OptionValue ScaleModes
 {
-	0, "$OPTVAL_NATIVE"
-	2, "320x200"
-	3, "640x400"
+	0, "$OPTVAL_NORMAL"
+	6, "320x200"
+	2, "640x400"
+	3, "960x600"
 	4, "1280x800"
 	5, "$OPTVAL_CUSTOM"
 	1, "$OPTVAL_LOWEST"
-	6, "$OPTVAL_HALF"
 }
 OptionValue CropAspect
 {
@@ -2295,6 +2295,11 @@ OptionMenu VideoModeMenu protected
 	Option "$VIDMNU_SCALEMODE",			"vid_scalemode", "ScaleModes"
 	Slider "$VIDMNU_SCALEFACTOR",		"vid_scalefactor", 0.25, 2.0, 0.25, 2
 
+	StaticText " "
+	Option "$DSPLYMNU_VSYNC",			"vid_vsync", "OnOff"
+	Option "$VIDMNU_MAXFPS",            "vid_maxfps", "MaxFps"
+	Option "$DSPLYMNU_CAPFPS",          "cl_capfps", "OffOn"
+       
 	StaticText ""
 	StaticText "$VIDMNU_CUSTOMRES"
 	TextField "$VIDMNU_CUSTOMX", menu_resolution_custom_width
