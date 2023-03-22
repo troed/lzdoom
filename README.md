@@ -1,3 +1,7 @@
+# Why this fork
+
+This is LZDoom updated/merged to match GZDoom 4.7.1. Its sole purpose is for playing Legend of Doom on an RPi4 Retropie. It might work well for other games too, but that's completely untested.
+
 # Welcome to LZDoom!
 
 [![Build Status](https://github.com/drfrag666/gzdoom/workflows/Continuous%20Integration/badge.svg)](https://github.com/drfrag666/gzdoom/actions?query=workflow%3A%22Continuous+Integration%22)
