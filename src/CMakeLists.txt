@@ -819,6 +819,7 @@ if (HAVE_VULKAN)
 	set (FASTMATH_SOURCES ${FASTMATH_SOURCES} ${VULKAN_SOURCES})
 endif()
 
+if (HAVE_SOFTPOLY)
 set (POLYBACKEND_SOURCES
 	common/rendering/polyrenderer/backend/poly_framebuffer.cpp
 	common/rendering/polyrenderer/backend/poly_buffers.cpp
@@ -826,6 +827,7 @@ set (POLYBACKEND_SOURCES
 	common/rendering/polyrenderer/backend/poly_renderstate.cpp
 )
 set (FASTMATH_SOURCES ${FASTMATH_SOURCES} ${POLYBACKEND_SOURCES})
+endif()
 
 set (PCH_SOURCES
 	am_map.cpp

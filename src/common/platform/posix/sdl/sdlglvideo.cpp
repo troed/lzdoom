@@ -483,7 +483,7 @@ DFrameBuffer *SDLVideo::CreateFrameBuffer ()
 #endif
 		{
 	    	fb = new OpenGLRenderer::OpenGLFrameBuffer(0, vid_fullscreen);
-			Printf("Using OpenGLES\n");
+			Printf("Using OpenGL\n");
 		}
 	}
 

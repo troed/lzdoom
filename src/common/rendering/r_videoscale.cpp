@@ -78,6 +78,8 @@ CUSTOM_CVAR(Float, vid_scale_custompixelaspect, 1.0, CVAR_ARCHIVE | CVAR_GLOBALC
 
 namespace
 {
+	uint32_t min_width = VID_MIN_WIDTH;
+	uint32_t min_height = VID_MIN_HEIGHT;
 
 	float v_MinimumToFill(uint32_t inwidth, uint32_t inheight)
 	{

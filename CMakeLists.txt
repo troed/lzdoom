@@ -217,7 +217,8 @@ if( MSVC )
 	# String pooling
 	# Function-level linking
 	# Disable run-time type information
-	set( ALL_C_FLAGS "/GF /Gy /permissive- /DHAVE_SOFTPOLY" )
+#	set( ALL_C_FLAGS "/GF /Gy /permissive- /DHAVE_SOFTPOLY" )
+	set( ALL_C_FLAGS "/GF /Gy /permissive-" )
 
 	if ( HAVE_VULKAN )
 		set( ALL_C_FLAGS "${ALL_C_FLAGS} /DHAVE_VULKAN" )
@@ -226,7 +227,7 @@ if( MSVC )
 	if ( HAVE_GLES2 )
 		set( ALL_C_FLAGS "${ALL_C_FLAGS} /DHAVE_GLES2" )
 	endif()
-	
+
 	# Use SSE 2 as minimum always as the true color drawers needs it for __vectorcall
 	#set( ALL_C_FLAGS "${ALL_C_FLAGS} /arch:SSE2") # This is already the default
 
